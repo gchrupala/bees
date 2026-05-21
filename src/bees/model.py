@@ -24,6 +24,14 @@ class Colony:
 
 
 @dataclass(frozen=True)
+class FoodSite:
+    direction: float
+    width: float
+    value: float
+    capacity: int
+
+
+@dataclass(frozen=True)
 class DirectionSettings:
     colony_count: int
     workers_per_colony: int
@@ -35,7 +43,9 @@ class DirectionSettings:
     max_signal_concentration: float
     dance_noise_sd: float
     interpretation_noise_sd: float
-    success_angle: float
+    food_site_count: int
+    food_site_width: float
+    food_site_capacity: int
     food_value: float
     cue_cost: float
     attention_cost: float
@@ -96,6 +106,36 @@ def produce_signal(
     return (signal + rng.gauss(0.0, settings.dance_noise_sd)) % tau
 
 
+def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodSite, ...]:
+    return tuple(
+        FoodSite(
+            direction=rng.random() * tau,
+            width=settings.food_site_width,
+            value=settings.food_value,
+            capacity=settings.food_site_capacity,
+        )
+        for _ in range(settings.food_site_count)
+    )
+
+
+def find_food_site(
+    search_direction: float,
+    sites: tuple[FoodSite, ...],
+    remaining_capacity: list[int],
+) -> int | None:
+    available_sites = [
+        (angular_distance(search_direction, site.direction), index)
+        for index, site in enumerate(sites)
+        if remaining_capacity[index] > 0
+        and angular_distance(search_direction, site.direction) <= site.width
+    ]
+
+    if not available_sites:
+        return None
+
+    return min(available_sites)[1]
+
+
 def evaluate_colony(
     colony: Colony,
     settings: DirectionSettings,
@@ -106,11 +146,14 @@ def evaluate_colony(
     total_recruits = settings.episodes_per_colony * settings.recruits_per_episode
 
     for _ in range(settings.episodes_per_colony):
-        food_direction = rng.random() * tau
+        sites = generate_food_sites(settings, rng)
+        remaining_capacity = [site.capacity for site in sites]
+        scout_site = rng.choice(sites)
         scout = rng.choice(colony.workers)
-        signal = produce_signal(food_direction, scout, settings, rng)
+        signal = produce_signal(scout_site.direction, scout, settings, rng)
         attention_count = 0
         success_count = 0
+        food_payoff = 0.0
 
         for _ in range(settings.recruits_per_episode):
             recruit = rng.choice(colony.workers)
@@ -122,15 +165,15 @@ def evaluate_colony(
             else:
                 search_direction = rng.random() * tau
 
-            if (
-                angular_distance(search_direction, food_direction)
-                <= settings.success_angle
-            ):
+            site_index = find_food_site(search_direction, sites, remaining_capacity)
+            if site_index is not None:
+                remaining_capacity[site_index] -= 1
                 success_count += 1
+                food_payoff += sites[site_index].value
 
         total_successes += success_count
         total_payoff += (
-            settings.food_value * success_count
+            food_payoff
             - settings.cue_cost * scout.directional_bias
             - settings.attention_cost * attention_count
         )

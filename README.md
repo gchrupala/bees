@@ -13,6 +13,12 @@ the biological question and modeling assumptions are clear.
 - `tests/`: tests for model behavior
 - `results/`: local experiment outputs
 
+## Current Model
+
+The horizontal-comb model represents food sites explicitly. In each episode,
+a scout discovers one site and dances for it, while recruits can either follow
+the dance or search independently and find any available food site in the world.
+
 ## Development
 
 Run the horizontal direction experiment:

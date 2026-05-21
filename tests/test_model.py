@@ -7,9 +7,11 @@ from random import Random
 from bees.model import (
     ColonyTraits,
     DirectionSettings,
+    FoodSite,
     angular_distance,
     create_colony,
     evaluate_colony,
+    find_food_site,
     simulate,
 )
 
@@ -36,6 +38,23 @@ class DirectionModelTests(unittest.TestCase):
         self.assertTrue(
             all(0.0 <= worker.receiver_attention <= 1.0 for worker in colony.workers)
         )
+
+    def test_random_search_can_find_any_available_food_site(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, width=0.1, value=1.0, capacity=1),
+            FoodSite(direction=tau / 2, width=0.1, value=1.0, capacity=1),
+        )
+        remaining_capacity = [1, 1]
+
+        self.assertEqual(
+            find_food_site(tau / 2 + 0.01, sites, remaining_capacity),
+            1,
+        )
+
+    def test_depleted_food_sites_cannot_be_found(self) -> None:
+        sites = (FoodSite(direction=0.0, width=0.1, value=1.0, capacity=1),)
+
+        self.assertIsNone(find_food_site(0.0, sites, [0]))
 
     def test_directional_signal_beats_random_search(self) -> None:
         settings = _settings(
@@ -93,7 +112,9 @@ def _settings(**overrides: float | int) -> DirectionSettings:
         "max_signal_concentration": 20.0,
         "dance_noise_sd": 0.08,
         "interpretation_noise_sd": 0.08,
-        "success_angle": 0.35,
+        "food_site_count": 1,
+        "food_site_width": 0.35,
+        "food_site_capacity": 8,
         "food_value": 1.0,
         "cue_cost": 0.01,
         "attention_cost": 0.01,

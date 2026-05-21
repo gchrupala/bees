@@ -10,7 +10,9 @@
   "max_signal_concentration": 14.0,
   "dance_noise_sd": 0.18,
   "interpretation_noise_sd": 0.12,
-  "success_angle": 0.35,
+  "food_site_count": 2,
+  "food_site_width": 0.2,
+  "food_site_capacity": 6,
   "food_value": 1.0,
   "cue_cost": 0.02,
   "attention_cost": 0.01
