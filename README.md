@@ -27,6 +27,12 @@ Generate a simple SVG demo plot:
 python experiments/demo_horizontal_direction.py
 ```
 
+Stream a one-parameter sweep:
+
+```sh
+python experiments/sweep_horizontal_direction.py --seeds 101,102,103
+```
+
 Run tests:
 
 ```sh
