@@ -1,0 +1,13 @@
+{
+  "seed": 11,
+  "lineages": 80,
+  "generations": 40,
+  "episodes_per_lineage": 80,
+  "mutation_sd": 0.04,
+  "max_distance": 1.0,
+  "cue_noise": 0.08,
+  "search_width": 0.18,
+  "random_success": 0.18,
+  "cue_cost": 0.02,
+  "attention_cost": 0.01
+}

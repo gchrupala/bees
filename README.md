@@ -21,6 +21,12 @@ Run the basic experiment:
 python experiments/run_basic.py
 ```
 
+Run the distance-signal ritualization experiment:
+
+```sh
+python experiments/run_distance_signal.py
+```
+
 Run tests:
 
 ```sh
