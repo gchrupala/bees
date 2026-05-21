@@ -21,6 +21,12 @@ Run the horizontal direction experiment:
 python experiments/run_horizontal_direction.py
 ```
 
+Generate a simple SVG demo plot:
+
+```sh
+python experiments/demo_horizontal_direction.py
+```
+
 Run tests:
 
 ```sh
