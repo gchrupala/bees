@@ -5,7 +5,6 @@ Computational models for exploring the evolution of honeybee communication.
 This repository is intentionally starting small. We will add models only once
 the biological question and modeling assumptions are clear.
 
-
 ## Repository Structure
 
 - `src/bees/`: Python package for model code
@@ -16,9 +15,14 @@ the biological question and modeling assumptions are clear.
 
 ## Development
 
+Run the horizontal direction experiment:
+
+```sh
+python experiments/run_horizontal_direction.py
+```
+
 Run tests:
 
 ```sh
 PYTHONPATH=src python -m unittest discover -s tests
 ```
-

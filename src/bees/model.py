@@ -1,0 +1,245 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from math import pi, tau
+from random import Random
+
+
+@dataclass(frozen=True)
+class ColonyTraits:
+    directional_bias: float
+    receiver_attention: float
+
+
+@dataclass(frozen=True)
+class Worker:
+    directional_bias: float
+    receiver_attention: float
+
+
+@dataclass(frozen=True)
+class Colony:
+    traits: ColonyTraits
+    workers: tuple[Worker, ...]
+
+
+@dataclass(frozen=True)
+class DirectionSettings:
+    colony_count: int
+    workers_per_colony: int
+    generations: int
+    episodes_per_colony: int
+    recruits_per_episode: int
+    mutation_sd: float
+    stable_worker_sd: float
+    max_signal_concentration: float
+    dance_noise_sd: float
+    interpretation_noise_sd: float
+    success_angle: float
+    food_value: float
+    cue_cost: float
+    attention_cost: float
+
+
+@dataclass(frozen=True)
+class ColonyEvaluation:
+    payoff: float
+    success_rate: float
+
+
+@dataclass(frozen=True)
+class GenerationSummary:
+    generation: int
+    average_directional_bias: float
+    average_receiver_attention: float
+    average_success_rate: float
+    average_payoff: float
+
+
+def angular_distance(first: float, second: float) -> float:
+    return abs((first - second + pi) % tau - pi)
+
+
+def create_colony(
+    traits: ColonyTraits,
+    settings: DirectionSettings,
+    rng: Random,
+) -> Colony:
+    workers = tuple(
+        Worker(
+            directional_bias=_clamp(
+                traits.directional_bias + rng.gauss(0.0, settings.stable_worker_sd),
+                0.0,
+                1.0,
+            ),
+            receiver_attention=_clamp(
+                traits.receiver_attention + rng.gauss(0.0, settings.stable_worker_sd),
+                0.0,
+                1.0,
+            ),
+        )
+        for _ in range(settings.workers_per_colony)
+    )
+
+    return Colony(traits=traits, workers=workers)
+
+
+def produce_signal(
+    food_direction: float,
+    worker: Worker,
+    settings: DirectionSettings,
+    rng: Random,
+) -> float:
+    concentration = worker.directional_bias * settings.max_signal_concentration
+    signal = rng.vonmisesvariate(food_direction, concentration)
+
+    return (signal + rng.gauss(0.0, settings.dance_noise_sd)) % tau
+
+
+def evaluate_colony(
+    colony: Colony,
+    settings: DirectionSettings,
+    rng: Random,
+) -> ColonyEvaluation:
+    total_payoff = 0.0
+    total_successes = 0
+    total_recruits = settings.episodes_per_colony * settings.recruits_per_episode
+
+    for _ in range(settings.episodes_per_colony):
+        food_direction = rng.random() * tau
+        scout = rng.choice(colony.workers)
+        signal = produce_signal(food_direction, scout, settings, rng)
+        attention_count = 0
+        success_count = 0
+
+        for _ in range(settings.recruits_per_episode):
+            recruit = rng.choice(colony.workers)
+            if rng.random() < recruit.receiver_attention:
+                search_direction = (
+                    signal + rng.gauss(0.0, settings.interpretation_noise_sd)
+                ) % tau
+                attention_count += 1
+            else:
+                search_direction = rng.random() * tau
+
+            if (
+                angular_distance(search_direction, food_direction)
+                <= settings.success_angle
+            ):
+                success_count += 1
+
+        total_successes += success_count
+        total_payoff += (
+            settings.food_value * success_count
+            - settings.cue_cost * scout.directional_bias
+            - settings.attention_cost * attention_count
+        )
+
+    return ColonyEvaluation(
+        payoff=max(0.001, total_payoff / settings.episodes_per_colony),
+        success_rate=total_successes / total_recruits,
+    )
+
+
+def simulate(
+    settings: DirectionSettings,
+    seed: int,
+) -> list[GenerationSummary]:
+    rng = Random(seed)
+    colonies = [
+        create_colony(_initial_traits(rng), settings, rng)
+        for _ in range(settings.colony_count)
+    ]
+    history = []
+
+    for generation in range(settings.generations + 1):
+        evaluations = [evaluate_colony(colony, settings, rng) for colony in colonies]
+        history.append(_summarize(generation, colonies, evaluations))
+
+        if generation < settings.generations:
+            colonies = [
+                create_colony(
+                    _mutate_traits(
+                        _choose_parent(colonies, evaluations, rng).traits,
+                        settings,
+                        rng,
+                    ),
+                    settings,
+                    rng,
+                )
+                for _ in colonies
+            ]
+
+    return history
+
+
+def _initial_traits(rng: Random) -> ColonyTraits:
+    return ColonyTraits(
+        directional_bias=rng.uniform(0.0, 0.15),
+        receiver_attention=rng.uniform(0.0, 0.25),
+    )
+
+
+def _mutate_traits(
+    traits: ColonyTraits,
+    settings: DirectionSettings,
+    rng: Random,
+) -> ColonyTraits:
+    return ColonyTraits(
+        directional_bias=_clamp(
+            traits.directional_bias + rng.gauss(0.0, settings.mutation_sd),
+            0.0,
+            1.0,
+        ),
+        receiver_attention=_clamp(
+            traits.receiver_attention + rng.gauss(0.0, settings.mutation_sd),
+            0.0,
+            1.0,
+        ),
+    )
+
+
+def _choose_parent(
+    colonies: list[Colony],
+    evaluations: list[ColonyEvaluation],
+    rng: Random,
+) -> Colony:
+    total_payoff = sum(evaluation.payoff for evaluation in evaluations)
+    threshold = rng.random() * total_payoff
+    cumulative = 0.0
+
+    for colony, evaluation in zip(colonies, evaluations):
+        cumulative += evaluation.payoff
+        if cumulative >= threshold:
+            return colony
+
+    return colonies[-1]
+
+
+def _summarize(
+    generation: int,
+    colonies: list[Colony],
+    evaluations: list[ColonyEvaluation],
+) -> GenerationSummary:
+    count = len(colonies)
+
+    return GenerationSummary(
+        generation=generation,
+        average_directional_bias=sum(
+            colony.traits.directional_bias for colony in colonies
+        )
+        / count,
+        average_receiver_attention=sum(
+            colony.traits.receiver_attention for colony in colonies
+        )
+        / count,
+        average_success_rate=sum(
+            evaluation.success_rate for evaluation in evaluations
+        )
+        / count,
+        average_payoff=sum(evaluation.payoff for evaluation in evaluations) / count,
+    )
+
+
+def _clamp(value: float, minimum: float, maximum: float) -> float:
+    return min(max(value, minimum), maximum)
