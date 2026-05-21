@@ -17,9 +17,13 @@
 Honeybee waggle dances provide spatial information about resources away from
 the nest. One ecological hypothesis is that such communication is favored when
 food is difficult to discover independently but remains useful after a scout
-has found it. We begin with a deliberately simple model of directional
-communication on an exposed horizontal comb, where dance angle can map directly
-onto food direction.
+has found it. Empirical and theoretical studies suggest that the value of dance
+information depends on the spatiotemporal distribution of food resources,
+including patch density, patch size, reward variability, and habitat
+\cite{sherman_visscher_2002,dornhaus_chittka_2004,dornhaus_etal_2006,beekman_lew_2008,donaldson_matasci_dornhaus_2012,schurch_gruter_2014,price_gruter_2015}.
+We begin with a deliberately simple model of directional communication on an
+exposed horizontal comb, where dance angle can map directly onto food
+direction.
 
 \section{Model}
 
@@ -45,7 +49,10 @@ site and dances for it. Recruits either attend to the dance and search near the
 signaled direction, or ignore it and search in a random direction. Crucially,
 independent searchers can find any available food site, not only the scout's
 site. This makes background discovery an emergent property of the food
-distribution.
+distribution. This design follows the logic of previous ecological models in
+which recruitment benefits depend on the availability and discoverability of
+resource patches rather than on communication having a fixed payoff advantage
+\cite{dornhaus_etal_2006,beekman_lew_2008}.
 
 The scout's dance angle is sampled from a circular von Mises distribution
 centered on the discovered site direction. The concentration parameter is
@@ -112,5 +119,8 @@ baseline condition lies between these extremes.
 The next step is to make the food-distribution experiment reproducible as a
 named script, then expand the ecological variables one at a time: site
 capacity, persistence across episodes, and spatial clustering.
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}

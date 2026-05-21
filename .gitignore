@@ -11,5 +11,8 @@ dist/
 results/*
 !results/.gitkeep
 report/*.aux
+report/*.bbl
+report/*.blg
 report/*.log
+report/*.out
 report/*.pdf
