@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+
+\title{A Minimal Model of Directional Communication in Honeybee Foraging}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Honeybee waggle dances provide spatial information about resources away from
+the nest. One ecological hypothesis is that such communication is favored when
+food is difficult to discover independently but remains useful after a scout
+has found it. We begin with a deliberately simple model of directional
+communication on an exposed horizontal comb, where dance angle can map directly
+onto food direction.
+
+\section{Model}
+
+Colonies are the reproducing entities, while workers are behavioral agents.
+Each colony has two heritable mean traits: directional bias, which controls how
+strongly a scout's dance angle is centered on the discovered food site, and
+receiver attention, which controls how likely recruits are to follow the dance.
+Individual workers are sampled around the colony means using stable within-
+colony variation. Each dance also includes transient production and
+interpretation noise.
+
+Each foraging episode generates a set of food sites in the world. A food site
+has a direction, angular width, value, and capacity. A scout discovers one food
+site and dances for it. Recruits either attend to the dance and search near the
+signaled direction, or ignore it and search in a random direction. Crucially,
+independent searchers can find any available food site, not only the scout's
+site. This makes background discovery an emergent property of the food
+distribution.
+
+After many episodes, each colony receives a payoff from collected food minus
+communication and attention costs. Daughter colonies are sampled in proportion
+to payoff, and colony-level traits mutate by Gaussian noise. We track the mean
+directional bias, receiver attention, and recruit success rate across
+generations.
+
+\section{Initial Results}
+
+We compared three simple food distributions over ten random seeds each. The
+``hard'' condition had one narrow food site per episode, the baseline condition
+had two moderately wide food sites, and the ``easy'' condition had many broad
+food sites. Table~\ref{tab:food-distribution} reports the generation at which
+mean directional bias first reached 0.30, plus final generation trait and
+success values.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Condition & Reach generation & Final bias & Final attention & Final success \\
+\midrule
+Hard & 10.0 & 0.781 & 0.886 & 0.148 \\
+Baseline & 13.0 & 0.716 & 0.837 & 0.373 \\
+Easy & 23.7 & 0.332 & 0.366 & 0.797 \\
+\bottomrule
+\end{tabular}
+\caption{Initial food-distribution experiment. The hard environment used one
+food site of width 0.08, the baseline used two sites of width 0.20, and the
+easy environment used eight sites of width 0.50. All conditions used food-site
+capacity 6 and ten seeds.}
+\label{tab:food-distribution}
+\end{table}
+
+The initial result matches the ecological prediction qualitatively. In the hard
+environment, communication evolves quickly and strongly, although absolute
+foraging success remains low because food is rare and narrow. In the easy
+environment, recruit success is high even without strong communication, and
+selection for directional bias and receiver attention is much weaker. The
+baseline condition lies between these extremes.
+
+\section{Next Steps}
+
+The next step is to make the food-distribution experiment reproducible as a
+named script, then expand the ecological variables one at a time: site
+capacity, persistence across episodes, and spatial clustering.
+
+\end{document}

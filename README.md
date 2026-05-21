@@ -10,6 +10,7 @@ the biological question and modeling assumptions are clear.
 - `src/bees/`: Python package for model code
 - `configs/`: reproducible experiment settings
 - `experiments/`: runnable experiment scripts
+- `report/`: LaTeX scientific report draft
 - `tests/`: tests for model behavior
 - `results/`: local experiment outputs
 
