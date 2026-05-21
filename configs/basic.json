@@ -1,0 +1,9 @@
+{
+  "seed": 7,
+  "generations": 20,
+  "initial_signalers": 50,
+  "initial_nonsignalers": 50,
+  "signaler_payoff": 1.15,
+  "nonsignaler_payoff": 1.0,
+  "communication_cost": 0.05
+}
