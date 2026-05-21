@@ -1,22 +1,34 @@
 # Bees
 
-Computational models for studying the evolution of bee communication.
+Computational models for exploring the evolution of honeybee communication.
 
-The project is currently a lightweight scaffold. Specific models, experiments,
-and tests should be added only after the modeling question is explicit.
+This repository is intentionally starting small. We will add models only once
+the biological question and modeling assumptions are clear.
 
-## Structure
+## Goals
 
-- `src/bees/`: simulation code
+- Study how communication behaviors can evolve from simpler cues.
+- Keep assumptions explicit and easy to revise.
+- Build simple, inspectable simulations before adding complexity.
+- Make experiments reproducible from configs and random seeds.
+
+## Repository Structure
+
+- `src/bees/`: Python package for model code
 - `configs/`: reproducible experiment settings
-- `experiments/`: scripts that run simulations
-- `tests/`: model tests
+- `experiments/`: runnable experiment scripts
+- `tests/`: tests for model behavior
 - `results/`: local experiment outputs
 
 ## Development
 
-Run tests once tests exist:
+Run tests:
 
 ```sh
 PYTHONPATH=src python -m unittest discover -s tests
 ```
+
+## Notes
+
+Specific models are not yet implemented. Early work will focus on clarifying
+which evolutionary pathway we want to simulate.
