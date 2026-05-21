@@ -26,6 +26,7 @@ We are modeling the evolution of bee communication.
 
 ## Workflow
 
+- Do not implement only based on discussing high level ideas. Wait for an explicit request to generate code.
 - Before large changes, inspect the existing structure and follow established patterns.
 - Keep changes scoped to the current modeling question or tooling need.
 - Run the relevant tests or checks after implementation when available.
