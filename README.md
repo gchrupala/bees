@@ -2,8 +2,8 @@
 
 Computational models for studying the evolution of bee communication.
 
-The project starts intentionally small: a simple simulation core, one basic
-experiment script, and tests for the model rules.
+The project is currently a lightweight scaffold. Specific models, experiments,
+and tests should be added only after the modeling question is explicit.
 
 ## Structure
 
@@ -13,21 +13,9 @@ experiment script, and tests for the model rules.
 - `tests/`: model tests
 - `results/`: local experiment outputs
 
-## Quick Start
+## Development
 
-Run the basic experiment:
-
-```sh
-python experiments/run_basic.py
-```
-
-Run the distance-signal ritualization experiment:
-
-```sh
-python experiments/run_distance_signal.py
-```
-
-Run tests:
+Run tests once tests exist:
 
 ```sh
 PYTHONPATH=src python -m unittest discover -s tests
