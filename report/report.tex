@@ -25,7 +25,7 @@ We begin with a deliberately simple model of directional communication on an
 exposed horizontal comb, where dance angle can map directly onto food
 direction.
 
-\section{Model}
+\section{Method}
 
 Colonies are the reproducing entities, while workers are behavioral agents.
 Each colony has four heritable mean traits: directional bias, which controls how
@@ -97,7 +97,9 @@ amount of within-colony worker heterogeneity, but payoff opportunity is set
 more directly by the number of foraging episodes per colony and the number of
 recruits per episode.
 
-\section{Initial Results}
+\section{Results}
+
+\subsection{Horizontal comb}
 
 We compared three simple food distributions over ten random seeds each. The
 ``hard'' condition had one narrow food site per episode, the baseline condition
@@ -140,11 +142,41 @@ environment, recruit success is high even without strong communication, and
 selection for directional bias and receiver attention is much weaker. The
 baseline condition lies between these extremes.
 
-\section{Next Steps}
+\subsection{Vertical comb}
 
-The next step is to make the food-distribution experiment reproducible as a
-named script, then expand the ecological variables one at a time: site
-capacity, persistence across episodes, and spatial clustering.
+We also made a first exploratory comparison of horizontal, tilted, and vertical
+combs while holding the baseline food distribution fixed. In this run, comb
+tilt was set to $t=0$, $t=0.5$, or $t=1.0$, and each condition used a single
+seed. Table~\ref{tab:comb-tilt} summarizes the result after 30 generations.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+Comb & Final bias & Final attention & Sender trans. & Receiver trans. & Final success \\
+\midrule
+Horizontal & 0.835 & 0.886 & 0.318 & 0.238 & 0.412 \\
+Tilted & 0.691 & 0.713 & 0.385 & 0.333 & 0.189 \\
+Vertical & 0.278 & 0.292 & 0.753 & 0.473 & 0.143 \\
+\bottomrule
+\end{tabular}
+\caption{Exploratory comb-tilt comparison using the baseline food distribution
+and one seed. ``Sender trans.'' and ``Receiver trans.'' denote the final mean
+sender and receiver transposition traits.}
+\label{tab:comb-tilt}
+\end{table}
+
+As expected, direct horizontal pointing performs best when the comb is
+horizontal. Increasing comb tilt weakens the existing direct mapping. In the
+vertical condition, sender transposition rises substantially, indicating
+selection toward gravity-referenced encoding, but receiver transposition and
+overall communication success remain limited after 30 generations. A longer
+single-seed run to 80 generations suggested that sender and receiver
+transposition can coevolve further, but this needs a systematic experiment.
+
+\section{Conclusion}
+
+Placeholder.
 
 \bibliographystyle{plain}
 \bibliography{references}
