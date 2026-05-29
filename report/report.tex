@@ -28,20 +28,25 @@ direction.
 \section{Model}
 
 Colonies are the reproducing entities, while workers are behavioral agents.
-Each colony has two heritable mean traits: directional bias, which controls how
-strongly a scout's dance angle is centered on the discovered food site, and
-receiver attention, which controls how likely recruits are to follow the dance.
-Individual workers are sampled around the colony means using stable within-
-colony variation. Each dance also includes transient production and
+Each colony has four heritable mean traits: directional bias, which controls how
+strongly a scout's dance angle is centered on the intended direction; receiver
+attention, which controls how likely recruits are to follow the dance; sender
+transposition, which controls how much the scout maps food direction onto a
+gravity-referenced dance angle; and receiver transposition, which controls how
+much recruits interpret the dance as gravity-referenced rather than direct
+pointing. Individual workers are sampled around the colony means using stable
+within-colony variation. Each dance also includes transient production and
 interpretation noise.
 
 More concretely, a colony is parameterized by mean directional bias
-$b \in [0,1]$ and mean receiver attention $a \in [0,1]$. Each worker receives
-stable individual deviations from these means, sampled from Gaussian noise with
-standard deviation 0.08 and then clipped to the unit interval. These deviations
-represent within-colony worker variation, but are not themselves heritable in
-the current model. At reproduction, only the colony-level mean traits are
-inherited, with Gaussian mutation of standard deviation 0.07.
+$b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
+transposition $s \in [0,1]$, and mean receiver transposition $r \in [0,1]$.
+Each worker receives stable individual deviations from these means, sampled
+from Gaussian noise with standard deviation 0.08 and then clipped to the unit
+interval. These deviations represent within-colony worker variation, but are
+not themselves heritable in the current model. At reproduction, only the
+colony-level mean traits are inherited, with Gaussian mutation of standard
+deviation 0.07.
 
 Each foraging episode generates a set of food sites in the world. A food site
 has a direction, angular width, value, and capacity. A scout discovers one food
@@ -54,13 +59,22 @@ which recruitment benefits depend on the availability and discoverability of
 resource patches rather than on communication having a fixed payoff advantage
 \cite{dornhaus_etal_2006,beekman_lew_2008}.
 
+Comb tilt is represented by an environmental parameter $t \in [0,1]$, where
+$t=0$ is a horizontal comb and $t=1$ is a vertical comb. Direct pointing has
+quality $1-t$: it is reliable on a horizontal comb and uninformative on a
+vertical comb. Gravity-referenced mapping remains available at all tilts. The
+sender transposition trait blends continuously between direct pointing and
+gravity-referenced encoding, and the receiver transposition trait blends
+between direct and gravity-referenced decoding. The initial food-distribution
+experiments below use $t=0$, so the setup reduces to the horizontal-comb case.
+
 The scout's dance angle is sampled from a circular von Mises distribution
-centered on the discovered site direction. The concentration parameter is
-$14b$, so workers with low directional bias produce nearly random angles, while
-workers with high directional bias produce angles concentrated around the food
+centered on the encoded direction. The concentration parameter is $14b$, so
+workers with low directional bias produce nearly random angles, while workers
+with high directional bias produce angles concentrated around the intended
 direction. Additional dance-production noise with standard deviation 0.18 is
 added to the angle. A recruit attends to the dance with probability $a$; if it
-attends, it searches near the signaled direction with interpretation noise of
+attends, it decodes the signaled direction with interpretation noise of
 standard deviation 0.12. If it does not attend, it searches in a uniformly
 random direction. A recruit succeeds when its search direction falls within the
 angular width of any food site that still has remaining capacity.
@@ -68,8 +82,8 @@ angular width of any food site that still has remaining capacity.
 After many episodes, each colony receives a payoff from collected food minus
 communication and attention costs. Daughter colonies are sampled in proportion
 to payoff, and colony-level traits mutate by Gaussian noise. We track the mean
-directional bias, receiver attention, and recruit success rate across
-generations.
+directional bias, receiver attention, sender and receiver transposition, and
+recruit success rate across generations.
 
 In each episode, collected food is the sum of the values of food sites found by
 recruits. The current simulations use food value 1.0. The colony then pays a
@@ -93,13 +107,13 @@ mean directional bias first reached 0.30, plus final generation trait and
 success values.
 
 Each run used 60 colonies, 80 workers per colony, 30 generations, 50 foraging
-episodes per colony per generation, and 6 recruits per episode. Food-site value
-was 1.0, and all three conditions used food-site capacity 6. The conditions
-varied only the number and width of food sites: hard used one site of width
-0.08, baseline used two sites of width 0.20, and easy used eight sites of width
-0.50. The hard condition therefore makes independent discovery unlikely, while
-the easy condition makes independent discovery likely even without using the
-dance.
+episodes per colony per generation, 6 recruits per episode, and horizontal-comb
+tilt $t=0$. Food-site value was 1.0, and all three conditions used food-site
+capacity 6. The conditions varied only the number and width of food sites: hard
+used one site of width 0.08, baseline used two sites of width 0.20, and easy
+used eight sites of width 0.50. The hard condition therefore makes independent
+discovery unlikely, while the easy condition makes independent discovery likely
+even without using the dance.
 
 \begin{table}[h]
 \centering
@@ -107,9 +121,9 @@ dance.
 \toprule
 Condition & Reach generation & Final bias & Final attention & Final success \\
 \midrule
-Hard & 10.0 & 0.781 & 0.886 & 0.148 \\
-Baseline & 13.0 & 0.716 & 0.837 & 0.373 \\
-Easy & 23.7 & 0.332 & 0.366 & 0.797 \\
+Hard & 11.0 & 0.741 & 0.871 & 0.144 \\
+Baseline & 11.8 & 0.745 & 0.826 & 0.373 \\
+Easy & 23.9 & 0.353 & 0.455 & 0.811 \\
 \bottomrule
 \end{tabular}
 \caption{Initial food-distribution experiment. The hard environment used one

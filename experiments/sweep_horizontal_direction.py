@@ -25,6 +25,7 @@ SWEEPS = {
     "max_signal_concentration": [4.0, 14.0, 30.0],
     "dance_noise_sd": [0.0, 0.18, 0.50],
     "interpretation_noise_sd": [0.0, 0.12, 0.50],
+    "comb_tilt": [0.0, 0.5, 1.0],
     "food_site_count": [1, 2, 8],
     "food_site_width": [0.08, 0.20, 0.50],
     "food_site_capacity": [1, 6, 24],
@@ -42,9 +43,13 @@ FIELDNAMES = [
     "reach_generation_sd",
     "mean_bias_delta",
     "mean_attention_delta",
+    "mean_sender_transposition_delta",
+    "mean_receiver_transposition_delta",
     "mean_success_delta",
     "mean_final_bias",
     "mean_final_attention",
+    "mean_final_sender_transposition",
+    "mean_final_receiver_transposition",
     "mean_final_success",
     "elapsed_seconds",
 ]
@@ -153,6 +158,12 @@ def summarize_setting(
         "mean_attention_delta": format_float(
             mean(metric["attention_delta"] for metric in metrics)
         ),
+        "mean_sender_transposition_delta": format_float(
+            mean(metric["sender_transposition_delta"] for metric in metrics)
+        ),
+        "mean_receiver_transposition_delta": format_float(
+            mean(metric["receiver_transposition_delta"] for metric in metrics)
+        ),
         "mean_success_delta": format_float(
             mean(metric["success_delta"] for metric in metrics)
         ),
@@ -161,6 +172,12 @@ def summarize_setting(
         ),
         "mean_final_attention": format_float(
             mean(metric["final_attention"] for metric in metrics)
+        ),
+        "mean_final_sender_transposition": format_float(
+            mean(metric["final_sender_transposition"] for metric in metrics)
+        ),
+        "mean_final_receiver_transposition": format_float(
+            mean(metric["final_receiver_transposition"] for metric in metrics)
         ),
         "mean_final_success": format_float(
             mean(metric["final_success"] for metric in metrics)
@@ -192,9 +209,15 @@ def run_metrics(
         - initial.average_directional_bias,
         "attention_delta": final.average_receiver_attention
         - initial.average_receiver_attention,
+        "sender_transposition_delta": final.average_sender_transposition
+        - initial.average_sender_transposition,
+        "receiver_transposition_delta": final.average_receiver_transposition
+        - initial.average_receiver_transposition,
         "success_delta": final.average_success_rate - initial.average_success_rate,
         "final_bias": final.average_directional_bias,
         "final_attention": final.average_receiver_attention,
+        "final_sender_transposition": final.average_sender_transposition,
+        "final_receiver_transposition": final.average_receiver_transposition,
         "final_success": final.average_success_rate,
     }
 

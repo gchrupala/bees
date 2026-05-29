@@ -19,6 +19,9 @@ the biological question and modeling assumptions are clear.
 The horizontal-comb model represents food sites explicitly. In each episode,
 a scout discovers one site and dances for it, while recruits can either follow
 the dance or search independently and find any available food site in the world.
+The model also includes an optional comb-tilt parameter and continuous sender
+and receiver transposition traits for exploring the transition from direct
+horizontal pointing to gravity-referenced mapping.
 
 ## Development
 

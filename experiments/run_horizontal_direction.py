@@ -22,6 +22,8 @@ def main() -> None:
             f"{state.generation:02d} "
             f"bias={state.average_directional_bias:.2f} "
             f"attention={state.average_receiver_attention:.2f} "
+            f"sender_t={state.average_sender_transposition:.2f} "
+            f"receiver_t={state.average_receiver_transposition:.2f} "
             f"success={state.average_success_rate:.2f} "
             f"payoff={state.average_payoff:.2f}"
         )

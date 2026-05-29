@@ -38,6 +38,14 @@ def main() -> None:
         f"{first.average_receiver_attention:.2f} -> {last.average_receiver_attention:.2f}"
     )
     print(
+        "sender_transposition: "
+        f"{first.average_sender_transposition:.2f} -> {last.average_sender_transposition:.2f}"
+    )
+    print(
+        "receiver_transposition: "
+        f"{first.average_receiver_transposition:.2f} -> {last.average_receiver_transposition:.2f}"
+    )
+    print(
         "success_rate: "
         f"{first.average_success_rate:.2f} -> {last.average_success_rate:.2f}"
     )

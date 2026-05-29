@@ -9,12 +9,16 @@ from random import Random
 class ColonyTraits:
     directional_bias: float
     receiver_attention: float
+    sender_transposition: float
+    receiver_transposition: float
 
 
 @dataclass(frozen=True)
 class Worker:
     directional_bias: float
     receiver_attention: float
+    sender_transposition: float
+    receiver_transposition: float
 
 
 @dataclass(frozen=True)
@@ -43,6 +47,7 @@ class DirectionSettings:
     max_signal_concentration: float
     dance_noise_sd: float
     interpretation_noise_sd: float
+    comb_tilt: float
     food_site_count: int
     food_site_width: float
     food_site_capacity: int
@@ -62,12 +67,19 @@ class GenerationSummary:
     generation: int
     average_directional_bias: float
     average_receiver_attention: float
+    average_sender_transposition: float
+    average_receiver_transposition: float
     average_success_rate: float
     average_payoff: float
 
 
 def angular_distance(first: float, second: float) -> float:
     return abs((first - second + pi) % tau - pi)
+
+
+def circular_interpolate(first: float, second: float, weight: float) -> float:
+    step = (second - first + pi) % tau - pi
+    return (first + weight * step) % tau
 
 
 def create_colony(
@@ -87,11 +99,39 @@ def create_colony(
                 0.0,
                 1.0,
             ),
+            sender_transposition=_clamp(
+                traits.sender_transposition
+                + rng.gauss(0.0, settings.stable_worker_sd),
+                0.0,
+                1.0,
+            ),
+            receiver_transposition=_clamp(
+                traits.receiver_transposition
+                + rng.gauss(0.0, settings.stable_worker_sd),
+                0.0,
+                1.0,
+            ),
         )
         for _ in range(settings.workers_per_colony)
     )
 
     return Colony(traits=traits, workers=workers)
+
+
+def encode_dance_direction(
+    food_direction: float,
+    worker: Worker,
+    settings: DirectionSettings,
+    rng: Random,
+) -> float:
+    direct_direction = _direct_mapping_direction(food_direction, settings, rng)
+    gravity_direction = food_direction
+
+    return circular_interpolate(
+        direct_direction,
+        gravity_direction,
+        worker.sender_transposition,
+    )
 
 
 def produce_signal(
@@ -100,10 +140,28 @@ def produce_signal(
     settings: DirectionSettings,
     rng: Random,
 ) -> float:
+    dance_direction = encode_dance_direction(food_direction, worker, settings, rng)
     concentration = worker.directional_bias * settings.max_signal_concentration
-    signal = rng.vonmisesvariate(food_direction, concentration)
+    signal = rng.vonmisesvariate(dance_direction, concentration)
 
     return (signal + rng.gauss(0.0, settings.dance_noise_sd)) % tau
+
+
+def interpret_signal(
+    signal: float,
+    worker: Worker,
+    settings: DirectionSettings,
+    rng: Random,
+) -> float:
+    direct_direction = _direct_mapping_direction(signal, settings, rng)
+    gravity_direction = signal
+    interpreted = circular_interpolate(
+        direct_direction,
+        gravity_direction,
+        worker.receiver_transposition,
+    )
+
+    return (interpreted + rng.gauss(0.0, settings.interpretation_noise_sd)) % tau
 
 
 def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodSite, ...]:
@@ -158,9 +216,7 @@ def evaluate_colony(
         for _ in range(settings.recruits_per_episode):
             recruit = rng.choice(colony.workers)
             if rng.random() < recruit.receiver_attention:
-                search_direction = (
-                    signal + rng.gauss(0.0, settings.interpretation_noise_sd)
-                ) % tau
+                search_direction = interpret_signal(signal, recruit, settings, rng)
                 attention_count += 1
             else:
                 search_direction = rng.random() * tau
@@ -220,6 +276,8 @@ def _initial_traits(rng: Random) -> ColonyTraits:
     return ColonyTraits(
         directional_bias=rng.uniform(0.0, 0.15),
         receiver_attention=rng.uniform(0.0, 0.25),
+        sender_transposition=rng.uniform(0.0, 0.10),
+        receiver_transposition=rng.uniform(0.0, 0.10),
     )
 
 
@@ -236,6 +294,16 @@ def _mutate_traits(
         ),
         receiver_attention=_clamp(
             traits.receiver_attention + rng.gauss(0.0, settings.mutation_sd),
+            0.0,
+            1.0,
+        ),
+        sender_transposition=_clamp(
+            traits.sender_transposition + rng.gauss(0.0, settings.mutation_sd),
+            0.0,
+            1.0,
+        ),
+        receiver_transposition=_clamp(
+            traits.receiver_transposition + rng.gauss(0.0, settings.mutation_sd),
             0.0,
             1.0,
         ),
@@ -276,12 +344,31 @@ def _summarize(
             colony.traits.receiver_attention for colony in colonies
         )
         / count,
+        average_sender_transposition=sum(
+            colony.traits.sender_transposition for colony in colonies
+        )
+        / count,
+        average_receiver_transposition=sum(
+            colony.traits.receiver_transposition for colony in colonies
+        )
+        / count,
         average_success_rate=sum(
             evaluation.success_rate for evaluation in evaluations
         )
         / count,
         average_payoff=sum(evaluation.payoff for evaluation in evaluations) / count,
     )
+
+
+def _direct_mapping_direction(
+    direction: float,
+    settings: DirectionSettings,
+    rng: Random,
+) -> float:
+    direct_quality = 1.0 - _clamp(settings.comb_tilt, 0.0, 1.0)
+    random_direction = rng.random() * tau
+
+    return circular_interpolate(random_direction, direction, direct_quality)
 
 
 def _clamp(value: float, minimum: float, maximum: float) -> float:

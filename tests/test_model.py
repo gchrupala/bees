@@ -8,10 +8,14 @@ from bees.model import (
     ColonyTraits,
     DirectionSettings,
     FoodSite,
+    Worker,
     angular_distance,
+    circular_interpolate,
     create_colony,
+    encode_dance_direction,
     evaluate_colony,
     find_food_site,
+    interpret_signal,
     simulate,
 )
 
@@ -20,10 +24,18 @@ class DirectionModelTests(unittest.TestCase):
     def test_angular_distance_wraps_around_zero(self) -> None:
         self.assertAlmostEqual(angular_distance(0.05, tau - 0.05), 0.1)
 
+    def test_circular_interpolation_takes_short_path(self) -> None:
+        self.assertAlmostEqual(circular_interpolate(tau - 0.1, 0.1, 0.5), 0.0)
+
     def test_worker_variation_is_sampled_inside_colonies(self) -> None:
         settings = _settings(stable_worker_sd=0.1)
         colony = create_colony(
-            ColonyTraits(directional_bias=0.5, receiver_attention=0.5),
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+            ),
             settings,
             Random(1),
         )
@@ -37,6 +49,12 @@ class DirectionModelTests(unittest.TestCase):
         )
         self.assertTrue(
             all(0.0 <= worker.receiver_attention <= 1.0 for worker in colony.workers)
+        )
+        self.assertTrue(
+            all(0.0 <= worker.sender_transposition <= 1.0 for worker in colony.workers)
+        )
+        self.assertTrue(
+            all(0.0 <= worker.receiver_transposition <= 1.0 for worker in colony.workers)
         )
 
     def test_random_search_can_find_any_available_food_site(self) -> None:
@@ -56,6 +74,44 @@ class DirectionModelTests(unittest.TestCase):
 
         self.assertIsNone(find_food_site(0.0, sites, [0]))
 
+    def test_horizontal_comb_preserves_direct_mapping(self) -> None:
+        settings = _settings(comb_tilt=0.0, interpretation_noise_sd=0.0)
+        worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+        )
+        food_direction = 1.2
+        signal = encode_dance_direction(food_direction, worker, settings, Random(1))
+        decoded = interpret_signal(signal, worker, settings, Random(1))
+
+        self.assertAlmostEqual(signal, food_direction)
+        self.assertAlmostEqual(decoded, food_direction)
+
+    def test_vertical_comb_requires_transposition_mapping(self) -> None:
+        settings = _settings(
+            comb_tilt=1.0,
+            interpretation_noise_sd=0.0,
+        )
+        gravity_worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+        )
+        food_direction = 1.2
+        signal = encode_dance_direction(
+            food_direction,
+            gravity_worker,
+            settings,
+            Random(1),
+        )
+        decoded = interpret_signal(signal, gravity_worker, settings, Random(1))
+
+        self.assertAlmostEqual(signal, food_direction)
+        self.assertAlmostEqual(decoded, food_direction)
+
     def test_directional_signal_beats_random_search(self) -> None:
         settings = _settings(
             episodes_per_colony=300,
@@ -67,12 +123,22 @@ class DirectionModelTests(unittest.TestCase):
             attention_cost=0.0,
         )
         signaled = create_colony(
-            ColonyTraits(directional_bias=1.0, receiver_attention=1.0),
+            ColonyTraits(
+                directional_bias=1.0,
+                receiver_attention=1.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+            ),
             settings,
             Random(2),
         )
         random = create_colony(
-            ColonyTraits(directional_bias=0.0, receiver_attention=0.0),
+            ColonyTraits(
+                directional_bias=0.0,
+                receiver_attention=0.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+            ),
             settings,
             Random(2),
         )
@@ -112,6 +178,7 @@ def _settings(**overrides: float | int) -> DirectionSettings:
         "max_signal_concentration": 20.0,
         "dance_noise_sd": 0.08,
         "interpretation_noise_sd": 0.08,
+        "comb_tilt": 0.0,
         "food_site_count": 1,
         "food_site_width": 0.35,
         "food_site_capacity": 8,
