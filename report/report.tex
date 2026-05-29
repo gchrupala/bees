@@ -71,6 +71,18 @@ to payoff, and colony-level traits mutate by Gaussian noise. We track the mean
 directional bias, receiver attention, and recruit success rate across
 generations.
 
+In each episode, collected food is the sum of the values of food sites found by
+recruits. The current simulations use food value 1.0. The colony then pays a
+communication cost of $0.02b_s$, where $b_s$ is the scout worker's directional
+bias, and an attention cost of 0.01 for each recruit that attends to the dance.
+Thus more directional signaling and more dance-following can increase food
+collection, but they are not free. The current model does not include an
+independent colony maintenance cost. The parameter ``workers per colony''
+controls the pool from which scouts and recruits are sampled, and therefore the
+amount of within-colony worker heterogeneity, but payoff opportunity is set
+more directly by the number of foraging episodes per colony and the number of
+recruits per episode.
+
 \section{Initial Results}
 
 We compared three simple food distributions over ten random seeds each. The
