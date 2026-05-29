@@ -97,6 +97,21 @@ amount of within-colony worker heterogeneity, but payoff opportunity is set
 more directly by the number of foraging episodes per colony and the number of
 recruits per episode.
 
+\subsection{Spatially explicit extension}
+
+We also implemented a separate spatially explicit prototype to verify that the
+core evolutionary effects are robust when resource discovery depends on
+location and travel. In this extension, food patches are placed as circular
+sites in a two-dimensional square world. Scouts communicate a noisy target
+coordinate for a discovered patch, and recruits travel from the hive to the
+signaled point. Travel cost is proportional to Euclidean distance, and recruits
+that do not attend to the dance instead select a uniformly random target point.
+A recruit succeeds when it arrives within a patch that still has remaining
+capacity. This spatial prototype retains the colony-level reproduction and
+mutation structure of the original model while adding world size, patch radius,
+forager speed, travel cost, perception radius, and coordinate signalling noise
+as explicit parameters.
+
 \section{Results}
 
 \subsection{Horizontal comb}
@@ -141,6 +156,40 @@ foraging success remains low because food is rare and narrow. In the easy
 environment, recruit success is high even without strong communication, and
 selection for directional bias and receiver attention is much weaker. The
 baseline condition lies between these extremes.
+
+\subsection{Spatial prototype comparison}
+
+We also compared a spatially explicit prototype using parameters that are
+comparable to the original horizontal-comb experiment: 60 colonies, 80 workers
+per colony, 30 generations, 50 episodes per colony, 6 recruits per episode,
+and the same communication costs and patch values. The spatial model used a
+100-by-100 world, moderate travel cost, and noisy coordinate signalling.
+Under these comparable settings, the spatial prototype also showed evolution
+of directional signaling and receiver attention, with mean success rising from
+about 0.28 to about 0.93 over 30 generations. This suggests that the basic
+selection dynamics survive the move to explicit space, even though the
+mechanistic interpretation of the signal and the underlying parameters are
+different.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Metric & Initial & Final & Change & Units \\
+\midrule
+Mean directional bias & 0.061 & 0.210 & +0.149 & -- \\
+Mean receiver attention & 0.140 & 0.937 & +0.797 & -- \\
+Mean sender transposition & 0.051 & 0.246 & +0.195 & -- \\
+Mean receiver transposition & 0.054 & 0.224 & +0.170 & -- \\
+Recruit success rate & 0.277 & 0.930 & +0.653 & fraction \\
+Mean payoff & 0.012 & 3.213 & +3.201 & currency \\
+\bottomrule
+\end{tabular}
+\caption{Outcome of the spatially explicit prototype using parameters comparable
+ to the original horizontal-comb experiment. The spatial run used a 100-by-100
+ world, moderate travel costs, and noisy coordinate signalling.}
+\label{tab:spatial-comparison}
+\end{table}
 
 \subsection{Vertical comb}
 
