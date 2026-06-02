@@ -22,6 +22,7 @@ from bees.model import (
     sample_sun_azimuth,
     simulate,
     _mutate_traits,
+    _orientation_mean_and_alignment,
 )
 
 
@@ -150,6 +151,58 @@ class DirectionModelTests(unittest.TestCase):
         )
 
         self.assertEqual(overbounded, bounded)
+
+    def test_comb_tilt_mutation_scale_can_freeze_tilt(self) -> None:
+        settings = _settings(
+            mutation_sd=0.04,
+            comb_tilt_mutation_sd=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.95,
+            comb_orientation=0.2,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(11))
+
+        self.assertAlmostEqual(mutated.comb_tilt, traits.comb_tilt)
+
+    def test_axial_orientation_treats_opposite_normals_as_aligned(self) -> None:
+        _, circular_alignment = _orientation_mean_and_alignment(
+            [0.0, tau / 2],
+            axial=False,
+        )
+        axial_mean, axial_alignment = _orientation_mean_and_alignment(
+            [0.0, tau / 2],
+            axial=True,
+        )
+
+        self.assertAlmostEqual(circular_alignment, 0.0)
+        self.assertAlmostEqual(axial_alignment, 1.0)
+        self.assertAlmostEqual(axial_mean, 0.0)
+
+    def test_axial_orientation_mutation_wraps_to_half_turn_period(self) -> None:
+        settings = _settings(
+            comb_orientation_axial=True,
+            comb_orientation_mutation_sd=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.95,
+            comb_orientation=0.75 * tau,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(12))
+
+        self.assertAlmostEqual(mutated.comb_orientation, 0.25 * tau)
 
     def test_random_search_can_find_any_available_food_site(self) -> None:
         sites = (
@@ -501,7 +554,7 @@ class DirectionModelTests(unittest.TestCase):
         self.assertEqual(first, second)
 
 
-def _settings(**overrides: float | int) -> DirectionSettings:
+def _settings(**overrides: float | int | bool | None) -> DirectionSettings:
     values = {
         "colony_count": 4,
         "workers_per_colony": 20,

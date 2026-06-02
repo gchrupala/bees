@@ -84,6 +84,8 @@ class DirectionSettings:
     base_dance_cost: float
     cue_cost: float
     attention_cost: float
+    comb_tilt_mutation_sd: float | None = None
+    comb_orientation_axial: bool = False
 
 
 @dataclass(frozen=True)
@@ -401,7 +403,7 @@ def simulate(
 
     for generation in range(settings.generations + 1):
         evaluations = [evaluate_colony(colony, settings, rng) for colony in colonies]
-        history.append(_summarize(generation, colonies, evaluations))
+        history.append(_summarize(generation, colonies, evaluations, settings))
 
         if generation < settings.generations:
             colonies = [
@@ -427,7 +429,7 @@ def _initial_traits(settings: DirectionSettings, rng: Random) -> ColonyTraits:
         sender_transposition=0.0,
         receiver_transposition=0.0,
         comb_tilt=_clamp(settings.initial_comb_tilt, 0.0, 1.0),
-        comb_orientation=rng.random() * tau,
+        comb_orientation=rng.random() * _comb_orientation_period(settings),
         search_limit=rng.uniform(
             0.15 * settings.max_search_distance,
             0.45 * settings.max_search_distance,
@@ -449,7 +451,7 @@ def _mutate_traits(
             rng,
         )
     )
-    comb_tilt_change = rng.gauss(0.0, settings.mutation_sd)
+    comb_tilt_change = rng.gauss(0.0, _comb_tilt_mutation_sd(settings))
     comb_orientation_change = rng.gauss(0.0, settings.comb_orientation_mutation_sd)
     search_limit_change = rng.gauss(
         0.0,
@@ -482,7 +484,10 @@ def _mutate_traits(
             0.0,
             1.0,
         ),
-        comb_orientation=(traits.comb_orientation + comb_orientation_change) % tau,
+        comb_orientation=(
+            traits.comb_orientation + comb_orientation_change
+        )
+        % _comb_orientation_period(settings),
         search_limit=_clamp(
             traits.search_limit + search_limit_change,
             0.0,
@@ -512,15 +517,12 @@ def _summarize(
     generation: int,
     colonies: list[Colony],
     evaluations: list[ColonyEvaluation],
+    settings: DirectionSettings,
 ) -> GenerationSummary:
     count = len(colonies)
-    orientation_x = sum(cos(colony.traits.comb_orientation) for colony in colonies)
-    orientation_y = sum(sin(colony.traits.comb_orientation) for colony in colonies)
-    orientation_alignment = hypot(orientation_x, orientation_y) / count
-    average_comb_orientation = (
-        atan2(orientation_y, orientation_x) % tau
-        if orientation_alignment > EPSILON
-        else 0.0
+    average_comb_orientation, orientation_alignment = _orientation_mean_and_alignment(
+        [colony.traits.comb_orientation for colony in colonies],
+        axial=settings.comb_orientation_axial,
     )
 
     return GenerationSummary(
@@ -693,6 +695,43 @@ def _comb_normal(comb_tilt: float, comb_orientation: float) -> Vector3:
         sin(tilt_angle) * sin(comb_orientation),
         cos(tilt_angle),
     )
+
+
+def _comb_tilt_mutation_sd(settings: DirectionSettings) -> float:
+    if settings.comb_tilt_mutation_sd is None:
+        return settings.mutation_sd
+
+    return settings.comb_tilt_mutation_sd
+
+
+def _comb_orientation_period(settings: DirectionSettings) -> float:
+    if settings.comb_orientation_axial:
+        return pi
+
+    return tau
+
+
+def _orientation_mean_and_alignment(
+    orientations: list[float],
+    axial: bool,
+) -> tuple[float, float]:
+    if not orientations:
+        return 0.0, 0.0
+
+    multiplier = 2.0 if axial else 1.0
+    period = pi if axial else tau
+    x_component = sum(cos(multiplier * orientation) for orientation in orientations)
+    y_component = sum(sin(multiplier * orientation) for orientation in orientations)
+    alignment = hypot(x_component, y_component) / len(orientations)
+
+    if alignment <= EPSILON:
+        return 0.0, 0.0
+
+    mean_orientation = (atan2(y_component, x_component) / multiplier) % period
+    if period - mean_orientation <= EPSILON:
+        mean_orientation = 0.0
+
+    return mean_orientation, alignment
 
 
 def _comb_vector(angle: float, basis: CombBasis) -> Vector3:

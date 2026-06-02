@@ -34,9 +34,12 @@ the comb plane; gravity-referenced mapping is unavailable on a horizontal comb
 and becomes stronger as the comb becomes vertical. Sender and receiver
 transposition mutations can be correlated with
 `transposition_mutation_correlation`, making coupling strength an explicit
-experimental parameter. Dance production can include both a baseline per-dance
-cost and a precision-dependent cost tied to the dancer's directional-bias
-trait.
+experimental parameter. Comb tilt can also use its own mutation scale via
+`comb_tilt_mutation_sd`, which allows constrained probes where tilt is supplied
+rather than evolved. Setting `comb_orientation_axial` treats orientations
+separated by 180 degrees as the same comb plane. Dance production can include
+both a baseline per-dance cost and a precision-dependent cost tied to the
+dancer's directional-bias trait.
 
 ## Development
 
@@ -74,6 +77,12 @@ Run a comb-orientation sanity grid:
 
 ```sh
 python experiments/run_orientation_sanity.py
+```
+
+Run the constrained near-vertical coupling probe:
+
+```sh
+python -u experiments/run_vertical_coupling_probe.py
 ```
 
 Run tests:
