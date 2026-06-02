@@ -61,7 +61,9 @@ More concretely, a colony is parameterized by mean directional precision
 investment $b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
 transposition $s \in [0,1]$, mean receiver transposition $r \in [0,1]$, and
 mean search limit $\ell \geq 0$. It also has a comb tilt $t \in [0,1]$ and a
-circular comb orientation $\phi$. Each worker receives stable individual
+comb orientation $\phi$. Orientation can be treated either as a circular
+direction or, in constrained probes, as an axial variable where $\phi$ and
+$\phi + 180^\circ$ represent the same comb plane. Each worker receives stable individual
 deviations from these means, sampled from Gaussian noise with standard
 deviation 0.08 for unit-interval traits. For search limit, the same scale is
 multiplied by the maximum search distance. All traits are clipped to their
@@ -71,7 +73,8 @@ colony-level mean traits are inherited, with Gaussian mutation of standard
 deviation 0.07, again scaled by maximum search distance for the search-limit
 trait. Sender and receiver transposition mutations can be correlated by a
 configurable coupling parameter; comb-orientation mutations use a separate
-circular mutation scale.
+circular mutation scale. Comb tilt can also use its own mutation scale when an
+experiment supplies a geometric precondition rather than asking tilt to evolve.
 
 Each foraging episode generates a set of food sites in the world. A food site
 has a direction, distance from the nest, angular width, value, and capacity.
@@ -324,6 +327,55 @@ unchanged by reversing its normal, comb orientation may be better treated as an
 axial variable, where $\phi$ and $\phi + 180^\circ$ are equivalent, rather than
 as a fully circular direction.
 
+\subsection{Constrained vertical coupling}
+
+The tilt-calibration results left open whether gravity-referenced
+communication is difficult because the sender--receiver code itself is hard to
+reach, or because colonies must evolve the vertical geometry and the
+sender--receiver code at the same time. To separate these possibilities, we ran
+a constrained probe with the geometric precondition supplied. Initial comb tilt
+was fixed near vertical at $t=0.95$, comb-tilt mutation was set to 0, comb
+orientation was treated axially, the vertical-comb benefit was set to 0, and
+the baseline food distribution was otherwise retained. We then varied only the
+sender--receiver transposition mutation correlation and ran each condition for
+120 generations over five seeds (101--105). A run was counted as reaching
+gravity-referenced communication when both mean sender and receiver
+transposition reached 0.50.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrrrrr}
+\toprule
+Corr. & Reached & Reach gen. & Bias & Sender & Receiver & Success & Payoff \\
+\midrule
+0.0 & 5/5 & 42.6 & 0.878 & 0.864 & 0.881 & 0.192 & 0.680 \\
+0.3 & 5/5 & 46.2 & 0.847 & 0.913 & 0.898 & 0.192 & 0.694 \\
+0.6 & 5/5 & 21.0 & 0.882 & 0.890 & 0.897 & 0.199 & 0.754 \\
+0.9 & 5/5 & 22.4 & 0.863 & 0.907 & 0.903 & 0.194 & 0.723 \\
+1.0 & 5/5 & 23.4 & 0.836 & 0.901 & 0.901 & 0.191 & 0.677 \\
+\bottomrule
+\end{tabular}
+\caption{Constrained near-vertical coupling probe. Corr. is the correlation
+between sender and receiver transposition mutation increments. ``Reached''
+counts seeds in which both mean sender and receiver transposition reached 0.50
+by generation 120. Reach generation is averaged over reached seeds only.}
+\label{tab:vertical-coupling-probe}
+\end{table}
+
+The result is strongly diagnostic. With near-vertical geometry supplied,
+gravity-referenced communication is reachable in every condition. Independent
+or weakly coupled sender--receiver mutations still reach the gravity channel,
+but only after roughly 40--50 generations on average. Moderate to strong
+coupling accelerates the transition: correlations of 0.6--1.0 reach the
+threshold by about generation 21--23, while also keeping final sender and
+receiver transposition closely matched. The best payoff in this probe occurs
+at correlation 0.6. These results suggest that the earlier vertical-comb
+failure is not because gravity-referenced communication is intrinsically
+unreachable. Rather, the difficult part is the joint transition in which comb
+architecture, orientation representation, and the sender--receiver code must
+all become useful together.
+
 \section{Conclusion}
 
 The current model now separates world directions, comb-plane dance signals,
@@ -338,12 +390,16 @@ The calibration runs show that this transition is not yet smooth. When
 verticality is weakly rewarded, colonies starting from horizontal combs remain
 mostly horizontal. When verticality is strongly rewarded, vertical combs can be
 retained, but foraging success often collapses before communication adapts.
-Orientation is not yet robustly selected relative to the sun arc. The next
-modeling steps are therefore to refine the comb-orientation representation,
-calibrate the vertical-comb benefit and mutation scales more systematically,
-and test whether longer runs or altered coupling between tilt, orientation, and
-transposition produce a gradual evolutionary transition rather than a sharp
-architecture--communication tradeoff.
+Orientation is not yet robustly selected relative to the sun arc under the
+circular representation. The constrained vertical-coupling probe clarifies this
+picture: once near-vertical geometry is supplied and orientation is treated
+axially, gravity-referenced sender--receiver transposition evolves reliably,
+especially when sender and receiver transposition mutations are moderately or
+strongly coupled. The next modeling steps are therefore to use the axial
+orientation representation in transition experiments from horizontal or tilted
+starts, and to calibrate vertical-comb benefits and mutation scales so that
+architecture and communication can coevolve without a collapse in foraging
+success.
 
 \bibliographystyle{plain}
 \bibliography{references}
