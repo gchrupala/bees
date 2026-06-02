@@ -624,7 +624,8 @@ def _projected_angle_and_strength(
 
     first_component = _dot(projected, basis.first_axis)
     second_component = _dot(projected, basis.second_axis)
-    return atan2(second_component, first_component) % tau, strength
+    angle = atan2(second_component, first_component) % tau
+    return _degrade_angle_by_strength(angle, strength, rng), strength
 
 
 def _horizontal_angle_and_strength(
@@ -636,7 +637,17 @@ def _horizontal_angle_and_strength(
     if strength <= EPSILON:
         return rng.random() * tau, 0.0
 
-    return atan2(vector[1], vector[0]) % tau, strength
+    angle = atan2(vector[1], vector[0]) % tau
+    return _degrade_angle_by_strength(angle, strength, rng), strength
+
+
+def _degrade_angle_by_strength(angle: float, strength: float, rng: Random) -> float:
+    bounded_strength = _clamp(strength, 0.0, 1.0)
+
+    if bounded_strength >= 1.0:
+        return angle
+
+    return circular_interpolate(rng.random() * tau, angle, bounded_strength)
 
 
 def _weighted_circular_mean(

@@ -293,6 +293,48 @@ class DirectionModelTests(unittest.TestCase):
 
         self.assertAlmostEqual(decoded, food_direction)
 
+    def test_horizontal_comb_cannot_use_gravity_transposition_mapping(self) -> None:
+        settings = _settings(
+            initial_comb_tilt=0.0,
+            interpretation_noise_sd=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+            search_limit=5.0,
+            comb_tilt=0.0,
+            comb_orientation=0.0,
+        )
+        gravity_worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+            search_limit=5.0,
+        )
+        food_direction = 1.2
+        sun_azimuth = 0.3
+        signal = encode_dance_direction(
+            food_direction,
+            gravity_worker,
+            traits,
+            settings,
+            sun_azimuth,
+            Random(1),
+        )
+        decoded = interpret_signal(
+            signal,
+            gravity_worker,
+            traits,
+            settings,
+            sun_azimuth,
+            Random(1),
+        )
+
+        self.assertGreater(angular_distance(decoded, food_direction), 0.1)
+
     def test_dance_following_amplifies_independent_discovery(self) -> None:
         settings = _settings(
             episodes_per_colony=400,
