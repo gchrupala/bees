@@ -64,6 +64,12 @@ Run the report conditions:
 python experiments/run_report_conditions.py
 ```
 
+Run a comb-tilt geometry sanity grid:
+
+```sh
+python experiments/run_tilt_geometry_sanity.py --seeds 101,102,103,104,105
+```
+
 Run tests:
 
 ```sh
