@@ -28,7 +28,8 @@ direction.
 \section{Method}
 
 Colonies are the reproducing entities, while workers are behavioral agents.
-Each colony has five heritable mean traits: directional bias, which controls how
+Each colony has five heritable mean traits: directional precision investment,
+called directional bias in the simulation code and tables, which controls how
 strongly a dancing worker's angle is centered on the intended direction;
 receiver attention, which controls how likely workers are to follow an
 available dance; sender transposition, which controls how much a dancer maps
@@ -40,8 +41,19 @@ Individual workers are sampled around the colony means using stable
 within-colony variation. Each dance also includes transient production and
 interpretation noise.
 
-More concretely, a colony is parameterized by mean directional bias
-$b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
+The directional-precision trait should be read as a costly investment in
+producing directionally informative dances, not as a pure measure of neural
+precision, motivation, or dance duration. In this minimal model, the same trait
+sets the angular concentration of a produced dance and the per-dance cost paid
+by the colony. The biological assumption is therefore that more precise
+directional signaling requires greater effort. This coupling keeps the model
+small, but it limits the interpretation: the results show the evolution of
+costly signal precision, not the separate evolution of intrinsic accuracy and
+signaling effort. A cleaner extension would give colonies distinct traits for
+produced signal accuracy and signaling effort or cost.
+
+More concretely, a colony is parameterized by mean directional precision
+investment $b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
 transposition $s \in [0,1]$, mean receiver transposition $r \in [0,1]$, and
 mean search limit $\ell \geq 0$. Each worker receives stable individual
 deviations from these means, sampled from Gaussian noise with standard
@@ -81,21 +93,22 @@ experiments below use $t=0$, so the setup reduces to the horizontal-comb case.
 
 The dancer's angle is sampled from a circular von Mises distribution
 centered on the encoded direction. The concentration parameter is $14b$, so
-workers with low directional bias produce nearly random angles, while workers
-with high directional bias produce angles concentrated around the intended
-direction. Additional dance-production noise with standard deviation 0.18 is
-added to the angle. A worker follows an available dance with probability $a$;
-if it follows, it decodes the signaled direction with interpretation noise of
-standard deviation 0.12. If it does not follow a dance, it searches in a
-uniformly random direction. A worker succeeds when its search direction falls
-within the angular width of an available food site whose distance is no greater
-than the worker's search limit.
+workers with low directional precision investment produce nearly random
+angles, while workers with high directional precision investment produce
+angles concentrated around the intended direction. Additional dance-production
+noise with standard deviation 0.18 is added to the angle. A worker follows an
+available dance with probability $a$; if it follows, it decodes the signaled
+direction with interpretation noise of standard deviation 0.12. If it does not
+follow a dance, it searches in a uniformly random direction. A worker succeeds
+when its search direction falls within the angular width of an available food
+site whose distance is no greater than the worker's search limit.
 
 After many episodes, each colony receives a payoff from collected food minus
 travel, communication, and attention costs. Daughter colonies are sampled in
 proportion to payoff, and colony-level traits mutate by Gaussian noise. We
-track the mean directional bias, receiver attention, sender and receiver
-transposition, and search limit, plus forager success rate across generations.
+track the mean directional precision investment, receiver attention, sender
+and receiver transposition, and search limit, plus forager success rate across
+generations.
 
 In each episode, collected food is the sum of the values of food sites found by
 workers. The current simulations use food value 1.0. Workers also pay a travel
@@ -105,9 +118,10 @@ their limit. The default travel cost is 0.02 per distance unit, so even the
 longest default trip remains profitable if it finds food, but long unsuccessful
 searches are costly. The colony then pays a communication cost of $0.02b_d$ for
 each dance added by an independent finder, where $b_d$ is that dancer's
-directional bias, and an attention cost of 0.01 for each worker that follows a
-dance. Thus more directional signaling, more dance-following, and longer search
-effort can increase food collection, but they are not free. The current model
+directional precision investment, and an attention cost of 0.01 for each worker
+that follows a dance. Thus more precise directional signaling, more
+dance-following, and longer search effort can increase food collection, but
+they are not free. The current model
 does not include an independent colony maintenance cost. The parameter
 ``workers per colony'' controls the pool from which active foragers are sampled,
 and therefore the amount of within-colony worker heterogeneity, but payoff
@@ -123,8 +137,8 @@ We compared three simple food distributions over ten random seeds each
 ``hard'' condition had one narrow food site per episode, the baseline condition
 had two moderately wide food sites, and the ``easy'' condition had many broad
 food sites. Table~\ref{tab:food-distribution} reports the generation at which
-mean directional bias first reached 0.30, plus final generation trait and
-success values.
+mean directional precision investment first reached 0.30, plus final generation
+trait and success values.
 
 Each run used 60 colonies, 80 workers per colony, 30 generations, 50 foraging
 episodes per colony per generation, 12 foraging attempts per episode, and
@@ -150,10 +164,11 @@ Easy & 7/10 & 21.4 & 0.352 & 0.335 & 6.917 & 0.703 & 7.320 \\
 \bottomrule
 \end{tabular}
 \caption{Food-distribution experiment under the current dynamic recruitment
-model. ``Reached'' is the number of seeds in which mean directional bias reached
-0.30 by generation 30. ``Reach gen.'' is averaged over reached seeds only.
-Bias, attention, search limit, success, and payoff are final-generation means
-over all ten seeds.}
+model. ``Reached'' is the number of seeds in which mean directional precision
+investment reached 0.30 by generation 30. ``Reach gen.'' is averaged over
+reached seeds only. Bias is the table label for directional precision
+investment; the reported bias, attention, search limit, success, and payoff
+values are final-generation means over all ten seeds.}
 \label{tab:food-distribution}
 \end{table}
 
@@ -162,10 +177,11 @@ distinction than in the earlier fixed-scout model. In the hard environment,
 food is so rare and narrow that independent discoveries seldom seed dances;
 final success and payoff remain close to zero, and communication evolves only
 in some seeds. In the baseline environment, independent discovery is sufficient
-to seed recruitment cascades, and directional bias, receiver attention, and
-search limit all rise strongly. In the easy environment, success and payoff are
-high, but directional bias and receiver attention remain much lower than in the
-baseline case because food is often found without precise communication.
+to seed recruitment cascades, and directional precision investment, receiver
+attention, and search limit all rise strongly. In the easy environment, success
+and payoff are high, but directional precision investment and receiver
+attention remain much lower than in the baseline case because food is often
+found without precise communication.
 
 \subsection{Vertical comb}
 
@@ -198,8 +214,8 @@ the evolution of directional signaling. In the tilted condition, sender and
 receiver transposition both rise, indicating selection toward the
 gravity-referenced mapping, but payoff remains lower than in the horizontal
 condition. In the fully vertical condition, communication remains weak after 30
-generations: only half of the seeds reach the directional-bias threshold, and
-final payoff is close to the minimum floor.
+generations: only half of the seeds reach the directional-precision threshold,
+and final payoff is close to the minimum floor.
 
 \section{Conclusion}
 
