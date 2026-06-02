@@ -70,6 +70,12 @@ Run a comb-tilt geometry sanity grid:
 python experiments/run_tilt_geometry_sanity.py --seeds 101,102,103,104,105
 ```
 
+Run a comb-orientation sanity grid:
+
+```sh
+python experiments/run_orientation_sanity.py
+```
+
 Run tests:
 
 ```sh
