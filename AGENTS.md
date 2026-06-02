@@ -38,6 +38,19 @@ We are modeling the evolution of bee communication.
   flush=True)`, or scripts that flush CSV rows. Avoid long buffered one-liners
   that hide all output until the command exits.
 
+## LaTeX Reports
+
+- When editing `report/report.tex`, compile the report before finishing if a
+  LaTeX toolchain is available.
+- Build from a clean temporary copy of `report/report.tex` and
+  `report/references.bib`, so auxiliary files do not clutter the repo or reuse
+  stale local state.
+- If bibliography state may have changed, run the normal LaTeX sequence in the
+  temporary build directory: `pdflatex`, `bibtex`, `pdflatex`, `pdflatex`.
+- Keep the compiled PDF in the repository as `report/report.pdf`. After a
+  successful build, copy only the final PDF back into `report/`; do not commit
+  `.aux`, `.bbl`, `.blg`, `.log`, or `.out` files.
+
 ## Token-Conservative Workflow
 
 - Start with a narrow discovery pass: read only directly relevant files, nearby tests, and scoped git history.
