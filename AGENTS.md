@@ -28,8 +28,15 @@ We are modeling the evolution of bee communication.
 
 - Do not implement only based on discussing high level ideas. Wait for an explicit request to generate code.
 - Before large changes, inspect the existing structure and follow established patterns.
-- Consult the git commit history to understand how the project has evolved before making substantive changes.
+- Consult relevant git history before substantive changes, scoped to affected files when possible.
 - Keep changes scoped to the current modeling question or tooling need.
 - Run the relevant tests or checks after implementation when available.
 - Update documentation when model behavior, experiment parameters, or usage changes.
 - Regularly commit changes to the git repo to keep track of the evolving project.
+
+## Token-Conservative Workflow
+
+- Start with a narrow discovery pass: read only directly relevant files, nearby tests, and scoped git history.
+- Use targeted commands such as `rg`, `rg --files`, and line ranges instead of dumping large files.
+- Run focused tests/checks first; use full suites only for broad or shared-behavior changes.
+- Summarize long command output unless raw output is explicitly requested.
