@@ -33,6 +33,10 @@ We are modeling the evolution of bee communication.
 - Run the relevant tests or checks after implementation when available.
 - Update documentation when model behavior, experiment parameters, or usage changes.
 - Regularly commit changes to the git repo to keep track of the evolving project.
+- For long-running experiment probes, stream progress/results as they are
+  produced: use unbuffered Python (`python -u`), explicit `print(...,
+  flush=True)`, or scripts that flush CSV rows. Avoid long buffered one-liners
+  that hide all output until the command exits.
 
 ## Token-Conservative Workflow
 
