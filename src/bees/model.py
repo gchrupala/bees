@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import pi, tau
+from math import pi, sqrt, tau
 from random import Random
 
 
@@ -51,6 +51,7 @@ class DirectionSettings:
     episodes_per_colony: int
     foraging_attempts_per_episode: int
     mutation_sd: float
+    transposition_mutation_correlation: float
     stable_worker_sd: float
     max_signal_concentration: float
     dance_noise_sd: float
@@ -353,30 +354,43 @@ def _mutate_traits(
     settings: DirectionSettings,
     rng: Random,
 ) -> ColonyTraits:
+    directional_bias_change = rng.gauss(0.0, settings.mutation_sd)
+    receiver_attention_change = rng.gauss(0.0, settings.mutation_sd)
+    sender_transposition_change, receiver_transposition_change = (
+        _correlated_gaussian_pair(
+            settings.mutation_sd,
+            settings.transposition_mutation_correlation,
+            rng,
+        )
+    )
+    search_limit_change = rng.gauss(
+        0.0,
+        settings.mutation_sd * settings.max_search_distance,
+    )
+
     return ColonyTraits(
         directional_bias=_clamp(
-            traits.directional_bias + rng.gauss(0.0, settings.mutation_sd),
+            traits.directional_bias + directional_bias_change,
             0.0,
             1.0,
         ),
         receiver_attention=_clamp(
-            traits.receiver_attention + rng.gauss(0.0, settings.mutation_sd),
+            traits.receiver_attention + receiver_attention_change,
             0.0,
             1.0,
         ),
         sender_transposition=_clamp(
-            traits.sender_transposition + rng.gauss(0.0, settings.mutation_sd),
+            traits.sender_transposition + sender_transposition_change,
             0.0,
             1.0,
         ),
         receiver_transposition=_clamp(
-            traits.receiver_transposition + rng.gauss(0.0, settings.mutation_sd),
+            traits.receiver_transposition + receiver_transposition_change,
             0.0,
             1.0,
         ),
         search_limit=_clamp(
-            traits.search_limit
-            + rng.gauss(0.0, settings.mutation_sd * settings.max_search_distance),
+            traits.search_limit + search_limit_change,
             0.0,
             settings.max_search_distance,
         ),
@@ -444,6 +458,24 @@ def _direct_mapping_direction(
     random_direction = rng.random() * tau
 
     return circular_interpolate(random_direction, direction, direct_quality)
+
+
+def _correlated_gaussian_pair(
+    standard_deviation: float,
+    correlation: float,
+    rng: Random,
+) -> tuple[float, float]:
+    bounded_correlation = _clamp(correlation, 0.0, 1.0)
+    first = rng.gauss(0.0, standard_deviation)
+    independent_second = rng.gauss(0.0, standard_deviation)
+
+    # Preserve the marginal mutation scale while changing only the correlation.
+    second = (
+        bounded_correlation * first
+        + sqrt(1.0 - bounded_correlation**2) * independent_second
+    )
+
+    return first, second
 
 
 def _clamp(value: float, minimum: float, maximum: float) -> float:

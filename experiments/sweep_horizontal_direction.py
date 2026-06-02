@@ -21,6 +21,7 @@ SWEEPS = {
     "episodes_per_colony": [15, 50, 120],
     "foraging_attempts_per_episode": [6, 12, 24],
     "mutation_sd": [0.01, 0.04, 0.10],
+    "transposition_mutation_correlation": [0.0, 0.6, 1.0],
     "stable_worker_sd": [0.0, 0.08, 0.20],
     "max_signal_concentration": [4.0, 14.0, 30.0],
     "dance_noise_sd": [0.0, 0.18, 0.50],

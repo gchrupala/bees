@@ -18,6 +18,7 @@ from bees.model import (
     generate_food_sites,
     interpret_signal,
     simulate,
+    _mutate_traits,
 )
 
 
@@ -64,6 +65,88 @@ class DirectionModelTests(unittest.TestCase):
                 for worker in colony.workers
             )
         )
+
+    def test_zero_transposition_mutation_correlation_uses_independent_draws(
+        self,
+    ) -> None:
+        settings = _settings(
+            mutation_sd=0.04,
+            transposition_mutation_correlation=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+        )
+        seed = 7
+        expected_rng = Random(seed)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_sender = traits.sender_transposition + expected_rng.gauss(
+            0.0,
+            settings.mutation_sd,
+        )
+        expected_receiver = traits.receiver_transposition + expected_rng.gauss(
+            0.0,
+            settings.mutation_sd,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(seed))
+
+        self.assertAlmostEqual(mutated.sender_transposition, expected_sender)
+        self.assertAlmostEqual(mutated.receiver_transposition, expected_receiver)
+
+    def test_full_transposition_mutation_correlation_couples_increments(
+        self,
+    ) -> None:
+        settings = _settings(
+            mutation_sd=0.04,
+            transposition_mutation_correlation=1.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(8))
+
+        self.assertAlmostEqual(
+            mutated.sender_transposition,
+            mutated.receiver_transposition,
+        )
+
+    def test_transposition_mutation_correlation_is_clamped(self) -> None:
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+        )
+
+        bounded = _mutate_traits(
+            traits,
+            _settings(
+                mutation_sd=0.04,
+                transposition_mutation_correlation=1.0,
+            ),
+            Random(9),
+        )
+        overbounded = _mutate_traits(
+            traits,
+            _settings(
+                mutation_sd=0.04,
+                transposition_mutation_correlation=2.0,
+            ),
+            Random(9),
+        )
+
+        self.assertEqual(overbounded, bounded)
 
     def test_random_search_can_find_any_available_food_site(self) -> None:
         sites = (
@@ -295,6 +378,7 @@ def _settings(**overrides: float | int) -> DirectionSettings:
         "episodes_per_colony": 20,
         "foraging_attempts_per_episode": 4,
         "mutation_sd": 0.03,
+        "transposition_mutation_correlation": 0.6,
         "stable_worker_sd": 0.05,
         "max_signal_concentration": 20.0,
         "dance_noise_sd": 0.08,
