@@ -19,7 +19,7 @@ SWEEPS = {
     "colony_count": [20, 60, 120],
     "workers_per_colony": [20, 80, 160],
     "episodes_per_colony": [15, 50, 120],
-    "recruits_per_episode": [6, 12, 24],
+    "foraging_attempts_per_episode": [6, 12, 24],
     "mutation_sd": [0.01, 0.04, 0.10],
     "stable_worker_sd": [0.0, 0.08, 0.20],
     "max_signal_concentration": [4.0, 14.0, 30.0],

@@ -159,7 +159,7 @@ class DirectionModelTests(unittest.TestCase):
     def test_dance_following_amplifies_independent_discovery(self) -> None:
         settings = _settings(
             episodes_per_colony=400,
-            recruits_per_episode=50,
+            foraging_attempts_per_episode=50,
             stable_worker_sd=0.0,
             max_signal_concentration=50.0,
             dance_noise_sd=0.0,
@@ -207,7 +207,7 @@ class DirectionModelTests(unittest.TestCase):
     def test_distance_cost_reduces_payoff_for_far_food(self) -> None:
         common = {
             "episodes_per_colony": 80,
-            "recruits_per_episode": 4,
+            "foraging_attempts_per_episode": 4,
             "stable_worker_sd": 0.0,
             "food_site_width": tau,
             "food_site_capacity": 8,
@@ -247,7 +247,7 @@ class DirectionModelTests(unittest.TestCase):
             workers_per_colony=12,
             generations=3,
             episodes_per_colony=8,
-            recruits_per_episode=3,
+            foraging_attempts_per_episode=3,
         )
 
         first = simulate(settings, seed=4)
@@ -262,7 +262,7 @@ def _settings(**overrides: float | int) -> DirectionSettings:
         "workers_per_colony": 20,
         "generations": 1,
         "episodes_per_colony": 20,
-        "recruits_per_episode": 4,
+        "foraging_attempts_per_episode": 4,
         "mutation_sd": 0.03,
         "stable_worker_sd": 0.05,
         "max_signal_concentration": 20.0,

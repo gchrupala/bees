@@ -16,10 +16,10 @@
 
 Honeybee waggle dances provide spatial information about resources away from
 the nest. One ecological hypothesis is that such communication is favored when
-food is difficult to discover independently but remains useful after a scout
+food is difficult to discover independently but remains useful after a worker
 has found it. Empirical and theoretical studies suggest that the value of dance
-information depends on the spatiotemporal distribution of food resources,
-including patch density, patch size, reward variability, and habitat
+information and recruitment depends on the spatiotemporal distribution of food
+resources, including patch density, patch size, reward variability, and habitat
 \cite{sherman_visscher_2002,dornhaus_chittka_2004,dornhaus_etal_2006,beekman_lew_2008,donaldson_matasci_dornhaus_2012,schurch_gruter_2014,price_gruter_2015}.
 We begin with a deliberately simple model of directional communication on an
 exposed horizontal comb, where dance angle can map directly onto food
@@ -36,9 +36,9 @@ food direction onto a gravity-referenced dance angle; receiver transposition,
 which controls how much dance followers interpret the dance as
 gravity-referenced rather than direct pointing; and search limit, which controls
 how far a worker searches along its chosen direction before giving up.
-Individual workers are sampled around the
-colony means using stable within-colony variation. Each dance also includes
-transient production and interpretation noise.
+Individual workers are sampled around the colony means using stable
+within-colony variation. Each dance also includes transient production and
+interpretation noise.
 
 More concretely, a colony is parameterized by mean directional bias
 $b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
@@ -130,13 +130,13 @@ mean directional bias first reached 0.30, plus final generation trait and
 success values.
 
 Each run used 60 colonies, 80 workers per colony, 30 generations, 50 foraging
-episodes per colony per generation, 6 recruits per episode, and horizontal-comb
-tilt $t=0$. Food-site value was 1.0, and all three conditions used food-site
-capacity 6. The conditions varied only the number and width of food sites: hard
-used one site of width 0.08, baseline used two sites of width 0.20, and easy
-used eight sites of width 0.50. The hard condition therefore makes independent
-discovery unlikely, while the easy condition makes independent discovery likely
-even without using the dance.
+episodes per colony per generation, 6 worker attempts per episode in the older
+episode structure, and horizontal-comb tilt $t=0$. Food-site value was 1.0, and
+all three conditions used food-site capacity 6. The conditions varied only the
+number and width of food sites: hard used one site of width 0.08, baseline used
+two sites of width 0.20, and easy used eight sites of width 0.50. The hard
+condition therefore makes independent discovery unlikely, while the easy
+condition makes independent discovery likely even without using the dance.
 
 \begin{table}[h]
 \centering
@@ -159,7 +159,7 @@ capacity 6 and ten seeds.}
 The initial result matches the ecological prediction qualitatively. In the hard
 environment, communication evolves quickly and strongly, although absolute
 foraging success remains low because food is rare and narrow. In the easy
-environment, recruit success is high even without strong communication, and
+environment, forager success is high even without strong communication, and
 selection for directional bias and receiver attention is much weaker. The
 baseline condition lies between these extremes.
 

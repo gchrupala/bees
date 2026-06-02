@@ -49,7 +49,7 @@ class DirectionSettings:
     workers_per_colony: int
     generations: int
     episodes_per_colony: int
-    recruits_per_episode: int
+    foraging_attempts_per_episode: int
     mutation_sd: float
     stable_worker_sd: float
     max_signal_concentration: float
@@ -229,7 +229,9 @@ def evaluate_colony(
 ) -> ColonyEvaluation:
     total_payoff = 0.0
     total_successes = 0
-    total_attempts = settings.episodes_per_colony * settings.recruits_per_episode
+    total_attempts = (
+        settings.episodes_per_colony * settings.foraging_attempts_per_episode
+    )
 
     for _ in range(settings.episodes_per_colony):
         sites = generate_food_sites(settings, rng)
@@ -240,15 +242,15 @@ def evaluate_colony(
         success_count = 0
         food_payoff = 0.0
 
-        for _ in range(settings.recruits_per_episode):
-            recruit = rng.choice(colony.workers)
-            follows_dance = bool(dances) and rng.random() < recruit.receiver_attention
+        for _ in range(settings.foraging_attempts_per_episode):
+            worker = rng.choice(colony.workers)
+            follows_dance = bool(dances) and rng.random() < worker.receiver_attention
 
             if follows_dance:
                 dance = rng.choice(dances)
                 search_direction = interpret_signal(
                     dance.signal,
-                    recruit,
+                    worker,
                     settings,
                     rng,
                 )
@@ -258,7 +260,7 @@ def evaluate_colony(
 
             site_index = find_food_site(
                 search_direction,
-                recruit.search_limit,
+                worker.search_limit,
                 sites,
                 remaining_capacity,
             )
@@ -274,15 +276,15 @@ def evaluate_colony(
                         Dance(
                             signal=produce_signal(
                                 sites[site_index].direction,
-                                recruit,
+                                worker,
                                 settings,
                                 rng,
                             )
                         )
                     )
-                    dance_cost += settings.cue_cost * recruit.directional_bias
+                    dance_cost += settings.cue_cost * worker.directional_bias
             else:
-                food_payoff -= recruit.search_limit * settings.travel_cost_per_distance
+                food_payoff -= worker.search_limit * settings.travel_cost_per_distance
 
         total_successes += success_count
         total_payoff += (
