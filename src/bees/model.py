@@ -11,6 +11,7 @@ class ColonyTraits:
     receiver_attention: float
     sender_transposition: float
     receiver_transposition: float
+    search_limit: float
 
 
 @dataclass(frozen=True)
@@ -19,6 +20,7 @@ class Worker:
     receiver_attention: float
     sender_transposition: float
     receiver_transposition: float
+    search_limit: float
 
 
 @dataclass(frozen=True)
@@ -30,9 +32,15 @@ class Colony:
 @dataclass(frozen=True)
 class FoodSite:
     direction: float
+    distance: float
     width: float
     value: float
     capacity: int
+
+
+@dataclass(frozen=True)
+class Dance:
+    signal: float
 
 
 @dataclass(frozen=True)
@@ -50,8 +58,12 @@ class DirectionSettings:
     comb_tilt: float
     food_site_count: int
     food_site_width: float
+    food_site_min_distance: float
+    food_site_max_distance: float
+    max_search_distance: float
     food_site_capacity: int
     food_value: float
+    travel_cost_per_distance: float
     cue_cost: float
     attention_cost: float
 
@@ -69,6 +81,7 @@ class GenerationSummary:
     average_receiver_attention: float
     average_sender_transposition: float
     average_receiver_transposition: float
+    average_search_limit: float
     average_success_rate: float
     average_payoff: float
 
@@ -110,6 +123,15 @@ def create_colony(
                 + rng.gauss(0.0, settings.stable_worker_sd),
                 0.0,
                 1.0,
+            ),
+            search_limit=_clamp(
+                traits.search_limit
+                + rng.gauss(
+                    0.0,
+                    settings.stable_worker_sd * settings.max_search_distance,
+                ),
+                0.0,
+                settings.max_search_distance,
             ),
         )
         for _ in range(settings.workers_per_colony)
@@ -168,6 +190,10 @@ def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodS
     return tuple(
         FoodSite(
             direction=rng.random() * tau,
+            distance=rng.uniform(
+                settings.food_site_min_distance,
+                settings.food_site_max_distance,
+            ),
             width=settings.food_site_width,
             value=settings.food_value,
             capacity=settings.food_site_capacity,
@@ -178,20 +204,22 @@ def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodS
 
 def find_food_site(
     search_direction: float,
+    search_limit: float,
     sites: tuple[FoodSite, ...],
     remaining_capacity: list[int],
 ) -> int | None:
     available_sites = [
-        (angular_distance(search_direction, site.direction), index)
+        (site.distance, angular_distance(search_direction, site.direction), index)
         for index, site in enumerate(sites)
         if remaining_capacity[index] > 0
         and angular_distance(search_direction, site.direction) <= site.width
+        and site.distance <= search_limit
     ]
 
     if not available_sites:
         return None
 
-    return min(available_sites)[1]
+    return min(available_sites)[2]
 
 
 def evaluate_colony(
@@ -201,42 +229,71 @@ def evaluate_colony(
 ) -> ColonyEvaluation:
     total_payoff = 0.0
     total_successes = 0
-    total_recruits = settings.episodes_per_colony * settings.recruits_per_episode
+    total_attempts = settings.episodes_per_colony * settings.recruits_per_episode
 
     for _ in range(settings.episodes_per_colony):
         sites = generate_food_sites(settings, rng)
         remaining_capacity = [site.capacity for site in sites]
-        scout_site = rng.choice(sites)
-        scout = rng.choice(colony.workers)
-        signal = produce_signal(scout_site.direction, scout, settings, rng)
+        dances: list[Dance] = []
         attention_count = 0
+        dance_cost = 0.0
         success_count = 0
         food_payoff = 0.0
 
         for _ in range(settings.recruits_per_episode):
             recruit = rng.choice(colony.workers)
-            if rng.random() < recruit.receiver_attention:
-                search_direction = interpret_signal(signal, recruit, settings, rng)
+            follows_dance = bool(dances) and rng.random() < recruit.receiver_attention
+
+            if follows_dance:
+                dance = rng.choice(dances)
+                search_direction = interpret_signal(
+                    dance.signal,
+                    recruit,
+                    settings,
+                    rng,
+                )
                 attention_count += 1
             else:
                 search_direction = rng.random() * tau
 
-            site_index = find_food_site(search_direction, sites, remaining_capacity)
+            site_index = find_food_site(
+                search_direction,
+                recruit.search_limit,
+                sites,
+                remaining_capacity,
+            )
             if site_index is not None:
                 remaining_capacity[site_index] -= 1
                 success_count += 1
+                food_payoff -= (
+                    sites[site_index].distance * settings.travel_cost_per_distance
+                )
                 food_payoff += sites[site_index].value
+                if not follows_dance:
+                    dances.append(
+                        Dance(
+                            signal=produce_signal(
+                                sites[site_index].direction,
+                                recruit,
+                                settings,
+                                rng,
+                            )
+                        )
+                    )
+                    dance_cost += settings.cue_cost * recruit.directional_bias
+            else:
+                food_payoff -= recruit.search_limit * settings.travel_cost_per_distance
 
         total_successes += success_count
         total_payoff += (
             food_payoff
-            - settings.cue_cost * scout.directional_bias
+            - dance_cost
             - settings.attention_cost * attention_count
         )
 
     return ColonyEvaluation(
         payoff=max(0.001, total_payoff / settings.episodes_per_colony),
-        success_rate=total_successes / total_recruits,
+        success_rate=total_successes / total_attempts,
     )
 
 
@@ -246,7 +303,7 @@ def simulate(
 ) -> list[GenerationSummary]:
     rng = Random(seed)
     colonies = [
-        create_colony(_initial_traits(rng), settings, rng)
+        create_colony(_initial_traits(settings, rng), settings, rng)
         for _ in range(settings.colony_count)
     ]
     history = []
@@ -272,12 +329,16 @@ def simulate(
     return history
 
 
-def _initial_traits(rng: Random) -> ColonyTraits:
+def _initial_traits(settings: DirectionSettings, rng: Random) -> ColonyTraits:
     return ColonyTraits(
         directional_bias=rng.uniform(0.0, 0.15),
         receiver_attention=rng.uniform(0.0, 0.25),
         sender_transposition=rng.uniform(0.0, 0.10),
         receiver_transposition=rng.uniform(0.0, 0.10),
+        search_limit=rng.uniform(
+            0.15 * settings.max_search_distance,
+            0.45 * settings.max_search_distance,
+        ),
     )
 
 
@@ -306,6 +367,12 @@ def _mutate_traits(
             traits.receiver_transposition + rng.gauss(0.0, settings.mutation_sd),
             0.0,
             1.0,
+        ),
+        search_limit=_clamp(
+            traits.search_limit
+            + rng.gauss(0.0, settings.mutation_sd * settings.max_search_distance),
+            0.0,
+            settings.max_search_distance,
         ),
     )
 
@@ -351,6 +418,8 @@ def _summarize(
         average_receiver_transposition=sum(
             colony.traits.receiver_transposition for colony in colonies
         )
+        / count,
+        average_search_limit=sum(colony.traits.search_limit for colony in colonies)
         / count,
         average_success_rate=sum(
             evaluation.success_rate for evaluation in evaluations

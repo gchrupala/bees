@@ -15,6 +15,7 @@ from bees.model import (
     encode_dance_direction,
     evaluate_colony,
     find_food_site,
+    generate_food_sites,
     interpret_signal,
     simulate,
 )
@@ -35,6 +36,7 @@ class DirectionModelTests(unittest.TestCase):
                 receiver_attention=0.5,
                 sender_transposition=0.5,
                 receiver_transposition=0.5,
+                search_limit=3.0,
             ),
             settings,
             Random(1),
@@ -56,23 +58,63 @@ class DirectionModelTests(unittest.TestCase):
         self.assertTrue(
             all(0.0 <= worker.receiver_transposition <= 1.0 for worker in colony.workers)
         )
+        self.assertTrue(
+            all(
+                0.0 <= worker.search_limit <= settings.max_search_distance
+                for worker in colony.workers
+            )
+        )
 
     def test_random_search_can_find_any_available_food_site(self) -> None:
         sites = (
-            FoodSite(direction=0.0, width=0.1, value=1.0, capacity=1),
-            FoodSite(direction=tau / 2, width=0.1, value=1.0, capacity=1),
+            FoodSite(direction=0.0, distance=2.0, width=0.1, value=1.0, capacity=1),
+            FoodSite(
+                direction=tau / 2,
+                distance=2.0,
+                width=0.1,
+                value=1.0,
+                capacity=1,
+            ),
         )
         remaining_capacity = [1, 1]
 
         self.assertEqual(
-            find_food_site(tau / 2 + 0.01, sites, remaining_capacity),
+            find_food_site(tau / 2 + 0.01, 3.0, sites, remaining_capacity),
             1,
         )
 
     def test_depleted_food_sites_cannot_be_found(self) -> None:
-        sites = (FoodSite(direction=0.0, width=0.1, value=1.0, capacity=1),)
+        sites = (
+            FoodSite(direction=0.0, distance=2.0, width=0.1, value=1.0, capacity=1),
+        )
 
-        self.assertIsNone(find_food_site(0.0, sites, [0]))
+        self.assertIsNone(find_food_site(0.0, 3.0, sites, [0]))
+
+    def test_food_site_must_be_within_search_limit(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=4.0, width=0.1, value=1.0, capacity=1),
+        )
+
+        self.assertIsNone(find_food_site(0.0, 3.99, sites, [1]))
+        self.assertEqual(find_food_site(0.0, 4.0, sites, [1]), 0)
+
+    def test_closest_matching_food_site_is_found_first(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=4.0, width=0.1, value=1.0, capacity=1),
+            FoodSite(direction=0.0, distance=2.0, width=0.1, value=1.0, capacity=1),
+        )
+
+        self.assertEqual(find_food_site(0.0, 5.0, sites, [1, 1]), 1)
+
+    def test_generated_food_sites_have_distances_in_range(self) -> None:
+        settings = _settings(
+            food_site_count=20,
+            food_site_min_distance=2.0,
+            food_site_max_distance=4.0,
+        )
+        sites = generate_food_sites(settings, Random(1))
+
+        self.assertTrue(all(2.0 <= site.distance <= 4.0 for site in sites))
 
     def test_horizontal_comb_preserves_direct_mapping(self) -> None:
         settings = _settings(comb_tilt=0.0, interpretation_noise_sd=0.0)
@@ -81,6 +123,7 @@ class DirectionModelTests(unittest.TestCase):
             receiver_attention=1.0,
             sender_transposition=0.0,
             receiver_transposition=0.0,
+            search_limit=5.0,
         )
         food_direction = 1.2
         signal = encode_dance_direction(food_direction, worker, settings, Random(1))
@@ -99,6 +142,7 @@ class DirectionModelTests(unittest.TestCase):
             receiver_attention=1.0,
             sender_transposition=1.0,
             receiver_transposition=1.0,
+            search_limit=5.0,
         )
         food_direction = 1.2
         signal = encode_dance_direction(
@@ -112,22 +156,30 @@ class DirectionModelTests(unittest.TestCase):
         self.assertAlmostEqual(signal, food_direction)
         self.assertAlmostEqual(decoded, food_direction)
 
-    def test_directional_signal_beats_random_search(self) -> None:
+    def test_dance_following_amplifies_independent_discovery(self) -> None:
         settings = _settings(
-            episodes_per_colony=300,
-            recruits_per_episode=8,
+            episodes_per_colony=400,
+            recruits_per_episode=50,
             stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
             dance_noise_sd=0.0,
             interpretation_noise_sd=0.0,
+            food_site_width=0.02,
+            food_site_min_distance=2.0,
+            food_site_max_distance=2.0,
+            max_search_distance=5.0,
+            food_site_capacity=50,
+            travel_cost_per_distance=0.0,
             cue_cost=0.0,
             attention_cost=0.0,
         )
-        signaled = create_colony(
+        attentive = create_colony(
             ColonyTraits(
                 directional_bias=1.0,
                 receiver_attention=1.0,
                 sender_transposition=0.0,
                 receiver_transposition=0.0,
+                search_limit=5.0,
             ),
             settings,
             Random(2),
@@ -138,18 +190,56 @@ class DirectionModelTests(unittest.TestCase):
                 receiver_attention=0.0,
                 sender_transposition=0.0,
                 receiver_transposition=0.0,
+                search_limit=5.0,
             ),
             settings,
             Random(2),
         )
 
-        signaled_evaluation = evaluate_colony(signaled, settings, Random(3))
+        attentive_evaluation = evaluate_colony(attentive, settings, Random(3))
         random_evaluation = evaluate_colony(random, settings, Random(3))
 
         self.assertGreater(
-            signaled_evaluation.success_rate,
-            random_evaluation.success_rate + 0.4,
+            attentive_evaluation.success_rate,
+            random_evaluation.success_rate + 0.01,
         )
+
+    def test_distance_cost_reduces_payoff_for_far_food(self) -> None:
+        common = {
+            "episodes_per_colony": 80,
+            "recruits_per_episode": 4,
+            "stable_worker_sd": 0.0,
+            "food_site_width": tau,
+            "food_site_capacity": 8,
+            "max_search_distance": 10.0,
+            "travel_cost_per_distance": 0.05,
+            "cue_cost": 0.0,
+            "attention_cost": 0.0,
+        }
+        near_settings = _settings(
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            **common,
+        )
+        far_settings = _settings(
+            food_site_min_distance=5.0,
+            food_site_max_distance=5.0,
+            **common,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=10.0,
+        )
+        near_colony = create_colony(traits, near_settings, Random(2))
+        far_colony = create_colony(traits, far_settings, Random(2))
+
+        near_evaluation = evaluate_colony(near_colony, near_settings, Random(3))
+        far_evaluation = evaluate_colony(far_colony, far_settings, Random(3))
+
+        self.assertGreater(near_evaluation.payoff, far_evaluation.payoff)
 
     def test_simulation_is_reproducible(self) -> None:
         settings = _settings(
@@ -181,8 +271,12 @@ def _settings(**overrides: float | int) -> DirectionSettings:
         "comb_tilt": 0.0,
         "food_site_count": 1,
         "food_site_width": 0.35,
+        "food_site_min_distance": 1.0,
+        "food_site_max_distance": 5.0,
+        "max_search_distance": 5.0,
         "food_site_capacity": 8,
         "food_value": 1.0,
+        "travel_cost_per_distance": 0.0,
         "cue_cost": 0.01,
         "attention_cost": 0.01,
     }

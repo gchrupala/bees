@@ -46,6 +46,10 @@ def main() -> None:
         f"{first.average_receiver_transposition:.2f} -> {last.average_receiver_transposition:.2f}"
     )
     print(
+        "search_limit: "
+        f"{first.average_search_limit:.2f} -> {last.average_search_limit:.2f}"
+    )
+    print(
         "success_rate: "
         f"{first.average_success_rate:.2f} -> {last.average_success_rate:.2f}"
     )

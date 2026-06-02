@@ -28,35 +28,46 @@ direction.
 \section{Method}
 
 Colonies are the reproducing entities, while workers are behavioral agents.
-Each colony has four heritable mean traits: directional bias, which controls how
-strongly a scout's dance angle is centered on the intended direction; receiver
-attention, which controls how likely recruits are to follow the dance; sender
-transposition, which controls how much the scout maps food direction onto a
-gravity-referenced dance angle; and receiver transposition, which controls how
-much recruits interpret the dance as gravity-referenced rather than direct
-pointing. Individual workers are sampled around the colony means using stable
-within-colony variation. Each dance also includes transient production and
-interpretation noise.
+Each colony has five heritable mean traits: directional bias, which controls how
+strongly a dancing worker's angle is centered on the intended direction;
+receiver attention, which controls how likely workers are to follow an
+available dance; sender transposition, which controls how much a dancer maps
+food direction onto a gravity-referenced dance angle; receiver transposition,
+which controls how much dance followers interpret the dance as
+gravity-referenced rather than direct pointing; and search limit, which controls
+how far a worker searches along its chosen direction before giving up.
+Individual workers are sampled around the
+colony means using stable within-colony variation. Each dance also includes
+transient production and interpretation noise.
 
 More concretely, a colony is parameterized by mean directional bias
 $b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
-transposition $s \in [0,1]$, and mean receiver transposition $r \in [0,1]$.
-Each worker receives stable individual deviations from these means, sampled
-from Gaussian noise with standard deviation 0.08 and then clipped to the unit
-interval. These deviations represent within-colony worker variation, but are
-not themselves heritable in the current model. At reproduction, only the
+transposition $s \in [0,1]$, mean receiver transposition $r \in [0,1]$, and
+mean search limit $\ell \geq 0$. Each worker receives stable individual
+deviations from these means, sampled from Gaussian noise with standard
+deviation 0.08 for unit-interval traits. For search limit, the same scale is
+multiplied by the maximum search distance. All traits are clipped to their
+allowed ranges. These deviations represent within-colony worker variation, but
+are not themselves heritable in the current model. At reproduction, only the
 colony-level mean traits are inherited, with Gaussian mutation of standard
-deviation 0.07.
+deviation 0.07, again scaled by maximum search distance for the search-limit
+trait.
 
 Each foraging episode generates a set of food sites in the world. A food site
-has a direction, angular width, value, and capacity. A scout discovers one food
-site and dances for it. Recruits either attend to the dance and search near the
-signaled direction, or ignore it and search in a random direction. Crucially,
-independent searchers can find any available food site, not only the scout's
-site. This makes background discovery an emergent property of the food
-distribution. This design follows the logic of previous ecological models in
-which recruitment benefits depend on the availability and discoverability of
-resource patches rather than on communication having a fixed payoff advantage
+has a direction, distance from the nest, angular width, value, and capacity.
+Workers act sequentially within an episode. If at least one dance is available,
+a worker follows a randomly chosen dance with probability given by its receiver
+attention. Otherwise it searches independently in a uniformly random direction.
+In both cases, the worker searches along the chosen direction up to its
+individual search limit. A food site is found only if it lies within the
+searched angular window and its distance is no greater than the worker's search
+limit. Independent searchers that find food add a noisy dance for the discovered
+site, so scouts are not assigned in advance: a scout is simply a worker that
+found food independently. This makes both background discovery and recruitment
+emergent properties of the food distribution and the evolving worker traits.
+This design follows the logic of previous ecological models in which
+recruitment benefits depend on the availability and discoverability of resource
+patches rather than on communication having a fixed payoff advantage
 \cite{dornhaus_etal_2006,beekman_lew_2008}.
 
 Comb tilt is represented by an environmental parameter $t \in [0,1]$, where
@@ -68,36 +79,46 @@ gravity-referenced encoding, and the receiver transposition trait blends
 between direct and gravity-referenced decoding. The initial food-distribution
 experiments below use $t=0$, so the setup reduces to the horizontal-comb case.
 
-The scout's dance angle is sampled from a circular von Mises distribution
+The dancer's angle is sampled from a circular von Mises distribution
 centered on the encoded direction. The concentration parameter is $14b$, so
 workers with low directional bias produce nearly random angles, while workers
 with high directional bias produce angles concentrated around the intended
 direction. Additional dance-production noise with standard deviation 0.18 is
-added to the angle. A recruit attends to the dance with probability $a$; if it
-attends, it decodes the signaled direction with interpretation noise of
-standard deviation 0.12. If it does not attend, it searches in a uniformly
-random direction. A recruit succeeds when its search direction falls within the
-angular width of any food site that still has remaining capacity.
+added to the angle. A worker follows an available dance with probability $a$;
+if it follows, it decodes the signaled direction with interpretation noise of
+standard deviation 0.12. If it does not follow a dance, it searches in a
+uniformly random direction. A worker succeeds when its search direction falls
+within the angular width of an available food site whose distance is no greater
+than the worker's search limit.
 
 After many episodes, each colony receives a payoff from collected food minus
-communication and attention costs. Daughter colonies are sampled in proportion
-to payoff, and colony-level traits mutate by Gaussian noise. We track the mean
-directional bias, receiver attention, sender and receiver transposition, and
-recruit success rate across generations.
+travel, communication, and attention costs. Daughter colonies are sampled in
+proportion to payoff, and colony-level traits mutate by Gaussian noise. We
+track the mean directional bias, receiver attention, sender and receiver
+transposition, and search limit, plus forager success rate across generations.
 
 In each episode, collected food is the sum of the values of food sites found by
-recruits. The current simulations use food value 1.0. The colony then pays a
-communication cost of $0.02b_s$, where $b_s$ is the scout worker's directional
-bias, and an attention cost of 0.01 for each recruit that attends to the dance.
-Thus more directional signaling and more dance-following can increase food
-collection, but they are not free. The current model does not include an
-independent colony maintenance cost. The parameter ``workers per colony''
-controls the pool from which scouts and recruits are sampled, and therefore the
-amount of within-colony worker heterogeneity, but payoff opportunity is set
-more directly by the number of foraging episodes per colony and the number of
-recruits per episode.
+workers. The current simulations use food value 1.0. Workers also pay a travel
+cost proportional to distance: successful workers pay the cost of reaching the
+found food site, while unsuccessful workers pay the cost of searching up to
+their limit. The default travel cost is 0.02 per distance unit, so even the
+longest default trip remains profitable if it finds food, but long unsuccessful
+searches are costly. The colony then pays a communication cost of $0.02b_d$ for
+each dance added by an independent finder, where $b_d$ is that dancer's
+directional bias, and an attention cost of 0.01 for each worker that follows a
+dance. Thus more directional signaling, more dance-following, and longer search
+effort can increase food collection, but they are not free. The current model
+does not include an independent colony maintenance cost. The parameter
+``workers per colony'' controls the pool from which active foragers are sampled,
+and therefore the amount of within-colony worker heterogeneity, but payoff
+opportunity is set more directly by the number of foraging episodes per colony
+and the number of foraging attempts per episode.
 
 \section{Results}
+
+The results below are preliminary baselines from an earlier version of the
+model. They should be rerun after the distance, search-limit, and dynamic
+recruitment extensions before being treated as current quantitative results.
 
 \subsection{Horizontal comb}
 

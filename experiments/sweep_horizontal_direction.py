@@ -19,7 +19,7 @@ SWEEPS = {
     "colony_count": [20, 60, 120],
     "workers_per_colony": [20, 80, 160],
     "episodes_per_colony": [15, 50, 120],
-    "recruits_per_episode": [2, 6, 12],
+    "recruits_per_episode": [6, 12, 24],
     "mutation_sd": [0.01, 0.04, 0.10],
     "stable_worker_sd": [0.0, 0.08, 0.20],
     "max_signal_concentration": [4.0, 14.0, 30.0],
@@ -28,8 +28,12 @@ SWEEPS = {
     "comb_tilt": [0.0, 0.5, 1.0],
     "food_site_count": [1, 2, 8],
     "food_site_width": [0.08, 0.20, 0.50],
+    "food_site_min_distance": [0.5, 1.0, 3.0],
+    "food_site_max_distance": [4.0, 8.0, 12.0],
+    "max_search_distance": [4.0, 8.0, 12.0],
     "food_site_capacity": [1, 6, 24],
     "food_value": [0.5, 1.0, 2.0],
+    "travel_cost_per_distance": [0.0, 0.02, 0.08],
     "cue_cost": [0.0, 0.02, 0.08],
     "attention_cost": [0.0, 0.01, 0.05],
 }
@@ -45,11 +49,13 @@ FIELDNAMES = [
     "mean_attention_delta",
     "mean_sender_transposition_delta",
     "mean_receiver_transposition_delta",
+    "mean_search_limit_delta",
     "mean_success_delta",
     "mean_final_bias",
     "mean_final_attention",
     "mean_final_sender_transposition",
     "mean_final_receiver_transposition",
+    "mean_final_search_limit",
     "mean_final_success",
     "elapsed_seconds",
 ]
@@ -164,6 +170,9 @@ def summarize_setting(
         "mean_receiver_transposition_delta": format_float(
             mean(metric["receiver_transposition_delta"] for metric in metrics)
         ),
+        "mean_search_limit_delta": format_float(
+            mean(metric["search_limit_delta"] for metric in metrics)
+        ),
         "mean_success_delta": format_float(
             mean(metric["success_delta"] for metric in metrics)
         ),
@@ -178,6 +187,9 @@ def summarize_setting(
         ),
         "mean_final_receiver_transposition": format_float(
             mean(metric["final_receiver_transposition"] for metric in metrics)
+        ),
+        "mean_final_search_limit": format_float(
+            mean(metric["final_search_limit"] for metric in metrics)
         ),
         "mean_final_success": format_float(
             mean(metric["final_success"] for metric in metrics)
@@ -213,11 +225,14 @@ def run_metrics(
         - initial.average_sender_transposition,
         "receiver_transposition_delta": final.average_receiver_transposition
         - initial.average_receiver_transposition,
+        "search_limit_delta": final.average_search_limit
+        - initial.average_search_limit,
         "success_delta": final.average_success_rate - initial.average_success_rate,
         "final_bias": final.average_directional_bias,
         "final_attention": final.average_receiver_attention,
         "final_sender_transposition": final.average_sender_transposition,
         "final_receiver_transposition": final.average_receiver_transposition,
+        "final_search_limit": final.average_search_limit,
         "final_success": final.average_success_rate,
     }
 
