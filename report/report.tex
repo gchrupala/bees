@@ -29,15 +29,16 @@ direction.
 \section{Method}
 
 Colonies are the reproducing entities, while workers are behavioral agents.
-Each colony has five heritable mean traits: directional precision investment,
+Each colony has seven heritable mean traits: directional precision investment,
 called directional bias in the simulation code and tables, which controls how
 strongly a dancing worker's angle is centered on the intended direction;
 receiver attention, which controls how likely workers are to follow an
 available dance; sender transposition, which controls how much a dancer maps
 food direction onto a gravity-referenced dance angle; receiver transposition,
 which controls how much dance followers interpret the dance as
-gravity-referenced rather than direct pointing; and search limit, which controls
-how far a worker searches along its chosen direction before giving up.
+gravity-referenced rather than direct pointing; comb tilt and comb orientation,
+which define the dance plane in the world; and search limit, which controls how
+far a worker searches along its chosen direction before giving up.
 Individual workers are sampled around the colony means using stable
 within-colony variation. Each dance also includes transient production and
 interpretation noise.
@@ -59,7 +60,8 @@ and signaling effort.
 More concretely, a colony is parameterized by mean directional precision
 investment $b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
 transposition $s \in [0,1]$, mean receiver transposition $r \in [0,1]$, and
-mean search limit $\ell \geq 0$. Each worker receives stable individual
+mean search limit $\ell \geq 0$. It also has a comb tilt $t \in [0,1]$ and a
+circular comb orientation $\phi$. Each worker receives stable individual
 deviations from these means, sampled from Gaussian noise with standard
 deviation 0.08 for unit-interval traits. For search limit, the same scale is
 multiplied by the maximum search distance. All traits are clipped to their
@@ -67,7 +69,9 @@ allowed ranges. These deviations represent within-colony worker variation, but
 are not themselves heritable in the current model. At reproduction, only the
 colony-level mean traits are inherited, with Gaussian mutation of standard
 deviation 0.07, again scaled by maximum search distance for the search-limit
-trait.
+trait. Sender and receiver transposition mutations can be correlated by a
+configurable coupling parameter; comb-orientation mutations use a separate
+circular mutation scale.
 
 Each foraging episode generates a set of food sites in the world. A food site
 has a direction, distance from the nest, angular width, value, and capacity.
@@ -86,14 +90,16 @@ recruitment benefits depend on the availability and discoverability of resource
 patches rather than on communication having a fixed payoff advantage
 \cite{dornhaus_etal_2006,beekman_lew_2008}.
 
-Comb tilt is represented by an environmental parameter $t \in [0,1]$, where
-$t=0$ is a horizontal comb and $t=1$ is a vertical comb. Direct pointing has
-quality $1-t$: it is reliable on a horizontal comb and uninformative on a
-vertical comb. Gravity-referenced mapping remains available at all tilts. The
-sender transposition trait blends continuously between direct pointing and
-gravity-referenced encoding, and the receiver transposition trait blends
-between direct and gravity-referenced decoding. The initial food-distribution
-experiments below use $t=0$, so the setup reduces to the horizontal-comb case.
+Comb tilt and orientation define a three-dimensional comb plane. Direct
+pointing projects the horizontal food direction onto that plane, so its
+available cue strength depends on both the tilt and the orientation of the comb
+relative to the food direction. Gravity-referenced mapping uses the projection
+of gravity onto the comb plane together with an episode-level sun azimuth.
+Gravity provides no in-plane reference on a horizontal comb and becomes a
+stronger cue as the comb becomes vertical. The sender transposition trait blends
+between direct pointing and sun/gravity-referenced encoding, and the receiver
+transposition trait blends between the corresponding decoding rules. Each
+episode samples the sun azimuth from a configurable daytime arc.
 
 The dancer's angle is sampled from a circular von Mises distribution
 centered on the encoded direction. The concentration parameter is $14b$, so
@@ -111,8 +117,8 @@ After many episodes, each colony receives a payoff from collected food minus
 travel, communication, and attention costs. Daughter colonies are sampled in
 proportion to payoff, and colony-level traits mutate by Gaussian noise. We
 track the mean directional precision investment, receiver attention, sender
-and receiver transposition, and search limit, plus forager success rate across
-generations.
+and receiver transposition, comb tilt, comb-orientation alignment, and search
+limit, plus forager success rate across generations.
 
 In each episode, collected food is the sum of the values of food sites found by
 workers. The current simulations use food value 1.0. Workers also pay a travel
@@ -127,7 +133,9 @@ investment. In the experiments reported here, $c_0 = 0$. The colony also pays
 an attention cost of 0.01 for each worker that follows a dance. Thus more
 precise directional signaling, more dance-following, and longer search effort
 can increase food collection, but they are not free. The current model
-does not include an independent colony maintenance cost. The parameter
+can also include a configurable benefit proportional to comb verticality, which
+represents non-communication selective pressure for vertical combs. The
+parameter
 ``workers per colony'' controls the pool from which active foragers are sampled,
 and therefore the amount of within-colony worker heterogeneity, but payoff
 opportunity is set more directly by the number of foraging episodes per colony

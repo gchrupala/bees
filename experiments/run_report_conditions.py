@@ -23,9 +23,9 @@ FOOD_DISTRIBUTIONS = {
 }
 
 COMB_TILTS = {
-    "horizontal": {"comb_tilt": 0.0},
-    "tilted": {"comb_tilt": 0.5},
-    "vertical": {"comb_tilt": 1.0},
+    "horizontal": {"initial_comb_tilt": 0.0},
+    "tilted": {"initial_comb_tilt": 0.5},
+    "vertical": {"initial_comb_tilt": 1.0},
 }
 
 FIELDNAMES = [
@@ -38,6 +38,8 @@ FIELDNAMES = [
     "final_attention",
     "final_sender_transposition",
     "final_receiver_transposition",
+    "final_comb_tilt",
+    "final_comb_orientation_alignment",
     "final_search_limit",
     "final_success",
     "final_payoff",
@@ -50,7 +52,7 @@ def main() -> None:
     writer.writeheader()
 
     for condition, overrides in FOOD_DISTRIBUTIONS.items():
-        settings = replace(base_settings, comb_tilt=0.0, **overrides)
+        settings = replace(base_settings, initial_comb_tilt=0.0, **overrides)
         writer.writerow(summarize("food_distribution", condition, settings))
         sys.stdout.flush()
 
@@ -99,6 +101,11 @@ def summarize(
         "final_receiver_transposition": mean_summary(
             finals,
             "average_receiver_transposition",
+        ),
+        "final_comb_tilt": mean_summary(finals, "average_comb_tilt"),
+        "final_comb_orientation_alignment": mean_summary(
+            finals,
+            "comb_orientation_alignment",
         ),
         "final_search_limit": mean_summary(finals, "average_search_limit"),
         "final_success": mean_summary(finals, "average_success_rate"),

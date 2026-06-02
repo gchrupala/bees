@@ -26,7 +26,11 @@ SWEEPS = {
     "max_signal_concentration": [4.0, 14.0, 30.0],
     "dance_noise_sd": [0.0, 0.18, 0.50],
     "interpretation_noise_sd": [0.0, 0.12, 0.50],
-    "comb_tilt": [0.0, 0.5, 1.0],
+    "initial_comb_tilt": [0.0, 0.5, 1.0],
+    "vertical_comb_benefit": [0.0, 0.02, 0.08],
+    "comb_orientation_mutation_sd": [0.05, 0.35, 1.0],
+    "sun_azimuth_center": [0.0, 1.5707963267948966, 3.141592653589793],
+    "sun_azimuth_width": [1.5707963267948966, 3.141592653589793, 6.283185307179586],
     "food_site_count": [1, 2, 8],
     "food_site_width": [0.08, 0.20, 0.50],
     "food_site_min_distance": [0.5, 1.0, 3.0],
@@ -51,14 +55,19 @@ FIELDNAMES = [
     "mean_attention_delta",
     "mean_sender_transposition_delta",
     "mean_receiver_transposition_delta",
+    "mean_comb_tilt_delta",
+    "mean_comb_orientation_alignment_delta",
     "mean_search_limit_delta",
     "mean_success_delta",
     "mean_final_bias",
     "mean_final_attention",
     "mean_final_sender_transposition",
     "mean_final_receiver_transposition",
+    "mean_final_comb_tilt",
+    "mean_final_comb_orientation_alignment",
     "mean_final_search_limit",
     "mean_final_success",
+    "mean_final_payoff",
     "elapsed_seconds",
 ]
 
@@ -172,6 +181,12 @@ def summarize_setting(
         "mean_receiver_transposition_delta": format_float(
             mean(metric["receiver_transposition_delta"] for metric in metrics)
         ),
+        "mean_comb_tilt_delta": format_float(
+            mean(metric["comb_tilt_delta"] for metric in metrics)
+        ),
+        "mean_comb_orientation_alignment_delta": format_float(
+            mean(metric["comb_orientation_alignment_delta"] for metric in metrics)
+        ),
         "mean_search_limit_delta": format_float(
             mean(metric["search_limit_delta"] for metric in metrics)
         ),
@@ -190,11 +205,20 @@ def summarize_setting(
         "mean_final_receiver_transposition": format_float(
             mean(metric["final_receiver_transposition"] for metric in metrics)
         ),
+        "mean_final_comb_tilt": format_float(
+            mean(metric["final_comb_tilt"] for metric in metrics)
+        ),
+        "mean_final_comb_orientation_alignment": format_float(
+            mean(metric["final_comb_orientation_alignment"] for metric in metrics)
+        ),
         "mean_final_search_limit": format_float(
             mean(metric["final_search_limit"] for metric in metrics)
         ),
         "mean_final_success": format_float(
             mean(metric["final_success"] for metric in metrics)
+        ),
+        "mean_final_payoff": format_float(
+            mean(metric["final_payoff"] for metric in metrics)
         ),
         "elapsed_seconds": "",
     }
@@ -227,6 +251,9 @@ def run_metrics(
         - initial.average_sender_transposition,
         "receiver_transposition_delta": final.average_receiver_transposition
         - initial.average_receiver_transposition,
+        "comb_tilt_delta": final.average_comb_tilt - initial.average_comb_tilt,
+        "comb_orientation_alignment_delta": final.comb_orientation_alignment
+        - initial.comb_orientation_alignment,
         "search_limit_delta": final.average_search_limit
         - initial.average_search_limit,
         "success_delta": final.average_success_rate - initial.average_success_rate,
@@ -234,8 +261,11 @@ def run_metrics(
         "final_attention": final.average_receiver_attention,
         "final_sender_transposition": final.average_sender_transposition,
         "final_receiver_transposition": final.average_receiver_transposition,
+        "final_comb_tilt": final.average_comb_tilt,
+        "final_comb_orientation_alignment": final.comb_orientation_alignment,
         "final_search_limit": final.average_search_limit,
         "final_success": final.average_success_rate,
+        "final_payoff": final.average_payoff,
     }
 
 

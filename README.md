@@ -16,21 +16,27 @@ the biological question and modeling assumptions are clear.
 
 ## Current Model
 
-The horizontal-comb model represents food sites explicitly with direction,
-angular width, distance, value, and capacity. In each episode, workers act
+The direction model represents food sites explicitly with direction, angular
+width, distance, value, and capacity. In each episode, workers act
 sequentially. A worker follows an existing dance with probability set by its
-receiver-attention trait; if no dance is available, or if it does not attend,
-it searches independently in a random direction. Independent searchers that find
+receiver-attention trait; if no dance is available, or if it does not attend, it
+searches independently in a random direction. Independent searchers that find
 food add a dance to the episode. Workers search along their chosen direction up
 to a worker-specific limit; this limit varies within colonies and its colony
-mean is heritable. The model also includes an optional comb-tilt parameter and
-continuous sender and receiver transposition traits for exploring the transition
-from direct horizontal pointing to gravity-referenced mapping. Sender and
-receiver transposition mutations can be correlated with the
-`transposition_mutation_correlation` setting, making coupling strength an
-explicit experimental parameter. Dance production can include both a baseline
-per-dance cost and a precision-dependent cost tied to the dancer's
-directional-bias trait.
+mean is heritable.
+
+Comb tilt and orientation are colony-level heritable traits. World food
+directions are projected onto the comb plane for direct pointing, while
+sun-relative directions can be encoded against the gravity projection on the
+comb. The sun azimuth is sampled once per episode from a configurable daytime
+arc. Direct pointing is strongest when the food direction projects well into
+the comb plane; gravity-referenced mapping is unavailable on a horizontal comb
+and becomes stronger as the comb becomes vertical. Sender and receiver
+transposition mutations can be correlated with
+`transposition_mutation_correlation`, making coupling strength an explicit
+experimental parameter. Dance production can include both a baseline per-dance
+cost and a precision-dependent cost tied to the dancer's directional-bias
+trait.
 
 ## Development
 

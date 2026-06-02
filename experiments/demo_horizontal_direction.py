@@ -45,6 +45,11 @@ def main() -> None:
         "receiver_transposition: "
         f"{first.average_receiver_transposition:.2f} -> {last.average_receiver_transposition:.2f}"
     )
+    print(f"comb_tilt: {first.average_comb_tilt:.2f} -> {last.average_comb_tilt:.2f}")
+    print(
+        "comb_orientation_alignment: "
+        f"{first.comb_orientation_alignment:.2f} -> {last.comb_orientation_alignment:.2f}"
+    )
     print(
         "search_limit: "
         f"{first.average_search_limit:.2f} -> {last.average_search_limit:.2f}"

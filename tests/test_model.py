@@ -12,11 +12,14 @@ from bees.model import (
     angular_distance,
     circular_interpolate,
     create_colony,
+    direct_projection_strength,
     encode_dance_direction,
     evaluate_colony,
     find_food_site,
     generate_food_sites,
+    gravity_reference_strength,
     interpret_signal,
+    sample_sun_azimuth,
     simulate,
     _mutate_traits,
 )
@@ -199,8 +202,34 @@ class DirectionModelTests(unittest.TestCase):
 
         self.assertTrue(all(2.0 <= site.distance <= 4.0 for site in sites))
 
+    def test_horizontal_comb_has_direct_but_no_gravity_reference(self) -> None:
+        self.assertAlmostEqual(direct_projection_strength(1.2, 0.0, 0.0), 1.0)
+        self.assertAlmostEqual(gravity_reference_strength(0.0, 0.0), 0.0)
+
+    def test_vertical_direct_projection_depends_on_comb_orientation(self) -> None:
+        self.assertAlmostEqual(direct_projection_strength(0.0, 1.0, 0.0), 0.0)
+        self.assertAlmostEqual(direct_projection_strength(tau / 4, 1.0, 0.0), 1.0)
+
+    def test_daytime_sun_sampling_stays_within_configured_arc(self) -> None:
+        settings = _settings(
+            sun_azimuth_center=tau / 4,
+            sun_azimuth_width=tau / 2,
+        )
+        samples = [sample_sun_azimuth(settings, Random(seed)) for seed in range(20)]
+
+        self.assertTrue(all(0.0 <= sample <= tau / 2 for sample in samples))
+
     def test_horizontal_comb_preserves_direct_mapping(self) -> None:
-        settings = _settings(comb_tilt=0.0, interpretation_noise_sd=0.0)
+        settings = _settings(initial_comb_tilt=0.0, interpretation_noise_sd=0.0)
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=0.0,
+            comb_orientation=0.0,
+        )
         worker = Worker(
             directional_bias=1.0,
             receiver_attention=1.0,
@@ -209,16 +238,32 @@ class DirectionModelTests(unittest.TestCase):
             search_limit=5.0,
         )
         food_direction = 1.2
-        signal = encode_dance_direction(food_direction, worker, settings, Random(1))
-        decoded = interpret_signal(signal, worker, settings, Random(1))
+        signal = encode_dance_direction(
+            food_direction,
+            worker,
+            traits,
+            settings,
+            0.0,
+            Random(1),
+        )
+        decoded = interpret_signal(signal, worker, traits, settings, 0.0, Random(1))
 
         self.assertAlmostEqual(signal, food_direction)
         self.assertAlmostEqual(decoded, food_direction)
 
-    def test_vertical_comb_requires_transposition_mapping(self) -> None:
+    def test_vertical_comb_supports_sun_gravity_transposition_mapping(self) -> None:
         settings = _settings(
-            comb_tilt=1.0,
+            initial_comb_tilt=1.0,
             interpretation_noise_sd=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+            search_limit=5.0,
+            comb_tilt=1.0,
+            comb_orientation=0.0,
         )
         gravity_worker = Worker(
             directional_bias=1.0,
@@ -228,15 +273,24 @@ class DirectionModelTests(unittest.TestCase):
             search_limit=5.0,
         )
         food_direction = 1.2
+        sun_azimuth = 0.3
         signal = encode_dance_direction(
             food_direction,
             gravity_worker,
+            traits,
             settings,
+            sun_azimuth,
             Random(1),
         )
-        decoded = interpret_signal(signal, gravity_worker, settings, Random(1))
+        decoded = interpret_signal(
+            signal,
+            gravity_worker,
+            traits,
+            settings,
+            sun_azimuth,
+            Random(1),
+        )
 
-        self.assertAlmostEqual(signal, food_direction)
         self.assertAlmostEqual(decoded, food_direction)
 
     def test_dance_following_amplifies_independent_discovery(self) -> None:
@@ -247,7 +301,7 @@ class DirectionModelTests(unittest.TestCase):
             max_signal_concentration=50.0,
             dance_noise_sd=0.0,
             interpretation_noise_sd=0.0,
-            food_site_width=0.02,
+            food_site_width=0.03,
             food_site_min_distance=2.0,
             food_site_max_distance=2.0,
             max_search_distance=5.0,
@@ -355,6 +409,41 @@ class DirectionModelTests(unittest.TestCase):
 
         self.assertAlmostEqual(evaluation.payoff, 4.5)
 
+    def test_vertical_comb_benefit_is_added_to_colony_payoff(self) -> None:
+        traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=1.0,
+            comb_orientation=0.0,
+        )
+        common = {
+            "episodes_per_colony": 20,
+            "foraging_attempts_per_episode": 1,
+            "stable_worker_sd": 0.0,
+            "food_site_width": tau,
+            "food_value": 1.0,
+            "travel_cost_per_distance": 0.0,
+            "base_dance_cost": 0.0,
+            "cue_cost": 0.0,
+            "attention_cost": 0.0,
+        }
+        no_benefit_settings = _settings(vertical_comb_benefit=0.0, **common)
+        benefit_settings = _settings(vertical_comb_benefit=0.05, **common)
+        no_benefit_colony = create_colony(traits, no_benefit_settings, Random(2))
+        benefit_colony = create_colony(traits, benefit_settings, Random(2))
+
+        no_benefit = evaluate_colony(
+            no_benefit_colony,
+            no_benefit_settings,
+            Random(3),
+        )
+        with_benefit = evaluate_colony(benefit_colony, benefit_settings, Random(3))
+
+        self.assertAlmostEqual(with_benefit.payoff - no_benefit.payoff, 0.05)
+
     def test_simulation_is_reproducible(self) -> None:
         settings = _settings(
             colony_count=8,
@@ -379,11 +468,15 @@ def _settings(**overrides: float | int) -> DirectionSettings:
         "foraging_attempts_per_episode": 4,
         "mutation_sd": 0.03,
         "transposition_mutation_correlation": 0.6,
+        "comb_orientation_mutation_sd": 0.15,
         "stable_worker_sd": 0.05,
         "max_signal_concentration": 20.0,
         "dance_noise_sd": 0.08,
         "interpretation_noise_sd": 0.08,
-        "comb_tilt": 0.0,
+        "initial_comb_tilt": 0.0,
+        "vertical_comb_benefit": 0.0,
+        "sun_azimuth_center": tau / 2,
+        "sun_azimuth_width": tau / 2,
         "food_site_count": 1,
         "food_site_width": 0.35,
         "food_site_min_distance": 1.0,

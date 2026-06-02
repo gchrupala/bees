@@ -24,6 +24,8 @@ def main() -> None:
             f"attention={state.average_receiver_attention:.2f} "
             f"sender_t={state.average_sender_transposition:.2f} "
             f"receiver_t={state.average_receiver_transposition:.2f} "
+            f"comb_tilt={state.average_comb_tilt:.2f} "
+            f"comb_align={state.comb_orientation_alignment:.2f} "
             f"search_limit={state.average_search_limit:.2f} "
             f"success={state.average_success_rate:.2f} "
             f"payoff={state.average_payoff:.2f}"
