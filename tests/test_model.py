@@ -241,6 +241,37 @@ class DirectionModelTests(unittest.TestCase):
 
         self.assertGreater(near_evaluation.payoff, far_evaluation.payoff)
 
+    def test_base_dance_cost_applies_independent_of_directional_bias(self) -> None:
+        settings = _settings(
+            episodes_per_colony=10,
+            foraging_attempts_per_episode=3,
+            stable_worker_sd=0.0,
+            food_site_width=tau,
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            food_site_capacity=3,
+            food_value=2.0,
+            travel_cost_per_distance=0.0,
+            base_dance_cost=0.5,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.0,
+                receiver_attention=0.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertAlmostEqual(evaluation.payoff, 4.5)
+
     def test_simulation_is_reproducible(self) -> None:
         settings = _settings(
             colony_count=8,
@@ -277,6 +308,7 @@ def _settings(**overrides: float | int) -> DirectionSettings:
         "food_site_capacity": 8,
         "food_value": 1.0,
         "travel_cost_per_distance": 0.0,
+        "base_dance_cost": 0.0,
         "cue_cost": 0.01,
         "attention_cost": 0.01,
     }

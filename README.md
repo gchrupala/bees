@@ -25,7 +25,9 @@ food add a dance to the episode. Workers search along their chosen direction up
 to a worker-specific limit; this limit varies within colonies and its colony
 mean is heritable. The model also includes an optional comb-tilt parameter and
 continuous sender and receiver transposition traits for exploring the transition
-from direct horizontal pointing to gravity-referenced mapping.
+from direct horizontal pointing to gravity-referenced mapping. Dance production
+can include both a baseline per-dance cost and a precision-dependent cost tied
+to the dancer's directional-bias trait.
 
 ## Development
 

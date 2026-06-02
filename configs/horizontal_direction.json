@@ -19,6 +19,7 @@
   "food_site_capacity": 6,
   "food_value": 1.0,
   "travel_cost_per_distance": 0.02,
+  "base_dance_cost": 0.0,
   "cue_cost": 0.02,
   "attention_cost": 0.01
 }

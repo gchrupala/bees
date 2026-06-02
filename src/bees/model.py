@@ -64,6 +64,7 @@ class DirectionSettings:
     food_site_capacity: int
     food_value: float
     travel_cost_per_distance: float
+    base_dance_cost: float
     cue_cost: float
     attention_cost: float
 
@@ -282,7 +283,10 @@ def evaluate_colony(
                             )
                         )
                     )
-                    dance_cost += settings.cue_cost * worker.directional_bias
+                    dance_cost += (
+                        settings.base_dance_cost
+                        + settings.cue_cost * worker.directional_bias
+                    )
             else:
                 food_payoff -= worker.search_limit * settings.travel_cost_per_distance
 

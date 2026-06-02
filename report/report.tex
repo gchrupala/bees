@@ -43,14 +43,17 @@ interpretation noise.
 
 The directional-precision trait should be read as a costly investment in
 producing directionally informative dances, not as a pure measure of neural
-precision, motivation, or dance duration. In this minimal model, the same trait
-sets the angular concentration of a produced dance and the per-dance cost paid
-by the colony. The biological assumption is therefore that more precise
-directional signaling requires greater effort. This coupling keeps the model
-small, but it limits the interpretation: the results show the evolution of
-costly signal precision, not the separate evolution of intrinsic accuracy and
-signaling effort. A cleaner extension would give colonies distinct traits for
-produced signal accuracy and signaling effort or cost.
+precision, motivation, or dance duration. In this model, $b$ sets the angular
+concentration of a produced dance and contributes to the per-dance cost paid by
+the colony. Dance cost is represented as a baseline cost plus a
+precision-dependent cost. The baseline component captures time, metabolic
+effort, or opportunity cost of dancing regardless of directional precision,
+whereas the precision-dependent component captures the additional cost of
+making the dance directionally informative. The reported simulations set the
+baseline dance cost to 0 and therefore include only the precision-dependent
+component. Thus the results show the evolution of costly signal precision under
+that simplified cost schedule, not the separate evolution of intrinsic accuracy
+and signaling effort.
 
 More concretely, a colony is parameterized by mean directional precision
 investment $b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
@@ -116,12 +119,13 @@ cost proportional to distance: successful workers pay the cost of reaching the
 found food site, while unsuccessful workers pay the cost of searching up to
 their limit. The default travel cost is 0.02 per distance unit, so even the
 longest default trip remains profitable if it finds food, but long unsuccessful
-searches are costly. The colony then pays a communication cost of $0.02b_d$ for
-each dance added by an independent finder, where $b_d$ is that dancer's
-directional precision investment, and an attention cost of 0.01 for each worker
-that follows a dance. Thus more precise directional signaling, more
-dance-following, and longer search effort can increase food collection, but
-they are not free. The current model
+searches are costly. The colony then pays a communication cost of
+$c_0 + 0.02b_d$ for each dance added by an independent finder, where $c_0$ is
+the baseline dance cost and $b_d$ is that dancer's directional precision
+investment. In the experiments reported here, $c_0 = 0$. The colony also pays
+an attention cost of 0.01 for each worker that follows a dance. Thus more
+precise directional signaling, more dance-following, and longer search effort
+can increase food collection, but they are not free. The current model
 does not include an independent colony maintenance cost. The parameter
 ``workers per colony'' controls the pool from which active foragers are sampled,
 and therefore the amount of within-colony worker heterogeneity, but payoff
@@ -144,12 +148,13 @@ Each run used 60 colonies, 80 workers per colony, 30 generations, 50 foraging
 episodes per colony per generation, 12 foraging attempts per episode, and
 horizontal-comb tilt $t=0$. Food-site distances were sampled uniformly from
 1.0 to 8.0, maximum search distance was 8.0, travel cost was 0.02 per distance
-unit, and food-site value was 1.0. All three conditions used food-site capacity
-6. The conditions varied only the number and angular width of food sites: hard
-used one site of width 0.08, baseline used two sites of width 0.20, and easy
-used eight sites of width 0.50. The hard condition therefore makes independent
-discovery unlikely, while the easy condition makes independent discovery likely
-even without using the dance.
+unit, baseline dance cost was 0, the precision-dependent dance-cost coefficient
+was 0.02, and food-site value was 1.0. All three conditions used food-site
+capacity 6. The conditions varied only the number and angular width of food
+sites: hard used one site of width 0.08, baseline used two sites of width 0.20,
+and easy used eight sites of width 0.50. The hard condition therefore makes
+independent discovery unlikely, while the easy condition makes independent
+discovery likely even without using the dance.
 
 \begin{table}[h]
 \centering

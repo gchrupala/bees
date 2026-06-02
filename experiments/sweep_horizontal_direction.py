@@ -34,6 +34,7 @@ SWEEPS = {
     "food_site_capacity": [1, 6, 24],
     "food_value": [0.5, 1.0, 2.0],
     "travel_cost_per_distance": [0.0, 0.02, 0.08],
+    "base_dance_cost": [0.0, 0.01, 0.05],
     "cue_cost": [0.0, 0.02, 0.08],
     "attention_cost": [0.0, 0.01, 0.05],
 }
