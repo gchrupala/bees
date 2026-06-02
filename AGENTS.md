@@ -28,6 +28,7 @@ We are modeling the evolution of bee communication.
 
 - Do not implement only based on discussing high level ideas. Wait for an explicit request to generate code.
 - Before large changes, inspect the existing structure and follow established patterns.
+- Consult the git commit history to understand how the project has evolved before making substantive changes.
 - Keep changes scoped to the current modeling question or tooling need.
 - Run the relevant tests or checks after implementation when available.
 - Update documentation when model behavior, experiment parameters, or usage changes.
