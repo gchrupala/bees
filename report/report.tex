@@ -231,9 +231,119 @@ condition. In the fully vertical condition, communication remains weak after 30
 generations: only half of the seeds reach the directional-precision threshold,
 and final payoff is close to the minimum floor.
 
+\subsection{Tilt-geometry calibration}
+
+After replacing the scalar comb-tilt degradation with explicit comb-plane
+geometry, we ran a calibration grid over initial comb tilt and the vertical-comb
+benefit. These runs used the baseline food distribution, the daytime sun arc
+from $0^\circ$ to $180^\circ$ centered at $90^\circ$, and ten seeds
+(101--110). Success is the fraction of foraging attempts that found food.
+Payoff is the final mean colony payoff after food rewards, search/travel costs,
+dance costs, attention costs, and the vertical-comb benefit. Table~
+\ref{tab:tilt-benefit-calibration} shows that increasing the vertical benefit
+can preserve more vertical combs, but current settings produce a sharp tradeoff:
+strong verticality often comes with reduced foraging success.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrrrrr}
+\toprule
+Initial tilt & Benefit & Final tilt & Sender & Receiver & Success & Payoff & Reached \\
+\midrule
+0.0 & 0.15 & 0.142 & 0.178 & 0.183 & 0.195 & 0.735 & 10/10 \\
+0.0 & 0.20 & 0.162 & 0.192 & 0.208 & 0.195 & 0.762 & 10/10 \\
+0.0 & 0.25 & 0.151 & 0.229 & 0.196 & 0.194 & 0.751 & 10/10 \\
+0.5 & 0.15 & 0.373 & 0.225 & 0.230 & 0.137 & 0.535 & 9/10 \\
+0.5 & 0.20 & 0.445 & 0.282 & 0.271 & 0.137 & 0.558 & 9/10 \\
+0.5 & 0.25 & 0.330 & 0.208 & 0.206 & 0.154 & 0.601 & 10/10 \\
+1.0 & 0.15 & 0.737 & 0.341 & 0.339 & 0.090 & 0.313 & 7/10 \\
+1.0 & 0.20 & 0.919 & 0.291 & 0.282 & 0.001 & 0.093 & 4/10 \\
+1.0 & 0.25 & 0.917 & 0.288 & 0.333 & 0.002 & 0.127 & 7/10 \\
+\bottomrule
+\end{tabular}
+\caption{Ten-seed calibration of the vertical-comb benefit under the explicit
+tilt-geometry model. Sender and receiver are final mean transposition traits.
+Reached is the number of seeds in which mean directional precision investment
+reached 0.30 by generation 30.}
+\label{tab:tilt-benefit-calibration}
+\end{table}
+
+The calibration suggests that the transition is path-dependent. Starting from a
+horizontal comb, benefits in the range 0.15--0.25 do not move colonies far from
+horizontal within 30 generations. Starting from a tilted comb, the same benefit
+range can retain intermediate tilt but with lower success. Starting from a
+vertical comb, benefits around 0.20--0.25 retain high verticality, but foraging
+nearly fails in most seeds. A separate five-seed stress test showed that a much
+larger benefit of 0.50 can drive high verticality from tilted starts, but at the
+cost of severe loss of foraging success. Thus the current model can impose a
+substantial architecture pressure, but communication does not yet adapt smoothly
+enough to make the transition robust.
+
+\subsection{Tilt orientation}
+
+We also examined the evolved orientation of the comb tilt. The current sun arc
+is centered at $90^\circ$, so Table~\ref{tab:orientation-calibration} reports
+the weighted mean orientation in degrees and its offset from this sun-arc
+center. The within-alignment column measures how strongly colonies within a run
+converge on an orientation. The across-alignment column measures whether
+different seeds converge on the same absolute orientation, weighting each seed
+by its within-run orientation alignment.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrrrrr}
+\toprule
+Initial tilt & Benefit & Final tilt & Success & Within align. & Mean orient. & Sun offset & Across align. \\
+\midrule
+0.0 & 0.15 & 0.142 & 0.195 & 0.518 & 122.8 & 32.8 & 0.473 \\
+0.0 & 0.20 & 0.162 & 0.195 & 0.489 & 155.1 & 65.1 & 0.492 \\
+0.0 & 0.25 & 0.151 & 0.194 & 0.478 & 79.0 & -11.0 & 0.084 \\
+0.5 & 0.15 & 0.373 & 0.137 & 0.490 & 158.9 & 68.9 & 0.249 \\
+0.5 & 0.20 & 0.445 & 0.137 & 0.356 & 214.4 & 124.4 & 0.158 \\
+0.5 & 0.25 & 0.330 & 0.154 & 0.523 & 73.9 & -16.1 & 0.401 \\
+1.0 & 0.15 & 0.737 & 0.090 & 0.545 & 251.7 & 161.7 & 0.374 \\
+1.0 & 0.20 & 0.919 & 0.001 & 0.374 & 263.8 & 173.8 & 0.093 \\
+1.0 & 0.25 & 0.917 & 0.002 & 0.392 & 266.8 & 176.8 & 0.291 \\
+\bottomrule
+\end{tabular}
+\caption{Orientation sanity check under the explicit tilt-geometry model.
+Mean orientation and sun offset are measured in degrees. Across alignment is
+the weighted across-seed orientation alignment; values near 0 indicate that
+different seeds choose different absolute orientations.}
+\label{tab:orientation-calibration}
+\end{table}
+
+Orientation sometimes aligns within a run, but it does not yet show a clean,
+robust relationship to the daytime sun arc across seeds. Some conditions point
+near the sun-arc center, some near the opposite direction, and several have weak
+across-seed alignment. This may indicate weak or path-dependent selection on
+orientation. It also highlights a modeling issue: because a comb plane is
+unchanged by reversing its normal, comb orientation may be better treated as an
+axial variable, where $\phi$ and $\phi + 180^\circ$ are equivalent, rather than
+as a fully circular direction.
+
 \section{Conclusion}
 
-Placeholder.
+The current model now separates world directions, comb-plane dance signals,
+comb tilt and orientation, and the sun/gravity reference. Direct pointing is
+available on horizontal combs without additional mapping machinery, while the
+sun/gravity channel becomes useful only as gravity projects into the comb
+plane. This supports the intended conceptual setup: a non-communication benefit
+for vertical combs can create pressure toward verticality, after which
+sender--receiver transposition may become advantageous.
+
+The calibration runs show that this transition is not yet smooth. When
+verticality is weakly rewarded, colonies starting from horizontal combs remain
+mostly horizontal. When verticality is strongly rewarded, vertical combs can be
+retained, but foraging success often collapses before communication adapts.
+Orientation is not yet robustly selected relative to the sun arc. The next
+modeling steps are therefore to refine the comb-orientation representation,
+calibrate the vertical-comb benefit and mutation scales more systematically,
+and test whether longer runs or altered coupling between tilt, orientation, and
+transposition produce a gradual evolutionary transition rather than a sharp
+architecture--communication tradeoff.
 
 \bibliographystyle{plain}
 \bibliography{references}
