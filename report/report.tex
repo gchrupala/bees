@@ -116,13 +116,10 @@ and the number of foraging attempts per episode.
 
 \section{Results}
 
-The results below are preliminary baselines from an earlier version of the
-model. They should be rerun after the distance, search-limit, and dynamic
-recruitment extensions before being treated as current quantitative results.
-
 \subsection{Horizontal comb}
 
-We compared three simple food distributions over ten random seeds each. The
+We compared three simple food distributions over ten random seeds each
+(seeds 101--110). The
 ``hard'' condition had one narrow food site per episode, the baseline condition
 had two moderately wide food sites, and the ``easy'' condition had many broad
 food sites. Table~\ref{tab:food-distribution} reports the generation at which
@@ -130,70 +127,79 @@ mean directional bias first reached 0.30, plus final generation trait and
 success values.
 
 Each run used 60 colonies, 80 workers per colony, 30 generations, 50 foraging
-episodes per colony per generation, 6 worker attempts per episode in the older
-episode structure, and horizontal-comb tilt $t=0$. Food-site value was 1.0, and
-all three conditions used food-site capacity 6. The conditions varied only the
-number and width of food sites: hard used one site of width 0.08, baseline used
-two sites of width 0.20, and easy used eight sites of width 0.50. The hard
-condition therefore makes independent discovery unlikely, while the easy
-condition makes independent discovery likely even without using the dance.
+episodes per colony per generation, 12 foraging attempts per episode, and
+horizontal-comb tilt $t=0$. Food-site distances were sampled uniformly from
+1.0 to 8.0, maximum search distance was 8.0, travel cost was 0.02 per distance
+unit, and food-site value was 1.0. All three conditions used food-site capacity
+6. The conditions varied only the number and angular width of food sites: hard
+used one site of width 0.08, baseline used two sites of width 0.20, and easy
+used eight sites of width 0.50. The hard condition therefore makes independent
+discovery unlikely, while the easy condition makes independent discovery likely
+even without using the dance.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lrrrr}
+\small
+\begin{tabular}{lrrrrrrr}
 \toprule
-Condition & Reach generation & Final bias & Final attention & Final success \\
+Condition & Reached & Reach gen. & Bias & Attention & Search & Success & Payoff \\
 \midrule
-Hard & 11.0 & 0.741 & 0.871 & 0.144 \\
-Baseline & 11.8 & 0.745 & 0.826 & 0.373 \\
-Easy & 23.9 & 0.353 & 0.455 & 0.811 \\
+Hard & 6/10 & 23.2 & 0.271 & 0.357 & 3.070 & 0.009 & 0.001 \\
+Baseline & 10/10 & 10.2 & 0.850 & 0.852 & 7.155 & 0.195 & 0.742 \\
+Easy & 7/10 & 21.4 & 0.352 & 0.335 & 6.917 & 0.703 & 7.320 \\
 \bottomrule
 \end{tabular}
-\caption{Initial food-distribution experiment. The hard environment used one
-food site of width 0.08, the baseline used two sites of width 0.20, and the
-easy environment used eight sites of width 0.50. All conditions used food-site
-capacity 6 and ten seeds.}
+\caption{Food-distribution experiment under the current dynamic recruitment
+model. ``Reached'' is the number of seeds in which mean directional bias reached
+0.30 by generation 30. ``Reach gen.'' is averaged over reached seeds only.
+Bias, attention, search limit, success, and payoff are final-generation means
+over all ten seeds.}
 \label{tab:food-distribution}
 \end{table}
 
-The initial result matches the ecological prediction qualitatively. In the hard
-environment, communication evolves quickly and strongly, although absolute
-foraging success remains low because food is rare and narrow. In the easy
-environment, forager success is high even without strong communication, and
-selection for directional bias and receiver attention is much weaker. The
-baseline condition lies between these extremes.
+The result matches the ecological prediction qualitatively, but with a sharper
+distinction than in the earlier fixed-scout model. In the hard environment,
+food is so rare and narrow that independent discoveries seldom seed dances;
+final success and payoff remain close to zero, and communication evolves only
+in some seeds. In the baseline environment, independent discovery is sufficient
+to seed recruitment cascades, and directional bias, receiver attention, and
+search limit all rise strongly. In the easy environment, success and payoff are
+high, but directional bias and receiver attention remain much lower than in the
+baseline case because food is often found without precise communication.
 
 \subsection{Vertical comb}
 
-We also made a first exploratory comparison of horizontal, tilted, and vertical
-combs while holding the baseline food distribution fixed. In this run, comb
-tilt was set to $t=0$, $t=0.5$, or $t=1.0$, and each condition used a single
-seed. Table~\ref{tab:comb-tilt} summarizes the result after 30 generations.
+We also compared horizontal, tilted, and vertical combs while holding the
+baseline food distribution fixed. Comb tilt was set to $t=0$, $t=0.5$, or
+$t=1.0$, with ten seeds per condition. Table~\ref{tab:comb-tilt} summarizes the
+result after 30 generations.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lrrrrr}
+\small
+\begin{tabular}{lrrrrrrrr}
 \toprule
-Comb & Final bias & Final attention & Sender trans. & Receiver trans. & Final success \\
+Comb & Reached & Reach gen. & Bias & Attention & Sender & Receiver & Success & Payoff \\
 \midrule
-Horizontal & 0.835 & 0.886 & 0.318 & 0.238 & 0.412 \\
-Tilted & 0.691 & 0.713 & 0.385 & 0.333 & 0.189 \\
-Vertical & 0.278 & 0.292 & 0.753 & 0.473 & 0.143 \\
+Horizontal & 10/10 & 10.2 & 0.850 & 0.852 & 0.278 & 0.397 & 0.195 & 0.742 \\
+Tilted & 9/10 & 22.3 & 0.455 & 0.740 & 0.659 & 0.586 & 0.146 & 0.223 \\
+Vertical & 5/10 & 21.0 & 0.277 & 0.337 & 0.376 & 0.352 & 0.099 & 0.013 \\
 \bottomrule
 \end{tabular}
-\caption{Exploratory comb-tilt comparison using the baseline food distribution
-and one seed. ``Sender trans.'' and ``Receiver trans.'' denote the final mean
-sender and receiver transposition traits.}
+\caption{Comb-tilt comparison using the baseline food distribution and ten
+seeds. Sender and receiver denote final mean sender and receiver transposition
+traits.}
 \label{tab:comb-tilt}
 \end{table}
 
 As expected, direct horizontal pointing performs best when the comb is
-horizontal. Increasing comb tilt weakens the existing direct mapping. In the
-vertical condition, sender transposition rises substantially, indicating
-selection toward gravity-referenced encoding, but receiver transposition and
-overall communication success remain limited after 30 generations. A longer
-single-seed run to 80 generations suggested that sender and receiver
-transposition can coevolve further, but this needs a systematic experiment.
+horizontal. Increasing comb tilt weakens the existing direct mapping and slows
+the evolution of directional signaling. In the tilted condition, sender and
+receiver transposition both rise, indicating selection toward the
+gravity-referenced mapping, but payoff remains lower than in the horizontal
+condition. In the fully vertical condition, communication remains weak after 30
+generations: only half of the seeds reach the directional-bias threshold, and
+final payoff is close to the minimum floor.
 
 \section{Conclusion}
 

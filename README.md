@@ -47,6 +47,12 @@ Stream a one-parameter sweep:
 python experiments/sweep_horizontal_direction.py --seeds 101,102,103
 ```
 
+Run the report conditions:
+
+```sh
+python experiments/run_report_conditions.py
+```
+
 Run tests:
 
 ```sh
