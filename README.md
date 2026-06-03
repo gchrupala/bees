@@ -85,6 +85,12 @@ Run the constrained near-vertical coupling probe:
 python -u experiments/run_vertical_coupling_probe.py
 ```
 
+Run the longer axial-orientation vertical transition experiment:
+
+```sh
+python -u experiments/run_long_vertical_transition.py
+```
+
 Run tests:
 
 ```sh
