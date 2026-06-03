@@ -11,7 +11,8 @@ from typing import Callable, Iterable
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
 TABLES = ROOT / "report" / "tables"
-SOURCE_MANIFEST = ROOT / "report" / "table_sources.csv"
+FIGURES = ROOT / "report" / "figures"
+SOURCE_MANIFEST = ROOT / "report" / "artifact_sources.csv"
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,16 @@ class TableSpec:
     builder: Callable[[], str]
 
 
+@dataclass(frozen=True)
+class FigureSpec:
+    name: str
+    label: str
+    result_name: str
+    result_file: Path
+    figure_file: Path
+    builder: Callable[[], str]
+
+
 def main() -> None:
     args = parse_args()
     selected = select_result_names(args.only)
@@ -44,21 +55,22 @@ def main() -> None:
     if args.action in {"results", "all"}:
         run_results(selected)
 
-    if args.action in {"tables", "all"}:
-        build_tables(selected)
+    if args.action in {"tables", "artifacts", "all"}:
+        build_artifacts(selected)
         write_source_manifest()
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Regenerate report result CSVs and LaTeX table fragments.",
+        description="Regenerate report result CSVs and LaTeX fragments.",
     )
     parser.add_argument(
         "action",
-        choices=("results", "tables", "all", "list"),
+        choices=("results", "tables", "artifacts", "all", "list"),
         help=(
-            "Use 'results' to run experiments, 'tables' to rebuild LaTeX from "
-            "existing CSVs, 'all' for both, or 'list' to show provenance."
+            "Use 'results' to run experiments, 'artifacts' or 'tables' to "
+            "rebuild LaTeX fragments from existing CSVs, 'all' for both, or "
+            "'list' to show provenance."
         ),
     )
     parser.add_argument(
@@ -175,13 +187,18 @@ def table_specs() -> dict[str, TableSpec]:
             table_file=TABLES / "vertical_coupling_probe.tex",
             builder=build_vertical_coupling_probe_table,
         ),
-        "long_transition": TableSpec(
-            name="long_transition",
-            label="tab:long-transition",
+    }
+
+
+def figure_specs() -> dict[str, FigureSpec]:
+    return {
+        "long_transition_heatmap": FigureSpec(
+            name="long_transition_heatmap",
+            label="fig:long-transition-heatmap",
             result_name="long_vertical_transition",
             result_file=RESULTS / "long_vertical_transition_summary.csv",
-            table_file=TABLES / "long_transition.tex",
-            builder=build_long_transition_table,
+            figure_file=FIGURES / "long_transition_heatmap.tex",
+            builder=build_long_transition_heatmap,
         ),
     }
 
@@ -256,8 +273,9 @@ def stream_stdout_to_file(spec: ResultSpec, command: list[str]) -> None:
     temp_file.replace(spec.stdout_file)
 
 
-def build_tables(selected: set[str]) -> None:
+def build_artifacts(selected: set[str]) -> None:
     TABLES.mkdir(parents=True, exist_ok=True)
+    FIGURES.mkdir(parents=True, exist_ok=True)
     for spec in table_specs().values():
         if spec.result_name not in selected:
             continue
@@ -265,6 +283,14 @@ def build_tables(selected: set[str]) -> None:
         assert_result_files_exist(result_specs()[spec.result_name])
         spec.table_file.write_text(spec.builder())
         print(f"wrote {relative(spec.table_file)}", file=sys.stderr)
+
+    for spec in figure_specs().values():
+        if spec.result_name not in selected:
+            continue
+
+        assert_result_files_exist(result_specs()[spec.result_name])
+        spec.figure_file.write_text(spec.builder())
+        print(f"wrote {relative(spec.figure_file)}", file=sys.stderr)
 
 
 def assert_result_files_exist(spec: ResultSpec) -> None:
@@ -300,7 +326,7 @@ def build_food_distribution_table() -> str:
         result_name="report_conditions",
         column_spec="lrrrrrrr",
         header=(
-            "Condition & Reached & Reach gen. & Bias & Attention & Search "
+            "Condition & Reached & Reach gen. & Prec. & Attention & Search "
             "& Success & Payoff \\\\"
         ),
         body=body,
@@ -310,10 +336,11 @@ def build_food_distribution_table() -> str:
             "precision\n"
             "investment reached 0.30 by generation 30. ``Reach gen.'' is averaged "
             "over\n"
-            "reached seeds only. Bias is the table label for directional precision\n"
-            "investment; the reported bias, attention, search limit, success, and "
-            "payoff\n"
-            "values are final-generation means over all ten seeds."
+            "reached seeds only. Prec. is final mean directional precision "
+            "investment;\n"
+            "attention, search limit, success, and payoff values are also "
+            "final-generation\n"
+            "means over all ten seeds."
         ),
         label="tab:food-distribution",
     )
@@ -346,7 +373,7 @@ def build_comb_tilt_table() -> str:
         result_name="report_conditions",
         column_spec="lrrrrrrrr",
         header=(
-            "Comb & Reached & Reach gen. & Bias & Attention & Sender & Receiver "
+            "Comb & Reached & Reach gen. & Prec. & Attention & Sender & Receiver "
             "& Success & Payoff \\\\"
         ),
         body=body,
@@ -447,6 +474,7 @@ def build_vertical_coupling_probe_table() -> str:
                 row["mean_final_bias"],
                 row["mean_final_sender_transposition"],
                 row["mean_final_receiver_transposition"],
+                row["mean_final_transposition_gap"],
                 row["mean_final_success"],
                 row["mean_final_payoff"],
             ]
@@ -456,8 +484,11 @@ def build_vertical_coupling_probe_table() -> str:
     return generated_table(
         name="vertical_coupling_probe",
         result_name="vertical_coupling_probe",
-        column_spec="rrrrrrrr",
-        header="Corr. & Reached & Reach gen. & Bias & Sender & Receiver & Success & Payoff \\\\",
+        column_spec="rrrrrrrrr",
+        header=(
+            "Corr. & Reached & Reach gen. & Prec. & Sender & Receiver & Gap "
+            "& Success & Payoff \\\\"
+        ),
         body=body,
         caption=(
             "Constrained near-vertical coupling probe. Corr. is the correlation\n"
@@ -465,54 +496,99 @@ def build_vertical_coupling_probe_table() -> str:
             "``Reached''\n"
             "counts seeds in which both mean sender and receiver transposition "
             "reached 0.50\n"
-            "by generation 120. Reach generation is averaged over reached seeds only."
+            "by generation 120. Reach generation is averaged over reached seeds "
+            "only.\n"
+            "Gap is the final mean absolute sender--receiver transposition "
+            "difference."
         ),
         label="tab:vertical-coupling-probe",
     )
 
 
-def build_long_transition_table() -> str:
+def build_long_transition_heatmap() -> str:
     rows = read_csv(RESULTS / "long_vertical_transition_summary.csv")
-    body = "\n".join(
-        table_row(
-            [
-                row["initial_comb_tilt"],
-                row["vertical_comb_benefit"],
-                count_from_fraction(row["reached_gravity_fraction"], row["seeds"]),
-                count_from_fraction(row["retained_vertical_fraction"], row["seeds"]),
-                count_from_fraction(row["collapse_fraction"], row["seeds"]),
-                count_from_fraction(
-                    row["recovered_from_collapse_fraction"],
-                    row["seeds"],
-                ),
-                row["mean_final_success"],
-                row["mean_final_comb_tilt"],
-            ]
-        )
+    lookup = {
+        (float(row["initial_comb_tilt"]), float(row["vertical_comb_benefit"])): row
         for row in rows
+    }
+    initial_tilts = sorted({key[0] for key in lookup}, reverse=True)
+    benefits = sorted({key[1] for key in lookup})
+    metrics = (
+        (
+            "Gravity",
+            "reached_gravity_fraction",
+            "count",
+            "blue",
+            "Seeds reaching gravity-channel transposition",
+        ),
+        (
+            "Vertical",
+            "retained_vertical_fraction",
+            "count",
+            "teal",
+            "Seeds retaining final comb tilt at least 0.80",
+        ),
+        (
+            "Collapse",
+            "collapse_fraction",
+            "count",
+            "red",
+            "Seeds whose success fell to 0.02 or below",
+        ),
+        (
+            "Recovered",
+            "recovered_from_collapse_fraction",
+            "count",
+            "green",
+            "Collapsed seeds ending with success at least 0.10",
+        ),
+        (
+            "Final success",
+            "mean_final_success",
+            "success",
+            "violet",
+            "Final-generation mean foraging success",
+        ),
+        (
+            "Final tilt",
+            "mean_final_comb_tilt",
+            "unit",
+            "orange",
+            "Final-generation mean comb tilt",
+        ),
     )
-    return generated_table(
-        name="long_transition",
+
+    body = "\n".join(
+        build_heatmap_panel(
+            title=title,
+            field=field,
+            value_kind=value_kind,
+            color=color,
+            rows=lookup,
+            initial_tilts=initial_tilts,
+            benefits=benefits,
+            origin_x=0.0 + 4.05 * (index % 3),
+            origin_y=0.0 - 3.05 * (index // 3),
+        )
+        for index, (title, field, value_kind, color, _description) in enumerate(metrics)
+    )
+    legend = "\n".join(
+        f"\\node[legend] at (0.0,{ -6.75 - 0.25 * index:.2f})"
+        f" {{{title}: {description}.}};"
+        for index, (title, _field, _kind, _color, description) in enumerate(metrics)
+    )
+
+    return generated_figure(
+        name="long_transition_heatmap",
         result_name="long_vertical_transition",
-        column_spec="rrrrrrrr",
-        header=(
-            "Initial tilt & Benefit & Gravity & Vertical & Collapse & Recovered "
-            "& Success & Final tilt \\\\"
-        ),
-        body=body,
+        body=body + "\n" + legend,
         caption=(
-            "Long axial-orientation transition experiment. Gravity counts seeds in\n"
-            "which both mean sender and receiver transposition reached 0.50 by "
-            "generation\n"
-            "120. Vertical counts seeds with final mean comb tilt at least 0.80. "
-            "Collapse\n"
-            "counts seeds whose mean foraging success fell to 0.02 or below at any\n"
-            "generation. Recovered counts collapsed seeds whose final success was "
-            "at least\n"
-            "0.10. Success and final tilt are final-generation means over all ten "
-            "seeds."
+            "Long axial-orientation transition experiment. Rows are initial "
+            "comb tilt, columns are vertical-comb benefit. Count panels report "
+            "seeds out of ten; continuous panels report final-generation means. "
+            "The generated fragment records the source CSV."
         ),
-        label="tab:long-transition",
+        label="fig:long-transition-heatmap",
     )
 
 
@@ -546,14 +622,109 @@ def generated_table(
     )
 
 
+def generated_figure(
+    name: str,
+    result_name: str,
+    body: str,
+    caption: str,
+    label: str,
+) -> str:
+    command = f"python -u experiments/run_report_artifacts.py results --only {result_name}"
+    return (
+        "% Generated by experiments/run_report_artifacts.py; do not edit by hand.\n"
+        f"% Result command: {command}\n"
+        f"% Result file: {relative(figure_specs()[name].result_file)}\n"
+        "\\begin{figure}[h]\n"
+        "\\centering\n"
+        "\\small\n"
+        "\\begin{tikzpicture}[\n"
+        "  cell/.style={minimum width=0.82cm, minimum height=0.56cm, "
+        "anchor=center, draw=white, line width=0.7pt, font=\\scriptsize},\n"
+        "  paneltitle/.style={font=\\footnotesize\\bfseries, anchor=west},\n"
+        "  axislabel/.style={font=\\scriptsize},\n"
+        "  legend/.style={font=\\scriptsize, anchor=west}\n"
+        "]\n"
+        f"{body}\n"
+        "\\end{tikzpicture}\n"
+        f"\\caption{{{caption}}}\n"
+        f"\\label{{{label}}}\n"
+        "\\end{figure}\n"
+    )
+
+
+def build_heatmap_panel(
+    title: str,
+    field: str,
+    value_kind: str,
+    color: str,
+    rows: dict[tuple[float, float], dict[str, str]],
+    initial_tilts: list[float],
+    benefits: list[float],
+    origin_x: float,
+    origin_y: float,
+) -> str:
+    lines = [
+        f"\\node[paneltitle] at ({origin_x:.2f},{origin_y:.2f}) {{{title}}};",
+        (
+            f"\\node[axislabel, anchor=east] at ({origin_x + 0.72:.2f},"
+            f"{origin_y - 2.55:.2f}) {{$t_0$}};"
+        ),
+        (
+            f"\\node[axislabel] at ({origin_x + 2.05:.2f},"
+            f"{origin_y - 2.55:.2f}) {{$\\beta_V$}};"
+        ),
+    ]
+    for column, benefit in enumerate(benefits):
+        x = origin_x + 1.15 + column * 0.82
+        lines.append(
+            f"\\node[axislabel] at ({x:.2f},{origin_y - 0.43:.2f}) "
+            f"{{{benefit:.2f}}};"
+        )
+
+    for row_index, initial_tilt in enumerate(initial_tilts):
+        y = origin_y - 0.88 - row_index * 0.56
+        lines.append(
+            f"\\node[axislabel, anchor=east] at ({origin_x + 0.75:.2f},{y:.2f}) "
+            f"{{{initial_tilt:.1f}}};"
+        )
+        for column, benefit in enumerate(benefits):
+            x = origin_x + 1.15 + column * 0.82
+            row = rows[(initial_tilt, benefit)]
+            text, intensity = heatmap_cell_value(row, field, value_kind)
+            lines.append(
+                f"\\node[cell, fill={color}!{intensity}!white] at "
+                f"({x:.2f},{y:.2f}) {{{text}}};"
+            )
+
+    return "\n".join(lines)
+
+
+def heatmap_cell_value(row: dict[str, str], field: str, value_kind: str) -> tuple[str, int]:
+    if value_kind == "count":
+        fraction = float(row[field])
+        seeds = int(row["seeds"])
+        count = round(fraction * seeds)
+        return f"{count}/{seeds}", round(100 * fraction)
+
+    value = float(row[field])
+    if value_kind == "success":
+        return f"{value:.2f}", round(100 * min(value / 0.2, 1.0))
+
+    if value_kind == "unit":
+        return f"{value:.2f}", round(100 * min(value, 1.0))
+
+    raise ValueError(f"unknown heatmap value kind: {value_kind}")
+
+
 def write_source_manifest() -> None:
     SOURCE_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     with SOURCE_MANIFEST.open("w", newline="") as handle:
         writer = csv.DictWriter(
             handle,
             fieldnames=(
-                "table_label",
-                "table_file",
+                "artifact_kind",
+                "artifact_label",
+                "artifact_file",
                 "result_file",
                 "result_command",
             ),
@@ -562,12 +733,26 @@ def write_source_manifest() -> None:
         for table in table_specs().values():
             writer.writerow(
                 {
-                    "table_label": table.label,
-                    "table_file": relative(table.table_file),
+                    "artifact_kind": "table",
+                    "artifact_label": table.label,
+                    "artifact_file": relative(table.table_file),
                     "result_file": relative(table.result_file),
                     "result_command": (
                         "python -u experiments/run_report_artifacts.py "
                         f"results --only {table.result_name}"
+                    ),
+                }
+            )
+        for figure in figure_specs().values():
+            writer.writerow(
+                {
+                    "artifact_kind": "figure",
+                    "artifact_label": figure.label,
+                    "artifact_file": relative(figure.figure_file),
+                    "result_file": relative(figure.result_file),
+                    "result_command": (
+                        "python -u experiments/run_report_artifacts.py "
+                        f"results --only {figure.result_name}"
                     ),
                 }
             )

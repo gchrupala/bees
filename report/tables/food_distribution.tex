@@ -6,7 +6,7 @@
 \small
 \begin{tabular}{lrrrrrrr}
 \toprule
-Condition & Reached & Reach gen. & Bias & Attention & Search & Success & Payoff \\
+Condition & Reached & Reach gen. & Prec. & Attention & Search & Success & Payoff \\
 \midrule
 Hard & 4/10 & 22.750 & 0.264 & 0.313 & 2.789 & 0.008 & 0.001 \\
 Baseline & 10/10 & 7.700 & 0.833 & 0.869 & 7.215 & 0.192 & 0.690 \\
@@ -16,8 +16,8 @@ Easy & 5/10 & 19.600 & 0.279 & 0.369 & 7.067 & 0.708 & 7.366 \\
 \caption{Food-distribution experiment under the current dynamic recruitment
 model. ``Reached'' is the number of seeds in which mean directional precision
 investment reached 0.30 by generation 30. ``Reach gen.'' is averaged over
-reached seeds only. Bias is the table label for directional precision
-investment; the reported bias, attention, search limit, success, and payoff
-values are final-generation means over all ten seeds.}
+reached seeds only. Prec. is final mean directional precision investment;
+attention, search limit, success, and payoff values are also final-generation
+means over all ten seeds.}
 \label{tab:food-distribution}
 \end{table}

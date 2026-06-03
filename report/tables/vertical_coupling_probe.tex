@@ -4,20 +4,21 @@
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{rrrrrrrr}
+\begin{tabular}{rrrrrrrrr}
 \toprule
-Corr. & Reached & Reach gen. & Bias & Sender & Receiver & Success & Payoff \\
+Corr. & Reached & Reach gen. & Prec. & Sender & Receiver & Gap & Success & Payoff \\
 \midrule
-0.000 & 5/5 & 42.600 & 0.878 & 0.864 & 0.881 & 0.192 & 0.680 \\
-0.300 & 5/5 & 46.200 & 0.847 & 0.913 & 0.898 & 0.192 & 0.694 \\
-0.600 & 5/5 & 21.000 & 0.882 & 0.890 & 0.897 & 0.199 & 0.754 \\
-0.900 & 5/5 & 22.400 & 0.863 & 0.907 & 0.903 & 0.194 & 0.723 \\
-1.000 & 5/5 & 23.400 & 0.836 & 0.901 & 0.901 & 0.191 & 0.677 \\
+0.000 & 5/5 & 42.600 & 0.878 & 0.864 & 0.881 & 0.033 & 0.192 & 0.680 \\
+0.300 & 5/5 & 46.200 & 0.847 & 0.913 & 0.898 & 0.022 & 0.192 & 0.694 \\
+0.600 & 5/5 & 21.000 & 0.882 & 0.890 & 0.897 & 0.010 & 0.199 & 0.754 \\
+0.900 & 5/5 & 22.400 & 0.863 & 0.907 & 0.903 & 0.005 & 0.194 & 0.723 \\
+1.000 & 5/5 & 23.400 & 0.836 & 0.901 & 0.901 & 0.000 & 0.191 & 0.677 \\
 \bottomrule
 \end{tabular}
 \caption{Constrained near-vertical coupling probe. Corr. is the correlation
 between sender and receiver transposition mutation increments. ``Reached''
 counts seeds in which both mean sender and receiver transposition reached 0.50
-by generation 120. Reach generation is averaged over reached seeds only.}
+by generation 120. Reach generation is averaged over reached seeds only.
+Gap is the final mean absolute sender--receiver transposition difference.}
 \label{tab:vertical-coupling-probe}
 \end{table}

@@ -1,7 +1,0 @@
-table_label,table_file,result_file,result_command
-tab:food-distribution,report/tables/food_distribution.tex,results/report_conditions.csv,python -u experiments/run_report_artifacts.py results --only report_conditions
-tab:comb-tilt,report/tables/comb_tilt.tex,results/report_conditions.csv,python -u experiments/run_report_artifacts.py results --only report_conditions
-tab:tilt-benefit-calibration,report/tables/tilt_benefit_calibration.tex,results/tilt_geometry_calibration.csv,python -u experiments/run_report_artifacts.py results --only tilt_geometry_calibration
-tab:orientation-calibration,report/tables/orientation_calibration.tex,results/orientation_calibration.csv,python -u experiments/run_report_artifacts.py results --only orientation_calibration
-tab:vertical-coupling-probe,report/tables/vertical_coupling_probe.tex,results/vertical_coupling_probe.csv,python -u experiments/run_report_artifacts.py results --only vertical_coupling_probe
-tab:long-transition,report/tables/long_transition.tex,results/long_vertical_transition_summary.csv,python -u experiments/run_report_artifacts.py results --only long_vertical_transition

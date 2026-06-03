@@ -3,6 +3,8 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{booktabs}
 \usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{tikz}
 
 \title{A computational model of the evolution of 
        honeybee waggle-dance communication}
@@ -22,139 +24,175 @@ has found it. Empirical and theoretical studies suggest that the value of dance
 information and recruitment depends on the spatiotemporal distribution of food
 resources, including patch density, patch size, reward variability, and habitat
 \cite{sherman_visscher_2002,dornhaus_chittka_2004,dornhaus_etal_2006,beekman_lew_2008,donaldson_matasci_dornhaus_2012,schurch_gruter_2014,price_gruter_2015}.
-We begin with a deliberately simple model of directional communication on an
-exposed horizontal comb, where dance angle can map directly onto food
+The model is deliberately minimal: it asks which evolutionary pressures are
+needed before adding richer social, developmental, or landscape detail. We start
+from direct directional communication on an exposed horizontal comb, where dance
+angle can point in the food direction, and then ask what additional conditions
+make a gravity-referenced vertical-comb code reachable.
+
+The simulations evaluate four evolutionary hypotheses.
+\begin{enumerate}
+\item \textbf{Resource-distribution hypothesis.} Costly directional
+communication should be favored when independent discovery is difficult enough
+that recruitment is useful, but not so difficult that few dances are seeded.
+It should be weakly favored when food is very easy to find without dances.
+\item \textbf{Architectural-precondition hypothesis.} Direct pointing should
+work well on a horizontal comb, whereas gravity-referenced communication should
+become useful only when the comb geometry supplies a reliable gravity cue.
+A non-communication benefit of vertical combs may therefore be needed to make
+the gravity channel selectively available.
+\item \textbf{Sender--receiver coordination hypothesis.} Sender and receiver
+transposition must evolve together. Positive coupling between sender and
+receiver mutations should reduce the time spent in mismatched codes.
+\item \textbf{Transition-risk hypothesis.} Selection for vertical combs can
+outpace adaptation of the communication code. Successful transitions should
+therefore require overlap among vertical geometry, directional precision,
+receiver attention, and matched sender--receiver transposition; otherwise
+foraging may collapse before the new code becomes useful.
+\end{enumerate}
+
+\section{Model}
+
+\subsection{Conceptual model}
+
+Colonies are the reproducing entities, while workers are behavioral agents
+sampled from colony-level trait means. A colony has seven heritable mean traits:
+directional precision investment, receiver attention, sender transposition,
+receiver transposition, search limit, comb tilt, and comb orientation.
+Directional precision investment is a costly investment in producing
+directionally informative dances. Receiver attention controls whether workers
+use available dances. Sender and receiver transposition interpolate between two
+communication modes: direct pointing in the comb plane and sun/gravity-referenced
+encoding. Comb tilt and orientation define the dance plane in the
+world, and search limit determines how far a worker searches along its chosen
 direction.
 
-\section{Method}
+Each foraging episode samples food sites with direction, distance, angular
+width, value, and capacity. Workers act sequentially. If dances are available,
+a worker may follow one; otherwise it searches independently in a random
+direction. Independent searchers that find food add a noisy dance for that site.
+There are therefore no fixed scouts in the model. Background discovery and
+recruitment both emerge from the food distribution, receiver attention, search
+limits, and dance precision. This follows ecological recruitment models in
+which communication is valuable only when resources are discoverable and worth
+recruiting to \cite{dornhaus_etal_2006,beekman_lew_2008}.
 
-Colonies are the reproducing entities, while workers are behavioral agents.
-Each colony has seven heritable mean traits: directional precision investment,
-called directional bias in the simulation code and tables, which controls how
-strongly a dancing worker's angle is centered on the intended direction;
-receiver attention, which controls how likely workers are to follow an
-available dance; sender transposition, which controls how much a dancer maps
-food direction onto a gravity-referenced dance angle; receiver transposition,
-which controls how much dance followers interpret the dance as
-gravity-referenced rather than direct pointing; comb tilt and comb orientation,
-which define the dance plane in the world; and search limit, which controls how
-far a worker searches along its chosen direction before giving up.
-Individual workers are sampled around the colony means using stable
-within-colony variation. Each dance also includes transient production and
-interpretation noise.
+Comb geometry determines which directional cue is available. Direct pointing
+projects the horizontal food direction onto the comb plane, so its strength
+depends on the food direction, comb tilt, and comb orientation. Gravity-
+referenced mapping uses the projection of gravity onto the comb plane together
+with the episode's sun azimuth. Gravity provides no in-plane reference on a
+horizontal comb and becomes a stronger cue as the comb becomes vertical.
+Comb orientation can be treated as circular, or as axial when orientations
+$\phi$ and $\phi + 180^\circ$ represent the same comb plane.
 
-The directional-precision trait should be read as a costly investment in
-producing directionally informative dances, not as a pure measure of neural
-precision, motivation, or dance duration. In this model, $b$ sets the angular
-concentration of a produced dance and contributes to the per-dance cost paid by
-the colony. Dance cost is represented as a baseline cost plus a
-precision-dependent cost. The baseline component captures time, metabolic
-effort, or opportunity cost of dancing regardless of directional precision,
-whereas the precision-dependent component captures the additional cost of
-making the dance directionally informative. The reported simulations set the
-baseline dance cost to 0 and therefore include only the precision-dependent
-component. Thus the results show the evolution of costly signal precision under
-that simplified cost schedule, not the separate evolution of intrinsic accuracy
-and signaling effort.
+\subsection{Mathematical implementation}
 
-More concretely, a colony is parameterized by mean directional precision
-investment $b \in [0,1]$, mean receiver attention $a \in [0,1]$, mean sender
-transposition $s \in [0,1]$, mean receiver transposition $r \in [0,1]$, and
-mean search limit $\ell \geq 0$. It also has a comb tilt $t \in [0,1]$ and a
-comb orientation $\phi$. Orientation can be treated either as a circular
-direction or, in constrained probes, as an axial variable where $\phi$ and
-$\phi + 180^\circ$ represent the same comb plane. Each worker receives stable individual
-deviations from these means, sampled from Gaussian noise with standard
-deviation 0.08 for unit-interval traits. For search limit, the same scale is
-multiplied by the maximum search distance. All traits are clipped to their
-allowed ranges. These deviations represent within-colony worker variation, but
-are not themselves heritable in the current model. At reproduction, only the
-colony-level mean traits are inherited, with Gaussian mutation of standard
-deviation 0.07, again scaled by maximum search distance for the search-limit
-trait. Sender and receiver transposition mutations can be correlated by a
-configurable coupling parameter; comb-orientation mutations use a separate
-circular mutation scale. Comb tilt can also use its own mutation scale when an
-experiment supplies a geometric precondition rather than asking tilt to evolve.
+Let a colony's mean strategy be
+\[
+\theta = (b, a, s, r, \ell, t, \phi),
+\]
+where $b \in [0,1]$ is directional precision investment, $a \in [0,1]$ is
+receiver attention, $s,r \in [0,1]$ are sender and receiver transposition,
+$\ell \geq 0$ is search limit, $t \in [0,1]$ is comb tilt, and $\phi$ is comb
+orientation. A worker $i$ receives stable within-colony deviations from the
+colony means:
+\[
+\theta_i = \operatorname{clip}(\theta + \epsilon_i).
+\]
+These deviations represent worker heterogeneity but are not themselves
+heritable.
 
-Each foraging episode generates a set of food sites in the world. A food site
-has a direction, distance from the nest, angular width, value, and capacity.
-Workers act sequentially within an episode. If at least one dance is available,
-a worker follows a randomly chosen dance with probability given by its receiver
-attention. Otherwise it searches independently in a uniformly random direction.
-In both cases, the worker searches along the chosen direction up to its
-individual search limit. A food site is found only if it lies within the
-searched angular window and its distance is no greater than the worker's search
-limit. Independent searchers that find food add a noisy dance for the discovered
-site, so scouts are not assigned in advance: a scout is simply a worker that
-found food independently. This makes both background discovery and recruitment
-emergent properties of the food distribution and the evolving worker traits.
-This design follows the logic of previous ecological models in which
-recruitment benefits depend on the availability and discoverability of resource
-patches rather than on communication having a fixed payoff advantage
-\cite{dornhaus_etal_2006,beekman_lew_2008}.
+For a food direction $\alpha$ and sun azimuth $\psi$, let $D(\alpha;t,\phi)$ be
+the direct projected dance angle and $G(\alpha,\psi;t,\phi)$ be the
+sun/gravity-referenced dance angle. Let $q_D$ and $q_G$ be their corresponding
+cue strengths in the comb plane. A sender with transposition $s_i$ encodes the
+dance mean angle as a weighted circular mean,
+\[
+\mu_i =
+\operatorname{cmean}\left(
+  (D, (1-s_i)q_D),\,
+  (G, s_i q_G)
+\right).
+\]
+The produced dance signal is
+\[
+x_i =
+\operatorname{VM}(\mu_i, \kappa_{\max} b_i) + \eta_d
+\pmod{2\pi},
+\]
+where $\operatorname{VM}$ is the von Mises distribution, $\kappa_{\max}=14$ in
+the reported simulations, and $\eta_d$ is transient dance-production noise.
+A receiver with transposition $r_j$ applies the analogous weighted decoding
+rule and adds interpretation noise $\eta_r$ to obtain a search direction
+$\hat{\alpha}_j$.
 
-Comb tilt and orientation define a three-dimensional comb plane. Direct
-pointing projects the horizontal food direction onto that plane, so its
-available cue strength depends on both the tilt and the orientation of the comb
-relative to the food direction. Gravity-referenced mapping uses the projection
-of gravity onto the comb plane together with an episode-level sun azimuth.
-Gravity provides no in-plane reference on a horizontal comb and becomes a
-stronger cue as the comb becomes vertical. The sender transposition trait blends
-between direct pointing and sun/gravity-referenced encoding, and the receiver
-transposition trait blends between the corresponding decoding rules. Each
-episode samples the sun azimuth from a configurable daytime arc.
+A worker succeeds at food site $k$ only if
+\[
+\Delta(\hat{\alpha}_j,\alpha_k) \leq w_k
+\quad\text{and}\quad
+d_k \leq \ell_j,
+\]
+where $\Delta$ is circular angular distance, $w_k$ is site angular width, and
+$d_k$ is site distance. If multiple available sites satisfy this condition, the
+nearest site is used.
 
-The dancer's angle is sampled from a circular von Mises distribution
-centered on the encoded direction. The concentration parameter is $14b$, so
-workers with low directional precision investment produce nearly random
-angles, while workers with high directional precision investment produce
-angles concentrated around the intended direction. Additional dance-production
-noise with standard deviation 0.18 is added to the angle. A worker follows an
-available dance with probability $a$; if it follows, it decodes the signaled
-direction with interpretation noise of standard deviation 0.12. If it does not
-follow a dance, it searches in a uniformly random direction. A worker succeeds
-when its search direction falls within the angular width of an available food
-site whose distance is no greater than the worker's search limit.
+The colony payoff for an episode is
+\[
+P_e =
+\sum_{j \in F_e} v_{k(j)}
+- c_T\left(\sum_{j \in F_e} d_{k(j)} + \sum_{j \in U_e} \ell_j\right)
+- \sum_{i \in D_e} (c_0 + c_b b_i)
+- c_a A_e
++ \beta_V t .
+\]
+Here $F_e$ is the set of successful workers, $U_e$ the unsuccessful workers,
+$D_e$ the independent finders that produce dances, and $A_e$ the number of
+dance-following attempts. The terms are food value, travel/search cost,
+per-dance communication cost, receiver-attention cost, and an optional
+non-communication benefit proportional to comb verticality. Mean colony payoff
+is averaged over episodes and floored at 0.001 so that low-payoff colonies
+remain selectable but rare.
 
-After many episodes, each colony receives a payoff from collected food minus
-travel, communication, and attention costs. Daughter colonies are sampled in
-proportion to payoff, and colony-level traits mutate by Gaussian noise. We
-track the mean directional precision investment, receiver attention, sender
-and receiver transposition, comb tilt, comb-orientation alignment, and search
-limit, plus forager success rate across generations.
+Daughter colonies are sampled in proportion to payoff. Only colony means are
+inherited. Mutations are Gaussian and clipped to the allowed ranges; sender and
+receiver transposition mutations can have correlation $\rho$, which is the
+coupling parameter used in the vertical-transition probes.
 
-In each episode, collected food is the sum of the values of food sites found by
-workers. The current simulations use food value 1.0. Workers also pay a travel
-cost proportional to distance: successful workers pay the cost of reaching the
-found food site, while unsuccessful workers pay the cost of searching up to
-their limit. The default travel cost is 0.02 per distance unit, so even the
-longest default trip remains profitable if it finds food, but long unsuccessful
-searches are costly. The colony then pays a communication cost of
-$c_0 + 0.02b_d$ for each dance added by an independent finder, where $c_0$ is
-the baseline dance cost and $b_d$ is that dancer's directional precision
-investment. In the experiments reported here, $c_0 = 0$. The colony also pays
-an attention cost of 0.01 for each worker that follows a dance. Thus more
-precise directional signaling, more dance-following, and longer search effort
-can increase food collection, but they are not free. The current model
-can also include a configurable benefit proportional to comb verticality, which
-represents non-communication selective pressure for vertical combs. The
-parameter
-``workers per colony'' controls the pool from which active foragers are sampled,
-and therefore the amount of within-colony worker heterogeneity, but payoff
-opportunity is set more directly by the number of foraging episodes per colony
-and the number of foraging attempts per episode.
+\subsection{Simulation parameters and reproducibility}
+
+Unless otherwise stated, reported runs use 60 colonies, 80 workers per colony,
+50 foraging episodes per colony per generation, 12 foraging attempts per
+episode, ten random seeds, within-colony standard deviation 0.08 for
+unit-interval traits, mutation standard deviation 0.07, dance-production noise
+standard deviation 0.18, interpretation-noise standard deviation 0.12, maximum
+search distance 8.0, food value 1.0, food-site capacity 6, travel cost 0.02
+per distance unit, precision-dependent dance-cost coefficient $c_b=0.02$,
+baseline dance cost $c_0=0$, and attention cost $c_a=0.01$. Search-limit noise
+and mutation use the same scales multiplied by the maximum search distance.
+Initial directional precision is sampled from $[0,0.15]$, initial receiver
+attention from $[0,0.25]$, initial transposition traits are 0, and initial
+search limit is sampled from 15--45\% of the maximum search distance.
+
+The tables and figures in this report are generated from tracked result files
+rather than hand-entered into the document. Running
+\[
+\texttt{python -u experiments/run\_report\_artifacts.py artifacts}
+\]
+rebuilds the LaTeX fragments from the CSV files in \texttt{results/}; running
+the same script with \texttt{all} first regenerates the result CSVs. The
+provenance manifest is \texttt{report/artifact\_sources.csv}.
 
 \section{Results}
 
 \subsection{Horizontal comb}
 
-We compared three simple food distributions over ten random seeds each
-(seeds 101--110). The
-``hard'' condition had one narrow food site per episode, the baseline condition
-had two moderately wide food sites, and the ``easy'' condition had many broad
-food sites. Table~\ref{tab:food-distribution} reports the generation at which
-mean directional precision investment first reached 0.30, plus final generation
-trait and success values.
+We first compared three simple food distributions over ten random seeds
+(101--110). The ``hard'' condition had one narrow food site per episode, the
+baseline condition had two moderately wide food sites, and the ``easy''
+condition had many broad food sites. Table~\ref{tab:food-distribution} reports
+the generation at which mean directional precision investment first reached
+0.30, plus final-generation trait, success, and payoff values.
 
 Each run used 60 colonies, 80 workers per colony, 30 generations, 50 foraging
 episodes per colony per generation, 12 foraging attempts per episode, and
@@ -170,16 +208,15 @@ discovery likely even without using the dance.
 
 \input{tables/food_distribution.tex}
 
-The result matches the ecological prediction qualitatively, but with a sharper
-distinction than in the earlier fixed-scout model. In the hard environment,
-food is so rare and narrow that independent discoveries seldom seed dances;
-final success and payoff remain close to zero, and communication evolves only
-in some seeds. In the baseline environment, independent discovery is sufficient
-to seed recruitment cascades, and directional precision investment, receiver
-attention, and search limit all rise strongly. In the easy environment, success
-and payoff are high, but directional precision investment and receiver
-attention remain much lower than in the baseline case because food is often
-found without precise communication.
+The result supports the resource-distribution hypothesis. In the hard
+environment, food is so rare and narrow that independent discoveries seldom
+seed dances; final success and payoff remain close to zero, and communication
+crosses the directional-precision threshold in only 4 of 10 seeds. In the
+baseline environment, independent discovery is sufficient to seed recruitment
+cascades, and directional precision, receiver attention, and search limit all
+rise strongly. In the easy environment, success and payoff are high, but
+directional precision and receiver attention remain much lower than in the
+baseline case because food is often found without precise communication.
 
 \subsection{Vertical comb}
 
@@ -202,15 +239,14 @@ itself establish a stable vertical-comb transition.
 
 \subsection{Tilt-geometry calibration}
 
-After replacing the scalar comb-tilt degradation with explicit comb-plane
-geometry, we ran a calibration grid over initial comb tilt and the vertical-comb
-benefit. These runs used the baseline food distribution, the daytime sun arc
-from $0^\circ$ to $180^\circ$ centered at $90^\circ$, and ten seeds
+We next ran a calibration grid over initial comb tilt and the vertical-comb
+benefit $\beta_V$. These runs used the baseline food distribution, the daytime
+sun arc from $0^\circ$ to $180^\circ$ centered at $90^\circ$, and ten seeds
 (101--110). Success is the fraction of foraging attempts that found food.
 Payoff is the final mean colony payoff after food rewards, search/travel costs,
 dance costs, attention costs, and the vertical-comb benefit. Table~
-\ref{tab:tilt-benefit-calibration} shows that increasing the vertical benefit
-can preserve more vertical combs, but current settings produce a sharp tradeoff:
+\ref{tab:tilt-benefit-calibration} shows that increasing $\beta_V$ can
+preserve more vertical combs, but these settings produce a sharp tradeoff:
 strong verticality often comes with reduced foraging success.
 
 \input{tables/tilt_benefit_calibration.tex}
@@ -220,14 +256,11 @@ horizontal comb, benefits in the range 0.15--0.25 do not move colonies far from
 horizontal within 30 generations. Starting from a tilted comb, the same benefit
 range can retain intermediate tilt but with lower success. Starting from a
 vertical comb, benefits around 0.20--0.25 retain high verticality, but foraging
-nearly fails in most seeds. A separate five-seed stress test showed that a much
-larger benefit of 0.50 can drive high verticality from tilted starts, but at the
-cost of severe loss of foraging success. Thus the current model can impose a
-substantial architecture pressure, but the 30-generation calibration may end
-before sender transposition, receiver transposition, and directional precision
-have enough time to adapt together. The relevant open question is therefore
-whether these cases represent a stable collapse or a longer coevolutionary
-transition.
+nearly fails in most seeds. Thus the model can impose substantial architecture
+pressure, but the 30-generation calibration may end before sender
+transposition, receiver transposition, and directional precision have enough
+time to adapt together. The relevant open question is therefore whether these
+cases represent stable collapse or a longer coevolutionary transition.
 
 \subsection{Tilt orientation}
 
@@ -241,14 +274,13 @@ by its within-run orientation alignment.
 
 \input{tables/orientation_calibration.tex}
 
-Orientation sometimes aligns within a run, but it does not yet show a clean,
-robust relationship to the daytime sun arc across seeds. Some conditions point
-near the sun-arc center, some near the opposite direction, and several have weak
-across-seed alignment. This may indicate weak or path-dependent selection on
-orientation. It also highlights a modeling issue: because a comb plane is
-unchanged by reversing its normal, comb orientation may be better treated as an
-axial variable, where $\phi$ and $\phi + 180^\circ$ are equivalent, rather than
-as a fully circular direction.
+Orientation sometimes aligns within a run, but it does not show a clean,
+robust relationship to the daytime sun arc across seeds under the circular
+orientation representation. Some conditions point near the sun-arc center, some
+near the opposite direction, and several have weak across-seed alignment. This
+indicates weak or path-dependent selection on orientation in these probes and
+motivates the axial representation used in the longer transition runs, where
+$\phi$ and $\phi + 180^\circ$ are treated as the same comb plane.
 
 \subsection{Constrained vertical coupling}
 
@@ -267,16 +299,20 @@ transposition reached 0.50.
 
 \input{tables/vertical_coupling_probe.tex}
 
-The result is strongly diagnostic. With near-vertical geometry supplied,
-gravity-referenced communication is reachable in every condition. Independent
-or weakly coupled sender--receiver mutations still reach the gravity channel,
-but only after roughly 40--50 generations on average. Moderate to strong
-coupling accelerates the transition: correlations of 0.6--1.0 reach the
-threshold by about generation 21--23, while also keeping final sender and
-receiver transposition closely matched. The best payoff in this probe occurs
-at correlation 0.6. These results suggest that the earlier vertical-comb
-failure is not because gravity-referenced communication is intrinsically
-unreachable. Rather, the difficult part is the joint transition in which comb
+Table~\ref{tab:vertical-coupling-probe} separates reachability from transition
+speed. With near-vertical geometry supplied, every correlation condition
+reaches gravity-referenced communication in all five seeds, so the gravity
+channel is not intrinsically unreachable. The main difference is how quickly
+the matched sender--receiver code appears. Independent or weakly coupled
+mutations ($\rho=0$ or $0.3$) reach the threshold only after about 43--46
+generations on average. Moderate to strong coupling ($\rho=0.6$--$1.0$)
+reaches it by about generation 21--23. The final sender--receiver gap also
+falls as coupling increases: from 0.033 without coupling to 0.010 at
+$\rho=0.6$ and 0 at $\rho=1.0$. Payoff peaks at $\rho=0.6$, not at perfect
+coupling, suggesting that coupling helps align the code but complete lockstep
+is not necessarily the highest-payoff mutation structure in this finite-seed
+probe. The result supports the sender--receiver coordination hypothesis and
+implies that the harder problem is the joint transition in which comb
 architecture, orientation representation, and the sender--receiver code must
 all become useful together.
 
@@ -294,52 +330,45 @@ It was counted as collapsed when mean foraging success fell to 0.02 or below
 at any generation, and as recovered when a collapsed seed ended with final
 success at least 0.10.
 
-\input{tables/long_transition.tex}
+\input{figures/long_transition_heatmap.tex}
 
 The longer horizon changes the interpretation but does not by itself solve the
-transition. From horizontal starts, weak and moderate vertical-comb benefits
-preserve high foraging success but do not move colonies far from horizontal.
-At benefit 0.25, one seed reaches verticality and the gravity channel, but that
-same seed collapses. From tilted starts, higher benefits increasingly retain
-verticality and allow more seeds to reach the gravity channel, but collapse
-also becomes common; at benefit 0.20, one seed recovers to a high-success
-vertical gravity-channel state. From vertical starts, longer runs show that
-successful vertical gravity-channel outcomes are possible, especially at
-benefit 0.25 where four collapsed seeds recover by generation 120, but most
-seeds still experience collapse. Thus the 30-generation failures were too short
-to distinguish an impossible transition from a slow coordination process, but
-120 generations show that longer time alone is insufficient to make the
-transition robust under the current parameters.
+transition (Figure~\ref{fig:long-transition-heatmap}). From horizontal starts,
+weak and moderate vertical-comb benefits preserve high foraging success but do
+not move colonies far from horizontal. At $\beta_V=0.25$, one seed reaches both
+verticality and the gravity channel, but that seed also collapses. From tilted
+starts, higher benefits increasingly retain verticality and allow more seeds to
+reach the gravity channel, but collapse also becomes common; at $\beta_V=0.20$,
+one seed recovers to a high-success vertical gravity-channel state. From
+vertical starts, successful vertical gravity-channel outcomes are possible,
+especially at $\beta_V=0.25$ where four collapsed seeds recover by generation
+120, but most seeds still experience collapse. Thus the 30-generation failures
+were too short to distinguish an impossible transition from a slow coordination
+process, while 120 generations show that longer time alone is insufficient to
+make the transition robust under the current parameters.
 
 \section{Conclusion}
 
-The current model now separates world directions, comb-plane dance signals,
-comb tilt and orientation, and the sun/gravity reference. Direct pointing is
-available on horizontal combs without additional mapping machinery, while the
-sun/gravity channel becomes useful only as gravity projects into the comb
-plane. This supports the intended conceptual setup: a non-communication benefit
-for vertical combs can create pressure toward verticality, after which
-sender--receiver transposition may become advantageous.
+The resource-distribution experiments support the idea that costly directional
+communication is favored most strongly in an intermediate ecological regime:
+food must be hard enough to make recruitment valuable, but discoverable enough
+for independent finders to seed dances. The geometry experiments support the
+architectural-precondition hypothesis in a more conditional way. A vertical-comb
+benefit can preserve verticality, and supplied near-vertical geometry allows
+gravity-referenced sender--receiver transposition to evolve, but the full
+architecture-and-code transition is not yet robust.
 
-The calibration runs show that this transition is not yet smooth. When
-verticality is weakly rewarded, colonies starting from horizontal combs remain
-mostly horizontal. When verticality is strongly rewarded, vertical combs can be
-retained, but foraging success often collapses before communication adapts.
-Orientation is not yet robustly selected relative to the sun arc under the
-circular representation. The constrained vertical-coupling probe clarifies this
-picture: once near-vertical geometry is supplied and orientation is treated
-axially, gravity-referenced sender--receiver transposition evolves reliably,
-especially when sender and receiver transposition mutations are moderately or
-strongly coupled. The long axial-orientation transition runs show that the
-30-generation failures were partly a horizon problem: some tilted or vertical
-starts do recover into high-success vertical gravity-channel states by
-generation 120. However, the transition is still not robust. Horizontal starts
-mostly remain horizontal unless the vertical-comb benefit is strong enough to
-risk collapse, and vertical-retaining seeds often lose foraging performance
-before communication catches up. The next modeling priority is therefore to
-calibrate vertical-comb benefits, mutation scales, and coupling assumptions so
-that architecture and communication can coevolve without routinely passing
-through a collapse in foraging success.
+The constrained coupling probe supports the sender--receiver coordination
+hypothesis: with near-vertical geometry supplied, gravity-referenced
+communication evolves in every condition, and correlated sender--receiver
+mutations shorten the transition and reduce final mismatch. The long transition
+runs support the transition-risk hypothesis. Some tilted or vertical starts
+recover into high-success vertical gravity-channel states by generation 120,
+but horizontal starts mostly remain horizontal, and many vertical-retaining
+seeds lose foraging performance before communication catches up. The next
+modeling priority is therefore to calibrate vertical-comb benefits, mutation
+scales, and coupling assumptions so that architecture and communication can
+coevolve without routinely passing through a collapse in foraging success.
 
 \bibliographystyle{plain}
 \bibliography{references}
