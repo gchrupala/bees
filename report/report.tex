@@ -381,6 +381,62 @@ unreachable. Rather, the difficult part is the joint transition in which comb
 architecture, orientation representation, and the sender--receiver code must
 all become useful together.
 
+\subsection{Long transition runs}
+
+We therefore ran longer transition experiments using the axial orientation
+representation. These runs used the baseline food distribution, 120
+generations, ten seeds (101--110), sender--receiver transposition mutation
+correlation 0.6, and the same three initial comb tilts and vertical-comb
+benefits as the calibration grid. Unlike the constrained near-vertical probe,
+comb tilt was free to mutate. A seed was counted as reaching the gravity
+channel when both mean sender and receiver transposition reached 0.50. It was
+counted as retaining verticality when final mean comb tilt was at least 0.80.
+It was counted as collapsed when mean foraging success fell to 0.02 or below
+at any generation, and as recovered when a collapsed seed ended with final
+success at least 0.10.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrrrrr}
+\toprule
+Initial tilt & Benefit & Gravity & Vertical & Collapse & Recovered & Success & Final tilt \\
+\midrule
+0.0 & 0.15 & 0/10 & 0/10 & 0/10 & 0/10 & 0.199 & 0.118 \\
+0.0 & 0.20 & 0/10 & 0/10 & 0/10 & 0/10 & 0.193 & 0.121 \\
+0.0 & 0.25 & 1/10 & 1/10 & 1/10 & 0/10 & 0.175 & 0.211 \\
+0.5 & 0.15 & 3/10 & 3/10 & 3/10 & 0/10 & 0.136 & 0.366 \\
+0.5 & 0.20 & 4/10 & 6/10 & 6/10 & 1/10 & 0.099 & 0.599 \\
+0.5 & 0.25 & 5/10 & 9/10 & 9/10 & 1/10 & 0.037 & 0.838 \\
+1.0 & 0.15 & 7/10 & 9/10 & 7/10 & 1/10 & 0.079 & 0.829 \\
+1.0 & 0.20 & 5/10 & 10/10 & 10/10 & 1/10 & 0.020 & 0.899 \\
+1.0 & 0.25 & 8/10 & 9/10 & 9/10 & 4/10 & 0.095 & 0.829 \\
+\bottomrule
+\end{tabular}
+\caption{Long axial-orientation transition experiment. Gravity counts seeds in
+which both mean sender and receiver transposition reached 0.50 by generation
+120. Vertical counts seeds with final mean comb tilt at least 0.80. Collapse
+counts seeds whose mean foraging success fell to 0.02 or below at any
+generation. Recovered counts collapsed seeds whose final success was at least
+0.10. Success and final tilt are final-generation means over all ten seeds.}
+\label{tab:long-transition}
+\end{table}
+
+The longer horizon changes the interpretation but does not by itself solve the
+transition. From horizontal starts, weak and moderate vertical-comb benefits
+preserve high foraging success but do not move colonies far from horizontal.
+At benefit 0.25, one seed reaches verticality and the gravity channel, but that
+same seed collapses. From tilted starts, higher benefits increasingly retain
+verticality and allow more seeds to reach the gravity channel, but collapse
+also becomes common; at benefit 0.20, one seed recovers to a high-success
+vertical gravity-channel state. From vertical starts, longer runs show that
+successful vertical gravity-channel outcomes are possible, especially at
+benefit 0.25 where four collapsed seeds recover by generation 120, but most
+seeds still experience collapse. Thus the 30-generation failures were too short
+to distinguish an impossible transition from a slow coordination process, but
+120 generations show that longer time alone is insufficient to make the
+transition robust under the current parameters.
+
 \section{Conclusion}
 
 The current model now separates world directions, comb-plane dance signals,
@@ -400,13 +456,16 @@ circular representation. The constrained vertical-coupling probe clarifies this
 picture: once near-vertical geometry is supplied and orientation is treated
 axially, gravity-referenced sender--receiver transposition evolves reliably,
 especially when sender and receiver transposition mutations are moderately or
-strongly coupled. The next modeling priority is therefore to run longer
-transition experiments from horizontal or tilted starts, using the axial
-orientation representation, to test whether the apparent collapse is a true
-failure mode or a short-run coordination lag. Only after that horizon is
-established should the vertical-comb benefit and mutation scales be calibrated
-to ask how architecture and communication can coevolve without a collapse in
-foraging success.
+strongly coupled. The long axial-orientation transition runs show that the
+30-generation failures were partly a horizon problem: some tilted or vertical
+starts do recover into high-success vertical gravity-channel states by
+generation 120. However, the transition is still not robust. Horizontal starts
+mostly remain horizontal unless the vertical-comb benefit is strong enough to
+risk collapse, and vertical-retaining seeds often lose foraging performance
+before communication catches up. The next modeling priority is therefore to
+calibrate vertical-comb benefits, mutation scales, and coupling assumptions so
+that architecture and communication can coevolve without routinely passing
+through a collapse in foraging success.
 
 \bibliographystyle{plain}
 \bibliography{references}
