@@ -230,9 +230,11 @@ horizontal. Increasing comb tilt weakens the existing direct mapping and slows
 the evolution of directional signaling. In the tilted condition, sender and
 receiver transposition both rise, indicating selection toward the
 gravity-referenced mapping, but payoff remains lower than in the horizontal
-condition. In the fully vertical condition, communication remains weak after 30
-generations: only half of the seeds reach the directional-precision threshold,
-and final payoff is close to the minimum floor.
+condition. In the fully vertical condition, communication remains weak within
+this 30-generation horizon: only half of the seeds reach the
+directional-precision threshold, and final payoff is close to the minimum floor.
+This should be read as a short-run coordination problem rather than evidence
+that gravity-referenced communication is unreachable.
 
 \subsection{Tilt-geometry calibration}
 
@@ -280,8 +282,11 @@ vertical comb, benefits around 0.20--0.25 retain high verticality, but foraging
 nearly fails in most seeds. A separate five-seed stress test showed that a much
 larger benefit of 0.50 can drive high verticality from tilted starts, but at the
 cost of severe loss of foraging success. Thus the current model can impose a
-substantial architecture pressure, but communication does not yet adapt smoothly
-enough to make the transition robust.
+substantial architecture pressure, but the 30-generation calibration may end
+before sender transposition, receiver transposition, and directional precision
+have enough time to adapt together. The relevant open question is therefore
+whether these cases represent a stable collapse or a longer coevolutionary
+transition.
 
 \subsection{Tilt orientation}
 
@@ -395,11 +400,13 @@ circular representation. The constrained vertical-coupling probe clarifies this
 picture: once near-vertical geometry is supplied and orientation is treated
 axially, gravity-referenced sender--receiver transposition evolves reliably,
 especially when sender and receiver transposition mutations are moderately or
-strongly coupled. The next modeling steps are therefore to use the axial
-orientation representation in transition experiments from horizontal or tilted
-starts, and to calibrate vertical-comb benefits and mutation scales so that
-architecture and communication can coevolve without a collapse in foraging
-success.
+strongly coupled. The next modeling priority is therefore to run longer
+transition experiments from horizontal or tilted starts, using the axial
+orientation representation, to test whether the apparent collapse is a true
+failure mode or a short-run coordination lag. Only after that horizon is
+established should the vertical-comb benefit and mutation scales be calibrated
+to ask how architecture and communication can coevolve without a collapse in
+foraging success.
 
 \bibliographystyle{plain}
 \bibliography{references}
