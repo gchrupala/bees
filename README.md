@@ -96,6 +96,12 @@ Run the longer axial-orientation vertical transition experiment:
 python -u experiments/run_long_vertical_transition.py
 ```
 
+Export no-threshold long-transition trajectories and event timings:
+
+```sh
+python -u experiments/analyze_long_transition_trajectories.py
+```
+
 Regenerate the tracked report result files and generated LaTeX report artifacts:
 
 ```sh
