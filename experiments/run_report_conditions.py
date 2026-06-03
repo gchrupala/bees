@@ -48,7 +48,7 @@ FIELDNAMES = [
 
 def main() -> None:
     base_settings = load_settings()
-    writer = csv.DictWriter(sys.stdout, fieldnames=FIELDNAMES)
+    writer = csv.DictWriter(sys.stdout, fieldnames=FIELDNAMES, lineterminator="\n")
     writer.writeheader()
 
     for condition, overrides in FOOD_DISTRIBUTIONS.items():

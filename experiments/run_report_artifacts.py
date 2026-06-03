@@ -135,6 +135,8 @@ def result_specs() -> dict[str, ResultSpec]:
                 "results/long_vertical_transition_summary.csv",
                 "--seed-output",
                 "results/long_vertical_transition_seeds.csv",
+                "--vertical-comb-modifiers",
+                "linear,threshold_0.8",
             ),
             stdout_file=None,
             result_files=(
@@ -409,12 +411,12 @@ def build_tilt_benefit_calibration_table() -> str:
         result_name="tilt_geometry_calibration",
         column_spec="rrrrrrrr",
         header=(
-            "Initial tilt & Benefit & Final tilt & Sender & Receiver & Success "
+            "Initial tilt & $\\alpha$ & Final tilt & Sender & Receiver & Success "
             "& Payoff & Reached \\\\"
         ),
         body=body,
         caption=(
-            "Ten-seed calibration of the vertical-comb benefit under the explicit\n"
+            "Ten-seed calibration of the proportional vertical-comb advantage under the explicit\n"
             "tilt-geometry model. Sender and receiver are final mean transposition "
             "traits.\n"
             "Reached is the number of seeds in which mean directional precision "
@@ -447,7 +449,7 @@ def build_orientation_calibration_table() -> str:
         result_name="orientation_calibration",
         column_spec="rrrrrrrr",
         header=(
-            "Initial tilt & Benefit & Final tilt & Success & Within align. "
+            "Initial tilt & $\\alpha$ & Final tilt & Success & Within align. "
             "& Mean orient. & Sun offset & Across align. \\\\"
         ),
         body=body,
@@ -507,12 +509,13 @@ def build_vertical_coupling_probe_table() -> str:
 
 def build_long_transition_heatmap() -> str:
     rows = read_csv(RESULTS / "long_vertical_transition_summary.csv")
-    lookup = {
-        (float(row["initial_comb_tilt"]), float(row["vertical_comb_benefit"])): row
-        for row in rows
-    }
-    initial_tilts = sorted({key[0] for key in lookup}, reverse=True)
-    benefits = sorted({key[1] for key in lookup})
+    for row in rows:
+        row.setdefault("vertical_comb_modifier", "linear")
+
+    modifiers = sorted(
+        {row["vertical_comb_modifier"] for row in rows},
+        key=vertical_comb_modifier_sort_key,
+    )
     metrics = (
         (
             "Gravity",
@@ -558,22 +561,46 @@ def build_long_transition_heatmap() -> str:
         ),
     )
 
-    body = "\n".join(
-        build_heatmap_panel(
-            title=title,
-            field=field,
-            value_kind=value_kind,
-            color=color,
-            rows=lookup,
-            initial_tilts=initial_tilts,
-            benefits=benefits,
-            origin_x=0.0 + 4.05 * (index % 3),
-            origin_y=0.0 - 3.05 * (index // 3),
+    blocks = []
+    for modifier_index, modifier in enumerate(modifiers):
+        modifier_rows = [
+            row for row in rows if row["vertical_comb_modifier"] == modifier
+        ]
+        lookup = {
+            (float(row["initial_comb_tilt"]), float(row["vertical_comb_benefit"])): row
+            for row in modifier_rows
+        }
+        initial_tilts = sorted({key[0] for key in lookup}, reverse=True)
+        benefits = sorted({key[1] for key in lookup})
+        block_y = -7.30 * modifier_index
+        blocks.append(
+            f"\\node[modifierlabel] at (0.0,{block_y + 0.45:.2f}) "
+            f"{{{vertical_comb_modifier_label(modifier)}}};"
         )
-        for index, (title, field, value_kind, color, _description) in enumerate(metrics)
-    )
+        blocks.extend(
+            build_heatmap_panel(
+                title=title,
+                field=field,
+                value_kind=value_kind,
+                color=color,
+                rows=lookup,
+                initial_tilts=initial_tilts,
+                benefits=benefits,
+                origin_x=0.0 + 4.85 * (index % 3),
+                origin_y=block_y - 0.10 - 3.05 * (index // 3),
+            )
+            for index, (
+                title,
+                field,
+                value_kind,
+                color,
+                _description,
+            ) in enumerate(metrics)
+        )
+
+    legend_y = -6.95 - 7.30 * (len(modifiers) - 1)
     legend = "\n".join(
-        f"\\node[legend] at (0.0,{ -6.75 - 0.25 * index:.2f})"
+        f"\\node[legend] at (0.0,{legend_y - 0.25 * index:.2f})"
         f" {{{title}: {description}.}};"
         for index, (title, _field, _kind, _color, description) in enumerate(metrics)
     )
@@ -581,15 +608,32 @@ def build_long_transition_heatmap() -> str:
     return generated_figure(
         name="long_transition_heatmap",
         result_name="long_vertical_transition",
-        body=body + "\n" + legend,
+        body="\n".join(blocks) + "\n" + legend,
         caption=(
             "Long axial-orientation transition experiment. Rows are initial "
-            "comb tilt, columns are vertical-comb benefit. Count panels report "
+            "comb tilt, columns are proportional vertical-comb advantage "
+            "$\\alpha$, and modifier headings give $f(t)$. Count panels report "
             "seeds out of ten; continuous panels report final-generation means. "
             "The generated fragment records the source CSV."
         ),
         label="fig:long-transition-heatmap",
     )
+
+
+def vertical_comb_modifier_sort_key(modifier: str) -> tuple[int, str]:
+    order = {"linear": 0, "threshold_0.8": 1}
+    return (order.get(modifier, len(order)), modifier)
+
+
+def vertical_comb_modifier_label(modifier: str) -> str:
+    if modifier == "linear":
+        return "Modifier: $f(t)=t$"
+
+    if modifier == "threshold_0.8":
+        return "Modifier: $f(t)=\\mathbf{1}[t \\geq 0.8]$"
+
+    escaped_modifier = modifier.replace("_", "\\_")
+    return f"Modifier: {escaped_modifier}"
 
 
 def generated_table(
@@ -641,6 +685,7 @@ def generated_figure(
         "  cell/.style={minimum width=0.82cm, minimum height=0.56cm, "
         "anchor=center, draw=white, line width=0.7pt, font=\\scriptsize},\n"
         "  paneltitle/.style={font=\\footnotesize\\bfseries, anchor=west},\n"
+        "  modifierlabel/.style={font=\\footnotesize\\bfseries, anchor=west},\n"
         "  axislabel/.style={font=\\scriptsize},\n"
         "  legend/.style={font=\\scriptsize, anchor=west}\n"
         "]\n"
@@ -671,7 +716,7 @@ def build_heatmap_panel(
         ),
         (
             f"\\node[axislabel] at ({origin_x + 2.05:.2f},"
-            f"{origin_y - 2.55:.2f}) {{$\\beta_V$}};"
+            f"{origin_y - 2.55:.2f}) {{$\\alpha$}};"
         ),
     ]
     for column, benefit in enumerate(benefits):
@@ -728,6 +773,7 @@ def write_source_manifest() -> None:
                 "result_file",
                 "result_command",
             ),
+            lineterminator="\n",
         )
         writer.writeheader()
         for table in table_specs().values():

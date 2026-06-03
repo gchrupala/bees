@@ -86,6 +86,7 @@ class DirectionSettings:
     attention_cost: float
     comb_tilt_mutation_sd: float | None = None
     comb_orientation_axial: bool = False
+    vertical_comb_modifier: str = "linear"
 
 
 @dataclass(frozen=True)
@@ -377,17 +378,34 @@ def evaluate_colony(
                 food_payoff -= worker.search_limit * settings.travel_cost_per_distance
 
         total_successes += success_count
-        total_payoff += (
+        episode_payoff = (
             food_payoff
             - dance_cost
             - settings.attention_cost * attention_count
-            + settings.vertical_comb_benefit * colony.traits.comb_tilt
         )
+        vertical_modifier = 1.0 + (
+            settings.vertical_comb_benefit
+            * _vertical_comb_modifier_value(colony.traits.comb_tilt, settings)
+        )
+        total_payoff += episode_payoff * vertical_modifier
 
     return ColonyEvaluation(
         payoff=max(0.001, total_payoff / settings.episodes_per_colony),
         success_rate=total_successes / total_attempts,
     )
+
+
+def _vertical_comb_modifier_value(
+    comb_tilt: float,
+    settings: DirectionSettings,
+) -> float:
+    if settings.vertical_comb_modifier == "linear":
+        return _clamp(comb_tilt, 0.0, 1.0)
+
+    if settings.vertical_comb_modifier == "threshold_0.8":
+        return 1.0 if comb_tilt >= 0.8 else 0.0
+
+    raise ValueError(f"unknown vertical comb modifier: {settings.vertical_comb_modifier}")
 
 
 def simulate(

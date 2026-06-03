@@ -40,7 +40,7 @@ def main() -> None:
     initial_comb_tilts = parse_floats(args.initial_comb_tilts)
     vertical_comb_benefits = parse_floats(args.vertical_comb_benefits)
 
-    writer = csv.DictWriter(sys.stdout, fieldnames=FIELDNAMES)
+    writer = csv.DictWriter(sys.stdout, fieldnames=FIELDNAMES, lineterminator="\n")
     writer.writeheader()
     sys.stdout.flush()
 

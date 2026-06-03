@@ -504,7 +504,7 @@ class DirectionModelTests(unittest.TestCase):
 
         self.assertAlmostEqual(evaluation.payoff, 4.5)
 
-    def test_vertical_comb_benefit_is_added_to_colony_payoff(self) -> None:
+    def test_vertical_comb_benefit_scales_colony_payoff(self) -> None:
         traits = ColonyTraits(
             directional_bias=0.0,
             receiver_attention=0.0,
@@ -537,7 +537,81 @@ class DirectionModelTests(unittest.TestCase):
         )
         with_benefit = evaluate_colony(benefit_colony, benefit_settings, Random(3))
 
-        self.assertAlmostEqual(with_benefit.payoff - no_benefit.payoff, 0.05)
+        self.assertAlmostEqual(with_benefit.payoff, no_benefit.payoff * 1.05)
+
+    def test_vertical_comb_benefit_does_not_rescue_zero_foraging_payoff(self) -> None:
+        traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=0.0,
+            comb_tilt=1.0,
+            comb_orientation=0.0,
+        )
+        settings = _settings(
+            episodes_per_colony=20,
+            foraging_attempts_per_episode=1,
+            stable_worker_sd=0.0,
+            food_site_width=tau,
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            food_value=1.0,
+            travel_cost_per_distance=0.0,
+            base_dance_cost=0.0,
+            cue_cost=0.0,
+            attention_cost=0.0,
+            vertical_comb_benefit=0.25,
+        )
+        colony = create_colony(traits, settings, Random(2))
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertAlmostEqual(evaluation.payoff, 0.001)
+
+    def test_threshold_vertical_comb_modifier_activates_at_threshold(self) -> None:
+        common = {
+            "episodes_per_colony": 20,
+            "foraging_attempts_per_episode": 1,
+            "stable_worker_sd": 0.0,
+            "food_site_width": tau,
+            "food_site_min_distance": 1.0,
+            "food_site_max_distance": 1.0,
+            "food_value": 2.0,
+            "travel_cost_per_distance": 0.0,
+            "base_dance_cost": 0.0,
+            "cue_cost": 0.0,
+            "attention_cost": 0.0,
+            "vertical_comb_benefit": 0.25,
+            "vertical_comb_modifier": "threshold_0.8",
+        }
+        below_traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=0.79,
+            comb_orientation=0.0,
+        )
+        threshold_traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=0.8,
+            comb_orientation=0.0,
+        )
+        settings = _settings(**common)
+        below_colony = create_colony(below_traits, settings, Random(2))
+        threshold_colony = create_colony(threshold_traits, settings, Random(2))
+
+        below = evaluate_colony(below_colony, settings, Random(3))
+        threshold = evaluate_colony(threshold_colony, settings, Random(3))
+
+        self.assertAlmostEqual(below.payoff, 2.0)
+        self.assertAlmostEqual(threshold.payoff, 2.5)
 
     def test_simulation_is_reproducible(self) -> None:
         settings = _settings(
@@ -554,7 +628,7 @@ class DirectionModelTests(unittest.TestCase):
         self.assertEqual(first, second)
 
 
-def _settings(**overrides: float | int | bool | None) -> DirectionSettings:
+def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings:
     values = {
         "colony_count": 4,
         "workers_per_colony": 20,

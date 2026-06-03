@@ -39,7 +39,12 @@ experimental parameter. Comb tilt can also use its own mutation scale via
 rather than evolved. Setting `comb_orientation_axial` treats orientations
 separated by 180 degrees as the same comb plane. Dance production can include
 both a baseline per-dance cost and a precision-dependent cost tied to the
-dancer's directional-bias trait.
+dancer's directional-bias trait. The optional non-communication advantage of
+vertical combs is proportional to colony performance: payoff is multiplied by
+`1 + vertical_comb_benefit * f(t)`, with `vertical_comb_modifier` selecting
+`linear` (`f(t)=t`) or `threshold_0.8` (`f(t)=1` only when tilt is at least
+0.8). This keeps verticality from rescuing colonies whose foraging payoff has
+collapsed.
 
 ## Development
 

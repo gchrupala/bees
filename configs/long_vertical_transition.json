@@ -13,7 +13,7 @@
   "dance_noise_sd": 0.18,
   "interpretation_noise_sd": 0.12,
   "initial_comb_tilt": 0.0,
-  "vertical_comb_benefit": 0.15,
+  "vertical_comb_benefit": 0.10,
   "sun_azimuth_center": 1.5707963267948966,
   "sun_azimuth_width": 3.141592653589793,
   "food_site_count": 2,
@@ -27,5 +27,6 @@
   "base_dance_cost": 0.0,
   "cue_cost": 0.02,
   "attention_cost": 0.01,
-  "comb_orientation_axial": true
+  "comb_orientation_axial": true,
+  "vertical_comb_modifier": "linear"
 }

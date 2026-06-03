@@ -137,22 +137,31 @@ where $\Delta$ is circular angular distance, $w_k$ is site angular width, and
 $d_k$ is site distance. If multiple available sites satisfy this condition, the
 nearest site is used.
 
-The colony payoff for an episode is
+Let the net foraging payoff for an episode be
 \[
-P_e =
-\sum_{j \in F_e} v_{k(j)}
-- c_T\left(\sum_{j \in F_e} d_{k(j)} + \sum_{j \in U_e} \ell_j\right)
-- \sum_{i \in D_e} (c_0 + c_b b_i)
-- c_a A_e
-+ \beta_V t .
+F_e =
+\sum_{j \in \mathcal{F}_e} v_{k(j)}
+- c_T\left(\sum_{j \in \mathcal{F}_e} d_{k(j)}
+  + \sum_{j \in \mathcal{U}_e} \ell_j\right)
+- \sum_{i \in \mathcal{D}_e} (c_0 + c_b b_i)
+- c_a A_e .
 \]
-Here $F_e$ is the set of successful workers, $U_e$ the unsuccessful workers,
-$D_e$ the independent finders that produce dances, and $A_e$ the number of
-dance-following attempts. The terms are food value, travel/search cost,
-per-dance communication cost, receiver-attention cost, and an optional
-non-communication benefit proportional to comb verticality. Mean colony payoff
-is averaged over episodes and floored at 0.001 so that low-payoff colonies
-remain selectable but rare.
+Here $\mathcal{F}_e$ is the set of successful workers, $\mathcal{U}_e$ the
+unsuccessful workers, $\mathcal{D}_e$ the independent finders that produce
+dances, and $A_e$ the number of dance-following attempts. The terms are food
+value, travel/search cost, per-dance communication cost, and receiver-attention
+cost. A vertical comb can then have an optional non-communication advantage
+that scales, rather than adds to, net performance:
+\[
+P_e = F_e \left(1 + \alpha f(t)\right).
+\]
+The default modifier is $f(t)=t$, so $\alpha=0.05$ means that a fully vertical
+comb has a 5\% advantage over a horizontal comb with the same foraging
+performance. The long-transition robustness check also uses
+$f(t)=\mathbf{1}[t \geq 0.8]$. Because the advantage is multiplicative,
+verticality cannot rescue a colony whose foraging payoff has collapsed. Mean
+colony payoff is averaged over episodes and floored at 0.001 so that low-payoff
+colonies remain selectable but rare.
 
 Daughter colonies are sampled in proportion to payoff. Only colony means are
 inherited. Mutations are Gaussian and clipped to the allowed ranges; sender and
@@ -239,28 +248,29 @@ itself establish a stable vertical-comb transition.
 
 \subsection{Tilt-geometry calibration}
 
-We next ran a calibration grid over initial comb tilt and the vertical-comb
-benefit $\beta_V$. These runs used the baseline food distribution, the daytime
-sun arc from $0^\circ$ to $180^\circ$ centered at $90^\circ$, and ten seeds
-(101--110). Success is the fraction of foraging attempts that found food.
-Payoff is the final mean colony payoff after food rewards, search/travel costs,
-dance costs, attention costs, and the vertical-comb benefit. Table~
-\ref{tab:tilt-benefit-calibration} shows that increasing $\beta_V$ can
-preserve more vertical combs, but these settings produce a sharp tradeoff:
-strong verticality often comes with reduced foraging success.
+We next ran a calibration grid over initial comb tilt and the proportional
+vertical-comb advantage $\alpha$ using the default modifier $f(t)=t$. These
+runs used the baseline food distribution, the daytime sun arc from $0^\circ$
+to $180^\circ$ centered at $90^\circ$, and ten seeds (101--110). Success is
+the fraction of foraging attempts that found food. Payoff is the final mean
+colony payoff after food rewards, search/travel costs, dance costs, attention
+costs, and the multiplicative vertical-comb modifier. Table~
+\ref{tab:tilt-benefit-calibration} shows that proportional advantages of
+15--25\% do not by themselves make horizontal or tilted starts retain
+verticality within 30 generations, but vertical starts can retain more tilt.
 
 \input{tables/tilt_benefit_calibration.tex}
 
-The calibration suggests that the transition is path-dependent. Starting from a
-horizontal comb, benefits in the range 0.15--0.25 do not move colonies far from
-horizontal within 30 generations. Starting from a tilted comb, the same benefit
-range can retain intermediate tilt but with lower success. Starting from a
-vertical comb, benefits around 0.20--0.25 retain high verticality, but foraging
-nearly fails in most seeds. Thus the model can impose substantial architecture
-pressure, but the 30-generation calibration may end before sender
-transposition, receiver transposition, and directional precision have enough
-time to adapt together. The relevant open question is therefore whether these
-cases represent stable collapse or a longer coevolutionary transition.
+The calibration suggests that the transition is strongly path-dependent.
+Starting from a horizontal or tilted comb, the tested advantages leave final
+mean tilt below 0.25 while preserving high foraging success. Starting from a
+vertical comb, final tilt is higher, especially at $\alpha=0.15$ and
+$\alpha=0.25$, but success and payoff are lower than in flatter conditions.
+The proportional rule therefore removes the artificial life-support effect of
+an additive bonus: verticality is retained only when enough foraging
+performance remains to be scaled. The relevant open question is whether
+longer runs can turn supplied verticality into a coordinated gravity-referenced
+code before selection drives colonies back toward flatter combs.
 
 \subsection{Tilt orientation}
 
@@ -290,7 +300,7 @@ reach, or because colonies must evolve the vertical geometry and the
 sender--receiver code at the same time. To separate these possibilities, we ran
 a constrained probe with the geometric precondition supplied. Initial comb tilt
 was fixed near vertical at $t=0.95$, comb-tilt mutation was set to 0, comb
-orientation was treated axially, the vertical-comb benefit was set to 0, and
+orientation was treated axially, the vertical-comb advantage was set to 0, and
 the baseline food distribution was otherwise retained. We then varied only the
 sender--receiver transposition mutation correlation and ran each condition for
 120 generations over five seeds (101--105). A run was counted as reaching
@@ -321,8 +331,10 @@ all become useful together.
 We therefore ran longer transition experiments using the axial orientation
 representation. These runs used the baseline food distribution, 120
 generations, ten seeds (101--110), sender--receiver transposition mutation
-correlation 0.6, and the same three initial comb tilts and vertical-comb
-benefits as the calibration grid. Unlike the constrained near-vertical probe,
+correlation 0.6, three initial comb tilts ($0$, $0.5$, and $1.0$), and
+proportional vertical-comb advantages $\alpha \in \{0.05,0.10,0.15,0.20,0.25\}$.
+The default runs used $f(t)=t$, and a robustness check used
+$f(t)=\mathbf{1}[t \geq 0.8]$. Unlike the constrained near-vertical probe,
 comb tilt was free to mutate. A seed was counted as reaching the gravity
 channel when both mean sender and receiver transposition reached 0.50. It was
 counted as retaining verticality when final mean comb tilt was at least 0.80.
@@ -332,20 +344,26 @@ success at least 0.10.
 
 \input{figures/long_transition_heatmap.tex}
 
-The longer horizon changes the interpretation but does not by itself solve the
-transition (Figure~\ref{fig:long-transition-heatmap}). From horizontal starts,
-weak and moderate vertical-comb benefits preserve high foraging success but do
-not move colonies far from horizontal. At $\beta_V=0.25$, one seed reaches both
-verticality and the gravity channel, but that seed also collapses. From tilted
-starts, higher benefits increasingly retain verticality and allow more seeds to
-reach the gravity channel, but collapse also becomes common; at $\beta_V=0.20$,
-one seed recovers to a high-success vertical gravity-channel state. From
-vertical starts, successful vertical gravity-channel outcomes are possible,
-especially at $\beta_V=0.25$ where four collapsed seeds recover by generation
-120, but most seeds still experience collapse. Thus the 30-generation failures
-were too short to distinguish an impossible transition from a slow coordination
-process, while 120 generations show that longer time alone is insufficient to
-make the transition robust under the current parameters.
+The proportional rule changes the interpretation of the long runs
+(Figure~\ref{fig:long-transition-heatmap}). From horizontal starts, no tested
+advantage reaches the gravity channel or retains verticality under either
+modifier, and final success remains high. From tilted starts, no tested
+advantage reaches the gravity channel or retains verticality either; a few
+seeds transiently collapse but recover by the final generation. Thus
+proportional verticality pressure up to 25\% is not sufficient to bootstrap the
+architecture from horizontal or intermediate tilt under the current mutation
+and ecological settings.
+
+From vertical starts, by contrast, verticality and gravity-referenced
+communication sometimes coevolve without lasting foraging failure. With
+$f(t)=t$, the number of seeds retaining verticality and reaching the gravity
+channel is 2/10 at $\alpha=0.05$, 2/10 at $\alpha=0.10$, 4/10 at
+$\alpha=0.15$, 0/10 at $\alpha=0.20$, and 3/10 at $\alpha=0.25$. With the
+threshold modifier, the corresponding counts are 2/10 for
+$\alpha=0.05$--$0.20$ and 3/10 at $\alpha=0.25$. Collapse is limited to one
+seed in each vertical-start condition and those seeds recover by generation
+120. The transition is therefore possible when vertical architecture is already
+supplied, but it remains stochastic and non-monotonic rather than robust.
 
 \section{Conclusion}
 
@@ -353,22 +371,25 @@ The resource-distribution experiments support the idea that costly directional
 communication is favored most strongly in an intermediate ecological regime:
 food must be hard enough to make recruitment valuable, but discoverable enough
 for independent finders to seed dances. The geometry experiments support the
-architectural-precondition hypothesis in a more conditional way. A vertical-comb
-benefit can preserve verticality, and supplied near-vertical geometry allows
-gravity-referenced sender--receiver transposition to evolve, but the full
-architecture-and-code transition is not yet robust.
+architectural-precondition hypothesis in a more conditional way. A
+proportional vertical-comb advantage can sometimes preserve supplied
+verticality, and supplied near-vertical geometry allows gravity-referenced
+sender--receiver transposition to evolve, but the full architecture-and-code
+transition is not yet robust.
 
 The constrained coupling probe supports the sender--receiver coordination
 hypothesis: with near-vertical geometry supplied, gravity-referenced
 communication evolves in every condition, and correlated sender--receiver
 mutations shorten the transition and reduce final mismatch. The long transition
-runs support the transition-risk hypothesis. Some tilted or vertical starts
-recover into high-success vertical gravity-channel states by generation 120,
-but horizontal starts mostly remain horizontal, and many vertical-retaining
-seeds lose foraging performance before communication catches up. The next
-modeling priority is therefore to calibrate vertical-comb benefits, mutation
-scales, and coupling assumptions so that architecture and communication can
-coevolve without routinely passing through a collapse in foraging success.
+runs support the transition-risk hypothesis under a stricter viability-scaled
+fitness rule. Proportional vertical-comb advantages up to 25\% do not bootstrap
+verticality from horizontal or tilted starts, and vertical starts produce
+gravity-referenced vertical outcomes only in a minority of seeds. The next
+modeling priority is therefore to identify what additional conditions can keep
+the architecture available while the sender--receiver code adapts: stronger or
+developmentally constrained comb architecture, different mutation scales, or
+ecological settings where partially vertical combs remain foraging-viable long
+enough for gravity-referenced communication to become useful.
 
 \bibliographystyle{plain}
 \bibliography{references}

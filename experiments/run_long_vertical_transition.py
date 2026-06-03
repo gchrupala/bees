@@ -18,6 +18,7 @@ from bees.model import DirectionSettings, GenerationSummary, simulate
 SUMMARY_FIELDNAMES = [
     "initial_comb_tilt",
     "vertical_comb_benefit",
+    "vertical_comb_modifier",
     "seeds",
     "generations",
     "comb_orientation_axial",
@@ -55,6 +56,7 @@ SUMMARY_FIELDNAMES = [
 SEED_FIELDNAMES = [
     "initial_comb_tilt",
     "vertical_comb_benefit",
+    "vertical_comb_modifier",
     "seed",
     "generations",
     "comb_orientation_axial",
@@ -88,6 +90,7 @@ SEED_FIELDNAMES = [
 class SeedMetrics:
     initial_comb_tilt: float
     vertical_comb_benefit: float
+    vertical_comb_modifier: str
     seed: int
     generations: int
     comb_orientation_axial: bool
@@ -125,6 +128,7 @@ def main() -> None:
     seeds = parse_ints(args.seeds)
     initial_comb_tilts = parse_floats(args.initial_comb_tilts)
     vertical_comb_benefits = parse_floats(args.vertical_comb_benefits)
+    vertical_comb_modifiers = parse_strings(args.vertical_comb_modifiers)
 
     args.summary_output.parent.mkdir(parents=True, exist_ok=True)
     args.seed_output.parent.mkdir(parents=True, exist_ok=True)
@@ -133,91 +137,109 @@ def main() -> None:
         args.summary_output.open("w", newline="") as summary_file,
         args.seed_output.open("w", newline="") as seed_file,
     ):
-        summary_writer = csv.DictWriter(summary_file, fieldnames=SUMMARY_FIELDNAMES)
-        seed_writer = csv.DictWriter(seed_file, fieldnames=SEED_FIELDNAMES)
+        summary_writer = csv.DictWriter(
+            summary_file,
+            fieldnames=SUMMARY_FIELDNAMES,
+            lineterminator="\n",
+        )
+        seed_writer = csv.DictWriter(
+            seed_file,
+            fieldnames=SEED_FIELDNAMES,
+            lineterminator="\n",
+        )
         summary_writer.writeheader()
         seed_writer.writeheader()
         summary_file.flush()
         seed_file.flush()
 
-        condition_count = len(initial_comb_tilts) * len(vertical_comb_benefits)
+        condition_count = (
+            len(initial_comb_tilts)
+            * len(vertical_comb_benefits)
+            * len(vertical_comb_modifiers)
+        )
         condition_index = 0
         for initial_comb_tilt in initial_comb_tilts:
-            for vertical_comb_benefit in vertical_comb_benefits:
-                condition_index += 1
-                condition_started = perf_counter()
-                settings = replace(
-                    base_settings,
-                    initial_comb_tilt=initial_comb_tilt,
-                    vertical_comb_benefit=vertical_comb_benefit,
-                )
-                print(
-                    (
-                        f"condition {condition_index}/{condition_count}: "
-                        f"tilt={initial_comb_tilt:.3f}, "
-                        f"benefit={vertical_comb_benefit:.3f}, "
-                        f"generations={settings.generations}, "
-                        f"seeds={len(seeds)}"
-                    ),
-                    file=sys.stderr,
-                    flush=True,
-                )
-
-                metrics = []
-                for seed_index, seed in enumerate(seeds, start=1):
-                    seed_started = perf_counter()
-                    history = simulate(settings, seed=seed)
-                    seed_metrics = summarize_seed(
+            for vertical_comb_modifier in vertical_comb_modifiers:
+                validate_vertical_comb_modifier(vertical_comb_modifier)
+                for vertical_comb_benefit in vertical_comb_benefits:
+                    condition_index += 1
+                    condition_started = perf_counter()
+                    settings = replace(
+                        base_settings,
                         initial_comb_tilt=initial_comb_tilt,
                         vertical_comb_benefit=vertical_comb_benefit,
-                        seed=seed,
-                        settings=settings,
-                        history=history,
-                        gravity_threshold=args.gravity_threshold,
-                        directional_threshold=args.directional_threshold,
-                        vertical_threshold=args.vertical_threshold,
-                        collapse_success_threshold=args.collapse_success_threshold,
-                        recovery_success_threshold=args.recovery_success_threshold,
-                        elapsed_seconds=perf_counter() - seed_started,
+                        vertical_comb_modifier=vertical_comb_modifier,
                     )
-                    metrics.append(seed_metrics)
-                    seed_writer.writerow(seed_row(seed_metrics))
-                    seed_file.flush()
                     print(
                         (
-                            f"  seed {seed_index}/{len(seeds)} ({seed}) done: "
-                            f"final_success={seed_metrics.final_success:.3f}, "
-                            f"final_tilt={seed_metrics.final_comb_tilt:.3f}, "
-                            f"final_min_transposition="
-                            f"{seed_metrics.final_min_transposition:.3f}, "
-                            f"collapsed={str(seed_metrics.collapsed).lower()}, "
-                            f"elapsed={seed_metrics.elapsed_seconds:.1f}s"
+                            f"condition {condition_index}/{condition_count}: "
+                            f"tilt={initial_comb_tilt:.3f}, "
+                            f"modifier={vertical_comb_modifier}, "
+                            f"benefit={vertical_comb_benefit:.3f}, "
+                            f"generations={settings.generations}, "
+                            f"seeds={len(seeds)}"
                         ),
                         file=sys.stderr,
                         flush=True,
                     )
 
-                row = summarize_condition(
-                    initial_comb_tilt=initial_comb_tilt,
-                    vertical_comb_benefit=vertical_comb_benefit,
-                    settings=settings,
-                    metrics=metrics,
-                    elapsed_seconds=perf_counter() - condition_started,
-                )
-                summary_writer.writerow(row)
-                summary_file.flush()
-                print(
-                    (
-                        f"condition {condition_index}/{condition_count} summary: "
-                        f"gravity={row['reached_gravity_fraction']}, "
-                        f"vertical={row['retained_vertical_fraction']}, "
-                        f"collapse={row['collapse_fraction']}, "
-                        f"final_success={row['mean_final_success']}, "
-                        f"elapsed={row['elapsed_seconds']}s"
-                    ),
-                    file=sys.stderr,
-                    flush=True,
-                )
+                    metrics = []
+                    for seed_index, seed in enumerate(seeds, start=1):
+                        seed_started = perf_counter()
+                        history = simulate(settings, seed=seed)
+                        seed_metrics = summarize_seed(
+                            initial_comb_tilt=initial_comb_tilt,
+                            vertical_comb_benefit=vertical_comb_benefit,
+                            vertical_comb_modifier=vertical_comb_modifier,
+                            seed=seed,
+                            settings=settings,
+                            history=history,
+                            gravity_threshold=args.gravity_threshold,
+                            directional_threshold=args.directional_threshold,
+                            vertical_threshold=args.vertical_threshold,
+                            collapse_success_threshold=args.collapse_success_threshold,
+                            recovery_success_threshold=args.recovery_success_threshold,
+                            elapsed_seconds=perf_counter() - seed_started,
+                        )
+                        metrics.append(seed_metrics)
+                        seed_writer.writerow(seed_row(seed_metrics))
+                        seed_file.flush()
+                        print(
+                            (
+                                f"  seed {seed_index}/{len(seeds)} ({seed}) done: "
+                                f"final_success={seed_metrics.final_success:.3f}, "
+                                f"final_tilt={seed_metrics.final_comb_tilt:.3f}, "
+                                f"final_min_transposition="
+                                f"{seed_metrics.final_min_transposition:.3f}, "
+                                f"collapsed={str(seed_metrics.collapsed).lower()}, "
+                                f"elapsed={seed_metrics.elapsed_seconds:.1f}s"
+                            ),
+                            file=sys.stderr,
+                            flush=True,
+                        )
+
+                    row = summarize_condition(
+                        initial_comb_tilt=initial_comb_tilt,
+                        vertical_comb_benefit=vertical_comb_benefit,
+                        vertical_comb_modifier=vertical_comb_modifier,
+                        settings=settings,
+                        metrics=metrics,
+                        elapsed_seconds=perf_counter() - condition_started,
+                    )
+                    summary_writer.writerow(row)
+                    summary_file.flush()
+                    print(
+                        (
+                            f"condition {condition_index}/{condition_count} summary: "
+                            f"gravity={row['reached_gravity_fraction']}, "
+                            f"vertical={row['retained_vertical_fraction']}, "
+                            f"collapse={row['collapse_fraction']}, "
+                            f"final_success={row['mean_final_success']}, "
+                            f"elapsed={row['elapsed_seconds']}s"
+                        ),
+                        file=sys.stderr,
+                        flush=True,
+                    )
 
     print(f"wrote {args.summary_output}", file=sys.stderr, flush=True)
     print(f"wrote {args.seed_output}", file=sys.stderr, flush=True)
@@ -260,8 +282,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--vertical-comb-benefits",
-        default="0.15,0.20,0.25",
-        help="Comma-separated vertical-comb benefit values.",
+        default="0.05,0.10,0.15,0.20,0.25",
+        help="Comma-separated proportional vertical-comb advantage values.",
+    )
+    parser.add_argument(
+        "--vertical-comb-modifiers",
+        default="linear",
+        help=(
+            "Comma-separated vertical-comb modifier functions. Supported "
+            "values: linear, threshold_0.8."
+        ),
     )
     parser.add_argument(
         "--generations",
@@ -322,9 +352,19 @@ def parse_floats(raw: str) -> list[float]:
     return [float(item.strip()) for item in raw.split(",") if item.strip()]
 
 
+def parse_strings(raw: str) -> list[str]:
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def validate_vertical_comb_modifier(modifier: str) -> None:
+    if modifier not in {"linear", "threshold_0.8"}:
+        raise ValueError(f"unknown vertical comb modifier: {modifier}")
+
+
 def summarize_seed(
     initial_comb_tilt: float,
     vertical_comb_benefit: float,
+    vertical_comb_modifier: str,
     seed: int,
     settings: DirectionSettings,
     history: list[GenerationSummary],
@@ -346,6 +386,7 @@ def summarize_seed(
     return SeedMetrics(
         initial_comb_tilt=initial_comb_tilt,
         vertical_comb_benefit=vertical_comb_benefit,
+        vertical_comb_modifier=vertical_comb_modifier,
         seed=seed,
         generations=settings.generations,
         comb_orientation_axial=settings.comb_orientation_axial,
@@ -431,6 +472,7 @@ def first_vertical_reach_generation(
 def summarize_condition(
     initial_comb_tilt: float,
     vertical_comb_benefit: float,
+    vertical_comb_modifier: str,
     settings: DirectionSettings,
     metrics: list[SeedMetrics],
     elapsed_seconds: float,
@@ -438,6 +480,7 @@ def summarize_condition(
     row = {
         "initial_comb_tilt": format_float(initial_comb_tilt),
         "vertical_comb_benefit": format_float(vertical_comb_benefit),
+        "vertical_comb_modifier": vertical_comb_modifier,
         "seeds": str(len(metrics)),
         "generations": str(settings.generations),
         "comb_orientation_axial": str(settings.comb_orientation_axial).lower(),
@@ -513,6 +556,7 @@ def seed_row(metric: SeedMetrics) -> dict[str, str]:
     return {
         "initial_comb_tilt": format_float(metric.initial_comb_tilt),
         "vertical_comb_benefit": format_float(metric.vertical_comb_benefit),
+        "vertical_comb_modifier": metric.vertical_comb_modifier,
         "seed": str(metric.seed),
         "generations": str(metric.generations),
         "comb_orientation_axial": str(metric.comb_orientation_axial).lower(),

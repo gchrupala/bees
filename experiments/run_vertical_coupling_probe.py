@@ -53,7 +53,7 @@ def main() -> None:
     seeds = parse_ints(args.seeds)
     correlations = parse_floats(args.correlations)
 
-    writer = csv.DictWriter(sys.stdout, fieldnames=FIELDNAMES)
+    writer = csv.DictWriter(sys.stdout, fieldnames=FIELDNAMES, lineterminator="\n")
     writer.writeheader()
     sys.stdout.flush()
 
