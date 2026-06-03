@@ -1,0 +1,6 @@
+transposition_mutation_correlation,seeds,generations,initial_comb_tilt,comb_tilt_mutation_sd,comb_orientation_axial,reached_gravity_fraction,mean_gravity_reach_generation,gravity_reach_generation_sd,reached_directional_fraction,mean_directional_reach_generation,directional_reach_generation_sd,mean_final_bias,mean_final_attention,mean_final_sender_transposition,mean_final_receiver_transposition,mean_final_min_transposition,mean_final_transposition_gap,mean_final_comb_tilt,mean_final_comb_orientation_alignment,mean_final_search_limit,mean_final_success,mean_final_payoff,mean_success_delta,elapsed_seconds
+0.000,5,120,0.950,0.000,true,1.000,42.600,16.475,1.000,15.000,5.404,0.878,0.886,0.864,0.881,0.856,0.033,0.950,0.238,7.274,0.192,0.680,0.167,113.608
+0.300,5,120,0.950,0.000,true,1.000,46.200,14.675,1.000,17.600,11.430,0.847,0.884,0.913,0.898,0.894,0.022,0.950,0.274,7.186,0.192,0.694,0.166,77.553
+0.600,5,120,0.950,0.000,true,1.000,21.000,3.521,1.000,13.400,4.224,0.882,0.913,0.890,0.897,0.888,0.010,0.950,0.231,7.329,0.199,0.754,0.174,80.957
+0.900,5,120,0.950,0.000,true,1.000,22.400,6.829,1.000,13.200,2.315,0.863,0.901,0.907,0.903,0.902,0.005,0.950,0.277,7.166,0.194,0.723,0.168,81.063
+1.000,5,120,0.950,0.000,true,1.000,23.400,8.800,1.000,13.600,3.137,0.836,0.880,0.901,0.901,0.901,0.000,0.950,0.250,7.246,0.191,0.677,0.166,80.988

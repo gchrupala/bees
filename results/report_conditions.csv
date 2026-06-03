@@ -1,0 +1,7 @@
+experiment,condition,seeds,reached_fraction,mean_reach_generation,final_bias,final_attention,final_sender_transposition,final_receiver_transposition,final_comb_tilt,final_comb_orientation_alignment,final_search_limit,final_success,final_payoff
+food_distribution,hard,10,0.400,22.750,0.264,0.313,0.243,0.226,0.254,0.259,2.789,0.008,0.001
+food_distribution,baseline,10,1.000,7.700,0.833,0.869,0.190,0.181,0.128,0.405,7.215,0.192,0.690
+food_distribution,easy,10,0.500,19.600,0.279,0.369,0.268,0.270,0.238,0.317,7.067,0.708,7.366
+comb_tilt,horizontal,10,1.000,7.700,0.833,0.869,0.190,0.181,0.128,0.405,7.215,0.192,0.690
+comb_tilt,tilted,10,1.000,11.000,0.799,0.891,0.148,0.170,0.157,0.478,7.305,0.193,0.685
+comb_tilt,vertical,10,1.000,13.700,0.698,0.824,0.486,0.489,0.567,0.618,7.201,0.177,0.522

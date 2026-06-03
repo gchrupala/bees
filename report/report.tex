@@ -168,26 +168,7 @@ and easy used eight sites of width 0.50. The hard condition therefore makes
 independent discovery unlikely, while the easy condition makes independent
 discovery likely even without using the dance.
 
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{lrrrrrrr}
-\toprule
-Condition & Reached & Reach gen. & Bias & Attention & Search & Success & Payoff \\
-\midrule
-Hard & 6/10 & 23.2 & 0.271 & 0.357 & 3.070 & 0.009 & 0.001 \\
-Baseline & 10/10 & 10.2 & 0.850 & 0.852 & 7.155 & 0.195 & 0.742 \\
-Easy & 7/10 & 21.4 & 0.352 & 0.335 & 6.917 & 0.703 & 7.320 \\
-\bottomrule
-\end{tabular}
-\caption{Food-distribution experiment under the current dynamic recruitment
-model. ``Reached'' is the number of seeds in which mean directional precision
-investment reached 0.30 by generation 30. ``Reach gen.'' is averaged over
-reached seeds only. Bias is the table label for directional precision
-investment; the reported bias, attention, search limit, success, and payoff
-values are final-generation means over all ten seeds.}
-\label{tab:food-distribution}
-\end{table}
+\input{tables/food_distribution.tex}
 
 The result matches the ecological prediction qualitatively, but with a sharper
 distinction than in the earlier fixed-scout model. In the hard environment,
@@ -202,39 +183,22 @@ found without precise communication.
 
 \subsection{Vertical comb}
 
-We also compared horizontal, tilted, and vertical combs while holding the
-baseline food distribution fixed. Comb tilt was set to $t=0$, $t=0.5$, or
-$t=1.0$, with ten seeds per condition. Table~\ref{tab:comb-tilt} summarizes the
-result after 30 generations.
+We also compared colonies initialized with horizontal, tilted, and vertical
+combs while holding the baseline food distribution fixed. Initial comb tilt was
+set to $t=0$, $t=0.5$, or $t=1.0$, with ten seeds per condition. Comb tilt was
+still heritable and mutable in these runs. Table~\ref{tab:comb-tilt} summarizes
+the result after 30 generations.
 
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{lrrrrrrrr}
-\toprule
-Comb & Reached & Reach gen. & Bias & Attention & Sender & Receiver & Success & Payoff \\
-\midrule
-Horizontal & 10/10 & 10.2 & 0.850 & 0.852 & 0.278 & 0.397 & 0.195 & 0.742 \\
-Tilted & 9/10 & 22.3 & 0.455 & 0.740 & 0.659 & 0.586 & 0.146 & 0.223 \\
-Vertical & 5/10 & 21.0 & 0.277 & 0.337 & 0.376 & 0.352 & 0.099 & 0.013 \\
-\bottomrule
-\end{tabular}
-\caption{Comb-tilt comparison using the baseline food distribution and ten
-seeds. Sender and receiver denote final mean sender and receiver transposition
-traits.}
-\label{tab:comb-tilt}
-\end{table}
+\input{tables/comb_tilt.tex}
 
-As expected, direct horizontal pointing performs best when the comb is
-horizontal. Increasing comb tilt weakens the existing direct mapping and slows
-the evolution of directional signaling. In the tilted condition, sender and
-receiver transposition both rise, indicating selection toward the
-gravity-referenced mapping, but payoff remains lower than in the horizontal
-condition. In the fully vertical condition, communication remains weak within
-this 30-generation horizon: only half of the seeds reach the
-directional-precision threshold, and final payoff is close to the minimum floor.
-This should be read as a short-run coordination problem rather than evidence
-that gravity-referenced communication is unreachable.
+With mutable tilt, all three initial-tilt conditions reach the
+directional-precision threshold in all ten seeds under the current baseline
+settings. Tilted and vertical starts retain substantial foraging success over
+30 generations, but they also evolve higher sender and receiver transposition
+than horizontal starts. The initially vertical condition still has lower payoff
+than the horizontal condition, and its final mean tilt is reduced in the
+underlying result file, indicating that the short-run comparison does not by
+itself establish a stable vertical-comb transition.
 
 \subsection{Tilt-geometry calibration}
 
@@ -249,30 +213,7 @@ dance costs, attention costs, and the vertical-comb benefit. Table~
 can preserve more vertical combs, but current settings produce a sharp tradeoff:
 strong verticality often comes with reduced foraging success.
 
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{rrrrrrrr}
-\toprule
-Initial tilt & Benefit & Final tilt & Sender & Receiver & Success & Payoff & Reached \\
-\midrule
-0.0 & 0.15 & 0.142 & 0.178 & 0.183 & 0.195 & 0.735 & 10/10 \\
-0.0 & 0.20 & 0.162 & 0.192 & 0.208 & 0.195 & 0.762 & 10/10 \\
-0.0 & 0.25 & 0.151 & 0.229 & 0.196 & 0.194 & 0.751 & 10/10 \\
-0.5 & 0.15 & 0.373 & 0.225 & 0.230 & 0.137 & 0.535 & 9/10 \\
-0.5 & 0.20 & 0.445 & 0.282 & 0.271 & 0.137 & 0.558 & 9/10 \\
-0.5 & 0.25 & 0.330 & 0.208 & 0.206 & 0.154 & 0.601 & 10/10 \\
-1.0 & 0.15 & 0.737 & 0.341 & 0.339 & 0.090 & 0.313 & 7/10 \\
-1.0 & 0.20 & 0.919 & 0.291 & 0.282 & 0.001 & 0.093 & 4/10 \\
-1.0 & 0.25 & 0.917 & 0.288 & 0.333 & 0.002 & 0.127 & 7/10 \\
-\bottomrule
-\end{tabular}
-\caption{Ten-seed calibration of the vertical-comb benefit under the explicit
-tilt-geometry model. Sender and receiver are final mean transposition traits.
-Reached is the number of seeds in which mean directional precision investment
-reached 0.30 by generation 30.}
-\label{tab:tilt-benefit-calibration}
-\end{table}
+\input{tables/tilt_benefit_calibration.tex}
 
 The calibration suggests that the transition is path-dependent. Starting from a
 horizontal comb, benefits in the range 0.15--0.25 do not move colonies far from
@@ -298,30 +239,7 @@ converge on an orientation. The across-alignment column measures whether
 different seeds converge on the same absolute orientation, weighting each seed
 by its within-run orientation alignment.
 
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{rrrrrrrr}
-\toprule
-Initial tilt & Benefit & Final tilt & Success & Within align. & Mean orient. & Sun offset & Across align. \\
-\midrule
-0.0 & 0.15 & 0.142 & 0.195 & 0.518 & 122.8 & 32.8 & 0.473 \\
-0.0 & 0.20 & 0.162 & 0.195 & 0.489 & 155.1 & 65.1 & 0.492 \\
-0.0 & 0.25 & 0.151 & 0.194 & 0.478 & 79.0 & -11.0 & 0.084 \\
-0.5 & 0.15 & 0.373 & 0.137 & 0.490 & 158.9 & 68.9 & 0.249 \\
-0.5 & 0.20 & 0.445 & 0.137 & 0.356 & 214.4 & 124.4 & 0.158 \\
-0.5 & 0.25 & 0.330 & 0.154 & 0.523 & 73.9 & -16.1 & 0.401 \\
-1.0 & 0.15 & 0.737 & 0.090 & 0.545 & 251.7 & 161.7 & 0.374 \\
-1.0 & 0.20 & 0.919 & 0.001 & 0.374 & 263.8 & 173.8 & 0.093 \\
-1.0 & 0.25 & 0.917 & 0.002 & 0.392 & 266.8 & 176.8 & 0.291 \\
-\bottomrule
-\end{tabular}
-\caption{Orientation sanity check under the explicit tilt-geometry model.
-Mean orientation and sun offset are measured in degrees. Across alignment is
-the weighted across-seed orientation alignment; values near 0 indicate that
-different seeds choose different absolute orientations.}
-\label{tab:orientation-calibration}
-\end{table}
+\input{tables/orientation_calibration.tex}
 
 Orientation sometimes aligns within a run, but it does not yet show a clean,
 robust relationship to the daytime sun arc across seeds. Some conditions point
@@ -347,26 +265,7 @@ sender--receiver transposition mutation correlation and ran each condition for
 gravity-referenced communication when both mean sender and receiver
 transposition reached 0.50.
 
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{rrrrrrrr}
-\toprule
-Corr. & Reached & Reach gen. & Bias & Sender & Receiver & Success & Payoff \\
-\midrule
-0.0 & 5/5 & 42.6 & 0.878 & 0.864 & 0.881 & 0.192 & 0.680 \\
-0.3 & 5/5 & 46.2 & 0.847 & 0.913 & 0.898 & 0.192 & 0.694 \\
-0.6 & 5/5 & 21.0 & 0.882 & 0.890 & 0.897 & 0.199 & 0.754 \\
-0.9 & 5/5 & 22.4 & 0.863 & 0.907 & 0.903 & 0.194 & 0.723 \\
-1.0 & 5/5 & 23.4 & 0.836 & 0.901 & 0.901 & 0.191 & 0.677 \\
-\bottomrule
-\end{tabular}
-\caption{Constrained near-vertical coupling probe. Corr. is the correlation
-between sender and receiver transposition mutation increments. ``Reached''
-counts seeds in which both mean sender and receiver transposition reached 0.50
-by generation 120. Reach generation is averaged over reached seeds only.}
-\label{tab:vertical-coupling-probe}
-\end{table}
+\input{tables/vertical_coupling_probe.tex}
 
 The result is strongly diagnostic. With near-vertical geometry supplied,
 gravity-referenced communication is reachable in every condition. Independent
@@ -395,32 +294,7 @@ It was counted as collapsed when mean foraging success fell to 0.02 or below
 at any generation, and as recovered when a collapsed seed ended with final
 success at least 0.10.
 
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{rrrrrrrr}
-\toprule
-Initial tilt & Benefit & Gravity & Vertical & Collapse & Recovered & Success & Final tilt \\
-\midrule
-0.0 & 0.15 & 0/10 & 0/10 & 0/10 & 0/10 & 0.199 & 0.118 \\
-0.0 & 0.20 & 0/10 & 0/10 & 0/10 & 0/10 & 0.193 & 0.121 \\
-0.0 & 0.25 & 1/10 & 1/10 & 1/10 & 0/10 & 0.175 & 0.211 \\
-0.5 & 0.15 & 3/10 & 3/10 & 3/10 & 0/10 & 0.136 & 0.366 \\
-0.5 & 0.20 & 4/10 & 6/10 & 6/10 & 1/10 & 0.099 & 0.599 \\
-0.5 & 0.25 & 5/10 & 9/10 & 9/10 & 1/10 & 0.037 & 0.838 \\
-1.0 & 0.15 & 7/10 & 9/10 & 7/10 & 1/10 & 0.079 & 0.829 \\
-1.0 & 0.20 & 5/10 & 10/10 & 10/10 & 1/10 & 0.020 & 0.899 \\
-1.0 & 0.25 & 8/10 & 9/10 & 9/10 & 4/10 & 0.095 & 0.829 \\
-\bottomrule
-\end{tabular}
-\caption{Long axial-orientation transition experiment. Gravity counts seeds in
-which both mean sender and receiver transposition reached 0.50 by generation
-120. Vertical counts seeds with final mean comb tilt at least 0.80. Collapse
-counts seeds whose mean foraging success fell to 0.02 or below at any
-generation. Recovered counts collapsed seeds whose final success was at least
-0.10. Success and final tilt are final-generation means over all ten seeds.}
-\label{tab:long-transition}
-\end{table}
+\input{tables/long_transition.tex}
 
 The longer horizon changes the interpretation but does not by itself solve the
 transition. From horizontal starts, weak and moderate vertical-comb benefits

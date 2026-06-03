@@ -91,6 +91,18 @@ Run the longer axial-orientation vertical transition experiment:
 python -u experiments/run_long_vertical_transition.py
 ```
 
+Regenerate the tracked report result files and generated LaTeX tables:
+
+```sh
+python -u experiments/run_report_artifacts.py all
+```
+
+List the command associated with each report table:
+
+```sh
+python -u experiments/run_report_artifacts.py list
+```
+
 Run tests:
 
 ```sh
