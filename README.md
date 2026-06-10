@@ -48,6 +48,12 @@ collapsed.
 
 ## Development
 
+Install the project and experiment dependencies:
+
+```sh
+python -m pip install -e .
+```
+
 Run the horizontal direction experiment:
 
 ```sh
@@ -94,6 +100,12 @@ Run the longer axial-orientation vertical transition experiment:
 
 ```sh
 python -u experiments/run_long_vertical_transition.py
+```
+
+Run an Optuna search over food-transition parameters:
+
+```sh
+python -u experiments/optimize_food_transition.py --workers 4 --n-trials 32
 ```
 
 Export no-threshold long-transition trajectories and event timings:

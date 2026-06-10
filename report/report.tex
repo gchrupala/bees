@@ -442,6 +442,38 @@ the view that the ecology can make the transition possible, but the
 architecture-and-code lock-in remains stochastic under the current mutation
 and selection regime.
 
+\subsection{Adaptive food-transition search}
+
+Manual grids become inefficient once several ecological parameters plausibly
+interact. We therefore added an Optuna-based adaptive search over the same
+scientific quantities, without introducing new biological mechanisms. The
+search starts from the long-transition configuration and keeps horizontal
+initial combs, axial orientation, $\rho=0.6$, food value 1.0, $f(t)=t$, and
+120 generations. It varies food-site count (3--6), angular width
+(0.22--0.36), capacity (6--14), vertical-comb advantage (0.15--0.35),
+maximum food distance (6.0--10.0), and travel cost (0.01--0.04). For each
+seed, let $t_f$ be final comb tilt and let $s_f,r_f$ be final sender and
+receiver transposition. A trial is stable when
+$t_f \geq 0.80$, $s_f \geq 0.50$, and $r_f \geq 0.50$. Its continuous
+near-miss score is
+\[
+p = \min\left(1, \frac{t_f}{0.80}, \frac{s_f}{0.50}, \frac{r_f}{0.50}\right).
+\]
+The optimization objective is stable seed count plus mean $p$, minus the
+number of seeds whose success falls to 0.02 or below. Thus an additional stable
+vertical gravity-code seed always dominates a merely better near miss, while
+the continuous term still lets the optimizer rank incomplete transitions.
+
+As a pilot, we ran eight seed-101 trials with four workers. One trial reached
+the target state: six food sites, width 0.35, capacity 13,
+$\alpha=0.33$, maximum food distance 8.0, and travel cost 0.01 ended with
+$t_f=0.914$, $\min(s_f,r_f)=0.855$, and final success 0.608. The other seven
+trials did not reach stability; their progress scores ranged from 0.129 to
+0.319. This first adaptive pass therefore finds another viable seed-101
+ecology, somewhat outside the earlier three-to-five-site local grid, but it
+should be treated as a search result rather than a robustness result until the
+best regions are rerun over multiple seeds.
+
 \section{Conclusion}
 
 The resource-distribution experiments support the idea that costly directional
@@ -470,11 +502,12 @@ making patches broader, richer, or higher-capacity mostly increases foraging
 success without making the architecture-and-code transition robust. The
 robustness panel reinforces this point: the best local pocket succeeds in only
 2 of 11 seeds, and the other pockets succeed only in seed 101. The next
-modeling priority is therefore to map the ecological corridor more carefully
-and identify what converts rare viable paths into reliable selection: finer
-ecological sweeps around five-site, moderate-width conditions, altered
-mutation/coupling structure, or additional mechanisms that keep partially
-vertical combs available while gravity-referenced communication becomes useful.
+modeling priority is therefore to use the adaptive search to map the
+ecological corridor more carefully and identify what converts rare viable
+paths into reliable selection: multi-seed follow-up around the Optuna and
+local-grid pockets, altered mutation/coupling structure, or additional
+mechanisms that keep partially vertical combs available while
+gravity-referenced communication becomes useful.
 
 \bibliographystyle{plain}
 \bibliography{references}

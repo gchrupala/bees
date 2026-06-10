@@ -3,7 +3,9 @@ name = "bees"
 version = "0.1.0"
 description = "Simple computational models for bee communication evolution."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "optuna>=4,<5",
+]
 
 [build-system]
 requires = ["setuptools>=68"]

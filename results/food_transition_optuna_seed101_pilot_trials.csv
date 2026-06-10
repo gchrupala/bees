@@ -1,0 +1,9 @@
+number,state,value,food_site_count,food_site_width,food_site_capacity,vertical_comb_benefit,food_site_max_distance,travel_cost_per_distance,stable_count,seed_count,collapse_count,mean_progress,mean_final_success,mean_final_comb_tilt,mean_final_min_transposition,elapsed_seconds
+0,COMPLETE,0.227,3,0.240,12,0.200,8.500,0.020,0,1,0,0.227,0.315,0.182,0.178,135.036
+1,COMPLETE,0.137,3,0.280,14,0.160,8.000,0.040,0,1,0,0.137,0.403,0.110,0.165,148.618
+2,COMPLETE,2.000,6,0.350,13,0.330,8.000,0.010,1,1,0,1.000,0.608,0.914,0.855,176.177
+3,COMPLETE,0.129,3,0.250,13,0.280,8.000,0.025,0,1,0,0.129,0.369,0.103,0.132,134.813
+4,COMPLETE,0.319,6,0.280,12,0.190,9.000,0.025,0,1,0,0.319,0.468,0.255,0.215,181.712
+5,COMPLETE,0.248,4,0.300,13,0.250,6.500,0.010,0,1,0,0.248,0.483,0.199,0.199,178.628
+6,COMPLETE,0.238,3,0.350,11,0.310,7.000,0.020,0,1,0,0.238,0.494,0.208,0.119,163.630
+7,COMPLETE,0.210,6,0.250,13,0.330,7.500,0.040,0,1,0,0.210,0.516,0.168,0.181,159.364
