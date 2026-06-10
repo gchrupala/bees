@@ -474,6 +474,23 @@ ecology, somewhat outside the earlier three-to-five-site local grid, but it
 should be treated as a search result rather than a robustness result until the
 best regions are rerun over multiple seeds.
 
+We then continued the same Optuna study for 24 total trials over seeds
+100--102, for 72 full seed simulations. No trial was stable in all three
+seeds, but the adaptive search did move beyond the single-seed result. The
+best trial was stable in two of three seeds, with six food sites, width 0.32,
+capacity 9, $\alpha=0.34$, maximum food distance 6.0, and travel cost 0.03.
+It had objective 2.761, mean progress 0.761, mean final success 0.589, mean
+final comb tilt 0.669, and mean final minimum sender--receiver transposition
+0.596. Three additional trials were stable in one of three seeds: the seed-101
+pilot setting; a nearby six-site setting with width 0.32, capacity 9,
+$\alpha=0.35$, maximum distance 6.0, and travel cost 0.03; and a lower-capacity
+six-site setting with width 0.28, capacity 7, $\alpha=0.25$, maximum distance
+6.0, and travel cost 0.025. None of the 24 trials collapsed. This suggests a
+more specific corridor than ``easier food'' alone: relatively many moderate
+patches, short food distances, and non-negligible travel costs can make
+vertical gravity-code transitions repeat across more than one seed, but the
+transition is still not reliable across the small seed panel.
+
 \section{Conclusion}
 
 The resource-distribution experiments support the idea that costly directional
@@ -504,10 +521,11 @@ robustness panel reinforces this point: the best local pocket succeeds in only
 2 of 11 seeds, and the other pockets succeed only in seed 101. The next
 modeling priority is therefore to use the adaptive search to map the
 ecological corridor more carefully and identify what converts rare viable
-paths into reliable selection: multi-seed follow-up around the Optuna and
-local-grid pockets, altered mutation/coupling structure, or additional
-mechanisms that keep partially vertical combs available while
-gravity-referenced communication becomes useful.
+paths into reliable selection: wider seed follow-up around the two-of-three
+Optuna pocket, local refinement around six-site short-distance conditions,
+altered mutation/coupling structure, or additional mechanisms that keep
+partially vertical combs available while gravity-referenced communication
+becomes useful.
 
 \bibliographystyle{plain}
 \bibliography{references}
