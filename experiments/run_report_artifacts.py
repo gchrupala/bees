@@ -144,6 +144,21 @@ def result_specs() -> dict[str, ResultSpec]:
                 RESULTS / "long_vertical_transition_seeds.csv",
             ),
         ),
+        "food_transition": ResultSpec(
+            name="food_transition",
+            command=(
+                "python",
+                "-u",
+                "experiments/run_food_transition.py",
+                "--seeds",
+                "101,102,103,104,105",
+            ),
+            stdout_file=None,
+            result_files=(
+                RESULTS / "food_transition_summary.csv",
+                RESULTS / "food_transition_seeds.csv",
+            ),
+        ),
     }
 
 
@@ -188,6 +203,14 @@ def table_specs() -> dict[str, TableSpec]:
             result_file=RESULTS / "vertical_coupling_probe.csv",
             table_file=TABLES / "vertical_coupling_probe.tex",
             builder=build_vertical_coupling_probe_table,
+        ),
+        "food_transition": TableSpec(
+            name="food_transition",
+            label="tab:food-transition",
+            result_name="food_transition",
+            result_file=RESULTS / "food_transition_summary.csv",
+            table_file=TABLES / "food_transition.tex",
+            builder=build_food_transition_table,
         ),
     }
 
@@ -507,6 +530,57 @@ def build_vertical_coupling_probe_table() -> str:
     )
 
 
+def build_food_transition_table() -> str:
+    rows = read_csv(RESULTS / "food_transition_summary.csv")
+    body = "\n".join(
+        table_row(
+            [
+                food_transition_label(row["condition"]),
+                row["food_site_count"],
+                row["food_site_width"],
+                row["food_site_capacity"],
+                row["food_value"],
+                count_from_fraction(
+                    row["stable_vertical_gravity_fraction"],
+                    row["seeds"],
+                ),
+                count_from_fraction(row["reached_gravity_fraction"], row["seeds"]),
+                count_from_fraction(row["retained_vertical_fraction"], row["seeds"]),
+                row["mean_final_min_transposition"],
+                row["mean_final_comb_tilt"],
+                row["mean_final_success"],
+            ]
+        )
+        for row in rows
+    )
+    return generated_table(
+        name="food_transition",
+        result_name="food_transition",
+        column_spec="@{}lrrrrrrrrrr@{}",
+        header=(
+            "Cond. & Sites & Width & Cap. & Value & Stable & Grav. "
+            "& Vert. & $m_f$ & $t_f$ & Succ. \\\\"
+        ),
+        body=body,
+        caption=(
+            "Horizontal-start food-distribution transition probe. All rows use\n"
+            "five seeds (101--105), axial orientation, 120 generations, sender--receiver mutation "
+            "correlation\n"
+            "$\\rho=0.6$, and proportional vertical-comb advantage $\\alpha=0.25$. "
+            "Stable counts seeds that end with final comb tilt at least 0.80 and "
+            "both\n"
+            "sender and receiver transposition at least 0.50. Gravity counts "
+            "seeds\n"
+            "that reached the transposition threshold at any generation; vertical "
+            "counts\n"
+            "seeds retaining final comb tilt at least 0.80. Final $m$ is the "
+            "final\n"
+            "mean of the lower of sender and receiver transposition."
+        ),
+        label="tab:food-transition",
+    )
+
+
 def build_long_transition_heatmap() -> str:
     rows = read_csv(RESULTS / "long_vertical_transition_summary.csv")
     for row in rows:
@@ -634,6 +708,18 @@ def vertical_comb_modifier_label(modifier: str) -> str:
 
     escaped_modifier = modifier.replace("_", "\\_")
     return f"Modifier: {escaped_modifier}"
+
+
+def food_transition_label(condition: str) -> str:
+    labels = {
+        "baseline": "Baseline",
+        "broad": "Broad",
+        "broad_high_capacity": "Broad cap.",
+        "broad_rich": "Broad rich",
+        "broad_rich_high_capacity": "Broad rich cap.",
+        "moderate_dense": "Dense",
+    }
+    return labels.get(condition, condition.replace("_", "\\_"))
 
 
 def generated_table(

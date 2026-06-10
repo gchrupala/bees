@@ -364,6 +364,38 @@ seed in each vertical-start condition and those seeds recover by generation
 120. The transition is therefore possible when vertical architecture is already
 supplied, but it remains stochastic and non-monotonic rather than robust.
 
+\subsection{Food-distribution transition probe}
+
+The long transition runs showed that the baseline food distribution does not
+bootstrap verticality from horizontal or tilted starts. We next asked whether
+more forgiving food distributions could create a viable transition corridor
+from horizontal starts without changing the inheritance or mutation rules. All
+runs in this probe started at $t=0$, used axial orientation, retained the
+sender--receiver mutation correlation $\rho=0.6$, used the proportional
+vertical-comb modifier $f(t)=t$ with $\alpha=0.25$, and ran for 120
+generations over five seeds (101--105). We varied only the food distribution:
+angular width, site count, capacity, and value.
+
+\input{tables/food_transition.tex}
+
+The result is mixed but informative. Broader, richer, or higher-capacity
+patches substantially improve foraging success relative to the baseline, but
+they do not by themselves make the gravity code or stable vertical combs evolve
+from horizontal starts. For example, broad high-capacity patches raise final
+success to 0.391, but no seed reaches the gravity threshold or retains
+verticality, and mean final tilt remains 0.115.
+
+The only successful horizontal-start transition in this probe occurs in the
+moderate-dense condition with four sites, angular width 0.30, capacity 10, and
+unit value. One of five seeds reaches the gravity-channel threshold at
+generation 75, reaches verticality at generation 108, and ends with comb tilt
+0.911 and sender and receiver transposition 0.863 and 0.862. The same condition
+also has the highest final success (0.470). The other four seeds in that
+condition, however, stay far from vertical and do not reach the gravity
+threshold. Thus this ecology can open a transition path from horizontal starts,
+but the path is still rare rather than reliably selected under the current
+settings.
+
 \section{Conclusion}
 
 The resource-distribution experiments support the idea that costly directional
@@ -382,13 +414,17 @@ communication evolves in every condition, and correlated sender--receiver
 mutations shorten the transition and reduce final mismatch. The long transition
 runs support the transition-risk hypothesis under a stricter viability-scaled
 fitness rule. Proportional vertical-comb advantages up to 25\% do not bootstrap
-verticality from horizontal or tilted starts, and vertical starts produce
-gravity-referenced vertical outcomes only in a minority of seeds. The next
-modeling priority is therefore to identify what additional conditions can keep
-the architecture available while the sender--receiver code adapts: stronger or
-developmentally constrained comb architecture, different mutation scales, or
-ecological settings where partially vertical combs remain foraging-viable long
-enough for gravity-referenced communication to become useful.
+verticality from horizontal or tilted starts under the baseline ecology, and
+vertical starts produce gravity-referenced vertical outcomes only in a minority
+of seeds. The food-distribution probe suggests that ecology can matter: a
+moderate-dense environment produced one stable horizontal-to-vertical
+gravity-code transition in five seeds. But simply making patches broader,
+richer, or higher-capacity mostly increases foraging success without making the
+architecture-and-code transition robust. The next modeling priority is
+therefore to map the ecological corridor more carefully, especially around
+intermediate patch density, width, and capacity, where partially vertical combs
+may remain foraging-viable long enough for gravity-referenced communication to
+become useful.
 
 \bibliographystyle{plain}
 \bibliography{references}
