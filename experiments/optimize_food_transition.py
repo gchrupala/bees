@@ -33,17 +33,48 @@ TRIAL_FIELDNAMES = [
     "food_site_count",
     "food_site_width",
     "food_site_capacity",
+    "food_value",
     "vertical_comb_benefit",
     "food_site_max_distance",
     "travel_cost_per_distance",
+    "mutation_sd",
+    "comb_tilt_mutation_sd",
+    "transposition_mutation_correlation",
     "stable_count",
     "seed_count",
     "collapse_count",
     "mean_progress",
     "mean_final_success",
+    "mean_final_payoff",
     "mean_final_comb_tilt",
     "mean_final_min_transposition",
     "elapsed_seconds",
+]
+
+SEED_FIELDNAMES = [
+    "number",
+    "state",
+    "value",
+    "seed",
+    "food_site_count",
+    "food_site_width",
+    "food_site_capacity",
+    "food_value",
+    "vertical_comb_benefit",
+    "food_site_max_distance",
+    "travel_cost_per_distance",
+    "mutation_sd",
+    "comb_tilt_mutation_sd",
+    "transposition_mutation_correlation",
+    "stable",
+    "collapsed",
+    "progress",
+    "final_success",
+    "final_payoff",
+    "final_comb_tilt",
+    "final_sender_transposition",
+    "final_receiver_transposition",
+    "final_min_transposition",
 ]
 
 
@@ -63,6 +94,9 @@ class SearchSpace:
     food_site_width_step: float
     food_site_capacity_min: int
     food_site_capacity_max: int
+    food_value_min: float
+    food_value_max: float
+    food_value_step: float
     vertical_comb_benefit_min: float
     vertical_comb_benefit_max: float
     vertical_comb_benefit_step: float
@@ -72,6 +106,21 @@ class SearchSpace:
     travel_cost_min: float
     travel_cost_max: float
     travel_cost_step: float
+    mutation_sd_min: float
+    mutation_sd_max: float
+    mutation_sd_step: float
+    comb_tilt_mutation_sd_min: float | None
+    comb_tilt_mutation_sd_max: float | None
+    comb_tilt_mutation_sd_step: float
+    transposition_mutation_correlation_min: float
+    transposition_mutation_correlation_max: float
+    transposition_mutation_correlation_step: float
+
+
+@dataclass(frozen=True)
+class SampledSettings:
+    settings: DirectionSettings
+    values: dict[str, int | float]
 
 
 def main() -> None:
@@ -94,6 +143,9 @@ def main() -> None:
         food_site_width_step=args.food_site_width_step,
         food_site_capacity_min=args.food_site_capacity_min,
         food_site_capacity_max=args.food_site_capacity_max,
+        food_value_min=args.food_value_min,
+        food_value_max=args.food_value_max,
+        food_value_step=args.food_value_step,
         vertical_comb_benefit_min=args.vertical_comb_benefit_min,
         vertical_comb_benefit_max=args.vertical_comb_benefit_max,
         vertical_comb_benefit_step=args.vertical_comb_benefit_step,
@@ -103,10 +155,27 @@ def main() -> None:
         travel_cost_min=args.travel_cost_min,
         travel_cost_max=args.travel_cost_max,
         travel_cost_step=args.travel_cost_step,
+        mutation_sd_min=args.mutation_sd_min,
+        mutation_sd_max=args.mutation_sd_max,
+        mutation_sd_step=args.mutation_sd_step,
+        comb_tilt_mutation_sd_min=args.comb_tilt_mutation_sd_min,
+        comb_tilt_mutation_sd_max=args.comb_tilt_mutation_sd_max,
+        comb_tilt_mutation_sd_step=args.comb_tilt_mutation_sd_step,
+        transposition_mutation_correlation_min=(
+            args.transposition_mutation_correlation_min
+        ),
+        transposition_mutation_correlation_max=(
+            args.transposition_mutation_correlation_max
+        ),
+        transposition_mutation_correlation_step=(
+            args.transposition_mutation_correlation_step
+        ),
     )
 
     args.journal_output.parent.mkdir(parents=True, exist_ok=True)
     args.trials_output.parent.mkdir(parents=True, exist_ok=True)
+    if args.seed_output is not None:
+        args.seed_output.parent.mkdir(parents=True, exist_ok=True)
     worker_trial_counts = split_trials(args.n_trials, args.workers)
     started = perf_counter()
     if args.workers == 1:
@@ -147,6 +216,8 @@ def main() -> None:
 
     study = create_study(args, worker_index=0)
     export_trials(study, args.trials_output)
+    if args.seed_output is not None:
+        export_seed_metrics(study, args.seed_output)
     print(
         (
             f"wrote {relative(args.trials_output)} from "
@@ -178,6 +249,12 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT / "results" / "food_transition_optuna_trials.csv",
         help="CSV export of all completed/pruned trials.",
+    )
+    parser.add_argument(
+        "--seed-output",
+        type=Path,
+        default=None,
+        help="Optional CSV export of per-seed metrics for each completed trial.",
     )
     parser.add_argument(
         "--study-name",
@@ -232,6 +309,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--food-site-width-step", type=float, default=0.01)
     parser.add_argument("--food-site-capacity-min", type=int, default=6)
     parser.add_argument("--food-site-capacity-max", type=int, default=14)
+    parser.add_argument("--food-value-min", type=float, default=1.0)
+    parser.add_argument("--food-value-max", type=float, default=1.0)
+    parser.add_argument("--food-value-step", type=float, default=0.1)
     parser.add_argument("--vertical-comb-benefit-min", type=float, default=0.15)
     parser.add_argument("--vertical-comb-benefit-max", type=float, default=0.35)
     parser.add_argument("--vertical-comb-benefit-step", type=float, default=0.01)
@@ -241,6 +321,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--travel-cost-min", type=float, default=0.01)
     parser.add_argument("--travel-cost-max", type=float, default=0.04)
     parser.add_argument("--travel-cost-step", type=float, default=0.005)
+    parser.add_argument("--mutation-sd-min", type=float, default=0.07)
+    parser.add_argument("--mutation-sd-max", type=float, default=0.07)
+    parser.add_argument("--mutation-sd-step", type=float, default=0.01)
+    parser.add_argument("--comb-tilt-mutation-sd-min", type=float, default=None)
+    parser.add_argument("--comb-tilt-mutation-sd-max", type=float, default=None)
+    parser.add_argument("--comb-tilt-mutation-sd-step", type=float, default=0.01)
+    parser.add_argument(
+        "--transposition-mutation-correlation-min",
+        type=float,
+        default=0.6,
+    )
+    parser.add_argument(
+        "--transposition-mutation-correlation-max",
+        type=float,
+        default=0.6,
+    )
+    parser.add_argument(
+        "--transposition-mutation-correlation-step",
+        type=float,
+        default=0.1,
+    )
     parser.add_argument(
         "--gravity-threshold",
         type=float,
@@ -302,11 +403,15 @@ class FoodTransitionObjective:
 
     def __call__(self, trial: optuna.Trial) -> float:
         started = perf_counter()
-        settings = sample_settings(trial, self.base_settings, self.search_space)
+        sample = sample_settings(trial, self.base_settings, self.search_space)
+        for name, value in sample.values.items():
+            trial.set_user_attr(f"setting_{name}", value)
+
         seed_scores = []
         seed_metrics = []
         for step, seed in enumerate(self.seeds, start=1):
-            metrics = evaluate_seed(settings, seed, self.thresholds)
+            metrics = evaluate_seed(sample.settings, seed, self.thresholds)
+            metrics["seed"] = seed
             seed_metrics.append(metrics)
             seed_scores.append(metrics["score"])
             trial.report(mean(seed_scores), step=step)
@@ -327,6 +432,10 @@ class FoodTransitionObjective:
             mean(metric["final_success"] for metric in seed_metrics),
         )
         trial.set_user_attr(
+            "mean_final_payoff",
+            mean(metric["final_payoff"] for metric in seed_metrics),
+        )
+        trial.set_user_attr(
             "mean_final_comb_tilt",
             mean(metric["final_comb_tilt"] for metric in seed_metrics),
         )
@@ -334,6 +443,7 @@ class FoodTransitionObjective:
             "mean_final_min_transposition",
             mean(metric["final_min_transposition"] for metric in seed_metrics),
         )
+        trial.set_user_attr("seed_metrics", seed_metrics)
         trial.set_user_attr("elapsed_seconds", perf_counter() - started)
 
         # Stable vertical gravity-code outcomes dominate the objective. The
@@ -346,7 +456,7 @@ def sample_settings(
     trial: optuna.Trial,
     base_settings: DirectionSettings,
     search_space: SearchSpace,
-) -> DirectionSettings:
+) -> SampledSettings:
     food_site_count = trial.suggest_int(
         "food_site_count",
         search_space.food_site_count_min,
@@ -362,6 +472,13 @@ def sample_settings(
         "food_site_capacity",
         search_space.food_site_capacity_min,
         search_space.food_site_capacity_max,
+    )
+    food_value = suggest_float_or_fixed(
+        trial,
+        "food_value",
+        search_space.food_value_min,
+        search_space.food_value_max,
+        search_space.food_value_step,
     )
     vertical_comb_benefit = trial.suggest_float(
         "vertical_comb_benefit",
@@ -381,18 +498,64 @@ def sample_settings(
         search_space.travel_cost_max,
         step=search_space.travel_cost_step,
     )
+    mutation_sd = suggest_float_or_fixed(
+        trial,
+        "mutation_sd",
+        search_space.mutation_sd_min,
+        search_space.mutation_sd_max,
+        search_space.mutation_sd_step,
+    )
+    comb_tilt_mutation_sd = suggest_optional_float_or_fixed(
+        trial,
+        "comb_tilt_mutation_sd",
+        (
+            base_settings.comb_tilt_mutation_sd
+            if base_settings.comb_tilt_mutation_sd is not None
+            else base_settings.mutation_sd
+        ),
+        search_space.comb_tilt_mutation_sd_min,
+        search_space.comb_tilt_mutation_sd_max,
+        search_space.comb_tilt_mutation_sd_step,
+    )
+    transposition_mutation_correlation = suggest_float_or_fixed(
+        trial,
+        "transposition_mutation_correlation",
+        search_space.transposition_mutation_correlation_min,
+        search_space.transposition_mutation_correlation_max,
+        search_space.transposition_mutation_correlation_step,
+    )
 
-    return replace(
-        base_settings,
-        initial_comb_tilt=0.0,
-        vertical_comb_modifier="linear",
-        food_site_count=food_site_count,
-        food_site_width=food_site_width,
-        food_site_capacity=food_site_capacity,
-        food_value=1.0,
-        food_site_max_distance=food_site_max_distance,
-        vertical_comb_benefit=vertical_comb_benefit,
-        travel_cost_per_distance=travel_cost,
+    values = {
+        "food_site_count": food_site_count,
+        "food_site_width": food_site_width,
+        "food_site_capacity": food_site_capacity,
+        "food_value": food_value,
+        "vertical_comb_benefit": vertical_comb_benefit,
+        "food_site_max_distance": food_site_max_distance,
+        "travel_cost_per_distance": travel_cost,
+        "mutation_sd": mutation_sd,
+        "comb_tilt_mutation_sd": comb_tilt_mutation_sd,
+        "transposition_mutation_correlation": transposition_mutation_correlation,
+    }
+    return SampledSettings(
+        settings=replace(
+            base_settings,
+            initial_comb_tilt=0.0,
+            vertical_comb_modifier="linear",
+            food_site_count=food_site_count,
+            food_site_width=food_site_width,
+            food_site_capacity=food_site_capacity,
+            food_value=food_value,
+            food_site_max_distance=food_site_max_distance,
+            vertical_comb_benefit=vertical_comb_benefit,
+            travel_cost_per_distance=travel_cost,
+            mutation_sd=mutation_sd,
+            comb_tilt_mutation_sd=comb_tilt_mutation_sd,
+            transposition_mutation_correlation=(
+                transposition_mutation_correlation
+            ),
+        ),
+        values=values,
     )
 
 
@@ -426,9 +589,39 @@ def evaluate_seed(
         "stable": stable,
         "collapsed": collapsed,
         "final_success": final.average_success_rate,
+        "final_payoff": final.average_payoff,
         "final_comb_tilt": final.average_comb_tilt,
+        "final_sender_transposition": final.average_sender_transposition,
+        "final_receiver_transposition": final.average_receiver_transposition,
         "final_min_transposition": final_min_transposition,
     }
+
+
+def suggest_float_or_fixed(
+    trial: optuna.Trial,
+    name: str,
+    low: float,
+    high: float,
+    step: float,
+) -> float:
+    if low == high:
+        return low
+
+    return trial.suggest_float(name, low, high, step=step)
+
+
+def suggest_optional_float_or_fixed(
+    trial: optuna.Trial,
+    name: str,
+    fallback: float,
+    low: float | None,
+    high: float | None,
+    step: float,
+) -> float:
+    if low is None or high is None:
+        return fallback
+
+    return suggest_float_or_fixed(trial, name, low, high, step)
 
 
 def create_study(args: argparse.Namespace, worker_index: int) -> optuna.Study:
@@ -479,6 +672,15 @@ def export_trials(study: optuna.Study, output_path: Path) -> None:
             writer.writerow(trial_row(trial))
 
 
+def export_seed_metrics(study: optuna.Study, output_path: Path) -> None:
+    with output_path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SEED_FIELDNAMES, lineterminator="\n")
+        writer.writeheader()
+        for trial in study.trials:
+            for metric in trial.user_attrs.get("seed_metrics", []):
+                writer.writerow(seed_row(trial, metric))
+
+
 def trial_row(trial: optuna.trial.FrozenTrial) -> dict[str, str]:
     return {
         "number": str(trial.number),
@@ -487,20 +689,71 @@ def trial_row(trial: optuna.trial.FrozenTrial) -> dict[str, str]:
         "food_site_count": param_value(trial, "food_site_count"),
         "food_site_width": param_value(trial, "food_site_width"),
         "food_site_capacity": param_value(trial, "food_site_capacity"),
+        "food_value": param_value(trial, "food_value"),
         "vertical_comb_benefit": param_value(trial, "vertical_comb_benefit"),
         "food_site_max_distance": param_value(trial, "food_site_max_distance"),
         "travel_cost_per_distance": param_value(trial, "travel_cost_per_distance"),
+        "mutation_sd": param_value(trial, "mutation_sd"),
+        "comb_tilt_mutation_sd": param_value(trial, "comb_tilt_mutation_sd"),
+        "transposition_mutation_correlation": param_value(
+            trial,
+            "transposition_mutation_correlation",
+        ),
         "stable_count": attr_value(trial, "stable_count"),
         "seed_count": attr_value(trial, "seed_count"),
         "collapse_count": attr_value(trial, "collapse_count"),
         "mean_progress": format_attr_float(trial, "mean_progress"),
         "mean_final_success": format_attr_float(trial, "mean_final_success"),
+        "mean_final_payoff": format_attr_float(trial, "mean_final_payoff"),
         "mean_final_comb_tilt": format_attr_float(trial, "mean_final_comb_tilt"),
         "mean_final_min_transposition": format_attr_float(
             trial,
             "mean_final_min_transposition",
         ),
         "elapsed_seconds": format_attr_float(trial, "elapsed_seconds"),
+    }
+
+
+def seed_row(
+    trial: optuna.trial.FrozenTrial,
+    metric: dict[str, int | float | bool],
+) -> dict[str, str]:
+    return {
+        "number": str(trial.number),
+        "state": trial.state.name,
+        "value": format_optional_float(trial.value),
+        "seed": str(metric["seed"]),
+        "food_site_count": param_value(trial, "food_site_count"),
+        "food_site_width": param_value(trial, "food_site_width"),
+        "food_site_capacity": param_value(trial, "food_site_capacity"),
+        "food_value": param_value(trial, "food_value"),
+        "vertical_comb_benefit": param_value(trial, "vertical_comb_benefit"),
+        "food_site_max_distance": param_value(trial, "food_site_max_distance"),
+        "travel_cost_per_distance": param_value(trial, "travel_cost_per_distance"),
+        "mutation_sd": param_value(trial, "mutation_sd"),
+        "comb_tilt_mutation_sd": param_value(trial, "comb_tilt_mutation_sd"),
+        "transposition_mutation_correlation": param_value(
+            trial,
+            "transposition_mutation_correlation",
+        ),
+        "stable": bool_string(metric["stable"]),
+        "collapsed": bool_string(metric["collapsed"]),
+        "progress": format_metric_float(metric, "progress"),
+        "final_success": format_metric_float(metric, "final_success"),
+        "final_payoff": format_metric_float(metric, "final_payoff"),
+        "final_comb_tilt": format_metric_float(metric, "final_comb_tilt"),
+        "final_sender_transposition": format_metric_float(
+            metric,
+            "final_sender_transposition",
+        ),
+        "final_receiver_transposition": format_metric_float(
+            metric,
+            "final_receiver_transposition",
+        ),
+        "final_min_transposition": format_metric_float(
+            metric,
+            "final_min_transposition",
+        ),
     }
 
 
@@ -522,7 +775,7 @@ def parse_ints(raw: str) -> list[int]:
 
 
 def param_value(trial: optuna.trial.FrozenTrial, name: str) -> str:
-    value = trial.params.get(name, "")
+    value = trial.params.get(name, trial.user_attrs.get(f"setting_{name}", ""))
     if isinstance(value, float):
         return f"{value:.3f}"
     return str(value)
@@ -543,6 +796,17 @@ def format_optional_float(value: float | None) -> str:
     if value is None:
         return ""
     return f"{value:.3f}"
+
+
+def format_metric_float(
+    metric: dict[str, int | float | bool],
+    name: str,
+) -> str:
+    return f"{float(metric[name]):.3f}"
+
+
+def bool_string(value: int | float | bool) -> str:
+    return str(bool(value)).lower()
 
 
 def relative(path: Path) -> str:

@@ -108,6 +108,42 @@ Run an Optuna search over food-transition parameters:
 python -u experiments/optimize_food_transition.py --workers 4 --n-trials 32
 ```
 
+Run the extensive overnight Optuna search over ecology, vertical advantage,
+mutation scale, tilt-mutation scale, and sender-receiver mutation coupling:
+
+```sh
+python -u experiments/optimize_food_transition.py \
+  --journal-output results/food_transition_optuna_extensive.journal \
+  --trials-output results/food_transition_optuna_extensive_trials.csv \
+  --seed-output results/food_transition_optuna_extensive_seeds.csv \
+  --study-name food_transition_optuna_extensive \
+  --n-trials 144 \
+  --workers 4 \
+  --seeds 100,101,102,103,104 \
+  --generations 120 \
+  --startup-trials 32 \
+  --food-site-count-min 3 \
+  --food-site-count-max 8 \
+  --food-site-width-min 0.20 \
+  --food-site-width-max 0.40 \
+  --food-site-capacity-min 6 \
+  --food-site-capacity-max 16 \
+  --food-value-min 0.8 \
+  --food-value-max 1.3 \
+  --food-site-max-distance-min 5.0 \
+  --food-site-max-distance-max 9.0 \
+  --travel-cost-min 0.01 \
+  --travel-cost-max 0.05 \
+  --vertical-comb-benefit-min 0.15 \
+  --vertical-comb-benefit-max 0.45 \
+  --mutation-sd-min 0.04 \
+  --mutation-sd-max 0.11 \
+  --comb-tilt-mutation-sd-min 0.04 \
+  --comb-tilt-mutation-sd-max 0.11 \
+  --transposition-mutation-correlation-min 0.3 \
+  --transposition-mutation-correlation-max 0.9
+```
+
 Compare successful and unsuccessful trajectories in the best Optuna pocket:
 
 ```sh
