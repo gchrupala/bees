@@ -1,0 +1,7 @@
+group_kind,group,runs,seeds,stable_fraction,reached_gravity_fraction,retained_vertical_fraction,collapse_fraction,mean_gravity_reach_generation,mean_vertical_reach_generation,mean_partial_tilt_generation,mean_partial_transposition_generation,mean_max_comb_tilt,mean_max_min_transposition,mean_min_success,mean_final_directional_bias,mean_final_attention,mean_final_min_transposition,mean_final_transposition_gap,mean_final_comb_tilt,mean_final_success,mean_final_payoff
+comparison,successful,5,"100,102,103,108,114",1.000,1.000,1.000,0.000,73.000,65.400,39.000,34.200,0.911,0.894,0.166,0.702,0.822,0.829,0.040,0.884,0.585,6.857
+comparison,unsuccessful,20,"96,97,98,99,101,104,105,106,107,109,110,111,112,113,115,116,117,118,119,120",0.000,0.050,0.000,0.000,104.000,116.000,48.000,45.556,0.506,0.336,0.160,0.793,0.829,0.207,0.043,0.278,0.592,5.847
+outcome,flat,18,"96,97,98,99,101,104,106,107,109,110,111,113,115,116,117,118,119,120",0.000,0.000,0.000,0.000,not_reached,not_reached,43.167,44.500,0.484,0.311,0.159,0.797,0.828,0.172,0.045,0.259,0.594,5.830
+outcome,gravity_without_vertical,1,105,0.000,1.000,0.000,0.000,104.000,116.000,102.000,22.000,0.805,0.787,0.164,0.796,0.869,0.718,0.014,0.721,0.571,6.488
+outcome,partial_transposition,1,112,0.000,0.000,0.000,0.000,not_reached,not_reached,23.000,86.000,0.605,0.335,0.160,0.710,0.809,0.319,0.031,0.186,0.582,5.505
+outcome,success,5,"100,102,103,108,114",1.000,1.000,1.000,0.000,73.000,65.400,39.000,34.200,0.911,0.894,0.166,0.702,0.822,0.829,0.040,0.884,0.585,6.857

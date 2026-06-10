@@ -491,6 +491,42 @@ patches, short food distances, and non-negligible travel costs can make
 vertical gravity-code transitions repeat across more than one seed, but the
 transition is still not reliable across the small seed panel.
 
+\subsection{Successful versus unsuccessful trajectories}
+
+To compare trajectories without confounding outcome with ecology, we reran the
+best Optuna pocket over a wider seed panel, seeds 96--120, and exported
+generation-level traces. The setting was six food sites, width 0.32, capacity
+9, $\alpha=0.34$, maximum food distance 6.0, travel cost 0.03, horizontal
+initial combs, axial orientation, $\rho=0.6$, $f(t)=t$, and 120 generations.
+An exact rerun of one successful seed and one failed seed reproduced the saved
+event rows, confirming that identical seeds and identical configurations are
+deterministic in this implementation.
+
+Five of 25 seeds ended in stable vertical gravity-code states: seeds 100, 102,
+103, 108, and 114. The other 20 seeds did not collapse; their final foraging
+success was slightly higher on average than in the successful group
+(0.592 versus 0.585), so the dominant failure mode is not loss of viability.
+Instead, unsuccessful seeds mostly remain in a productive low-tilt,
+low-transposition basin. Successful seeds reached partial tilt ($t \geq 0.5$)
+by generation 39.0 on average, reached verticality by generation 65.4, and
+reached gravity-code transposition by generation 73.0. Their final mean tilt
+and minimum sender--receiver transposition were 0.884 and 0.829. Unsuccessful
+seeds had final means of only 0.278 and 0.207, although their final precision
+investment and receiver attention were higher than in the successful seeds.
+
+The generation-level trajectories show the divergence. At generation 40,
+successful seeds already averaged tilt 0.553 and minimum transposition 0.250,
+whereas unsuccessful seeds averaged 0.332 and 0.186. By generation 80, the
+successful group had moved to tilt 0.760 and minimum transposition 0.641, while
+the unsuccessful group remained near tilt 0.288 and minimum transposition
+0.183. Only one unsuccessful seed reached the gravity threshold at all; it did
+so late, at generation 104, crossed verticality at generation 116, and ended
+below the vertical threshold at $t_f=0.721$. Thus the successful trajectory is
+not simply higher communication effort or higher foraging success. It is a
+coordinated path in which moderate verticality appears early enough for
+gravity-referenced transposition to become useful before selection settles into
+the flat direct-pointing regime.
+
 \section{Conclusion}
 
 The resource-distribution experiments support the idea that costly directional
@@ -518,14 +554,15 @@ found four seed-101 parameter pockets that sustain the transition. But simply
 making patches broader, richer, or higher-capacity mostly increases foraging
 success without making the architecture-and-code transition robust. The
 robustness panel reinforces this point: the best local pocket succeeds in only
-2 of 11 seeds, and the other pockets succeed only in seed 101. The next
-modeling priority is therefore to use the adaptive search to map the
-ecological corridor more carefully and identify what converts rare viable
-paths into reliable selection: wider seed follow-up around the two-of-three
-Optuna pocket, local refinement around six-site short-distance conditions,
-altered mutation/coupling structure, or additional mechanisms that keep
-partially vertical combs available while gravity-referenced communication
-becomes useful.
+2 of 11 seeds, and the other pockets succeed only in seed 101. The Optuna
+search found a stronger six-site short-distance pocket, but a wider seed panel
+still succeeds in only 5 of 25 seeds. Trajectory comparison shows that
+unsuccessful seeds usually retain high foraging success while remaining flat
+and direct-pointing. The next modeling priority is therefore to identify what
+converts rare viable paths into reliable selection: local refinement around
+the six-site short-distance corridor, altered mutation/coupling structure, or
+additional mechanisms that keep partially vertical combs available while
+gravity-referenced communication becomes useful.
 
 \bibliographystyle{plain}
 \bibliography{references}

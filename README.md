@@ -108,6 +108,12 @@ Run an Optuna search over food-transition parameters:
 python -u experiments/optimize_food_transition.py --workers 4 --n-trials 32
 ```
 
+Compare successful and unsuccessful trajectories in the best Optuna pocket:
+
+```sh
+python -u experiments/analyze_optuna_best_trajectories.py --seeds 96-120 --max-workers 4
+```
+
 Export no-threshold long-transition trajectories and event timings:
 
 ```sh
