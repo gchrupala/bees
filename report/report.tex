@@ -396,6 +396,52 @@ threshold. Thus this ecology can open a transition path from horizontal starts,
 but the path is still rare rather than reliably selected under the current
 settings.
 
+\subsection{Local food-transition grid}
+
+To resolve the neighborhood around the seed-101 transition, we ran a local
+grid from horizontal starts while keeping the model rules fixed. The grid used
+seed 101, axial orientation, $\rho=0.6$, food value 1.0, $f(t)=t$, 120
+generations, and four worker processes. It varied the food-site count
+$n \in \{3,4,5\}$, angular width $w \in \{0.26,0.30,0.34\}$, capacity
+$K \in \{8,10,12\}$, and vertical-comb advantage
+$\alpha \in \{0.20,0.25,0.30\}$, for 81 conditions. Table~
+\ref{tab:food-transition-local-grid} lists the only conditions that ended in
+a stable vertical gravity-code state.
+
+\input{tables/food_transition_local_grid.tex}
+
+The local grid confirms that the earlier transition is reproducible for the
+same seed and parameter setting, but it also shows that the transition is not a
+smooth monotone response to easier foraging or stronger verticality pressure.
+Only 4 of 81 seed-101 conditions are stable. The original pocket
+($n=4,w=0.30,K=10,\alpha=0.25$) remains stable, while its immediate
+$\alpha=0.20$ and $\alpha=0.30$ neighbors do not. Three additional stable
+conditions occur with five food sites and $\alpha=0.30$. In contrast, many
+high-success conditions at width 0.34 remain flat and do not reach the gravity
+threshold. The transition therefore appears to require a fairly specific
+balance: enough discovery and recruitment opportunity to keep foraging viable,
+but not so much ecological tolerance that vertical architecture and
+gravity-referenced transposition are weakly selected.
+
+We then reran the four stable pockets over seeds 96--106 for 160 generations.
+This seed panel is a reproducibility check rather than a statistical
+neighborhood in the random-number sequence. Table~
+\ref{tab:food-transition-local-robustness} shows that the pockets remain rare.
+
+\input{tables/food_transition_local_robustness.tex}
+
+All four seed-101 stable states remain stable when extended to generation 160,
+so they are not transient generation-120 crossings. Across the 44 robustness
+runs, however, only five stable outcomes occur. The strongest pocket is
+$n=5,w=0.26,K=8,\alpha=0.30$, which succeeds in seeds 100 and 101. The other
+three pockets succeed only in seed 101. None of the robustness runs collapses,
+and final success remains high even in non-transition runs, so the limiting
+factor is not colony viability alone. Most failures keep foraging performance
+while either tilt stays low, transposition stays low, or both. This supports
+the view that the ecology can make the transition possible, but the
+architecture-and-code lock-in remains stochastic under the current mutation
+and selection regime.
+
 \section{Conclusion}
 
 The resource-distribution experiments support the idea that costly directional
@@ -416,15 +462,19 @@ runs support the transition-risk hypothesis under a stricter viability-scaled
 fitness rule. Proportional vertical-comb advantages up to 25\% do not bootstrap
 verticality from horizontal or tilted starts under the baseline ecology, and
 vertical starts produce gravity-referenced vertical outcomes only in a minority
-of seeds. The food-distribution probe suggests that ecology can matter: a
+of seeds. The food-distribution probes suggest that ecology can matter: a
 moderate-dense environment produced one stable horizontal-to-vertical
-gravity-code transition in five seeds. But simply making patches broader,
-richer, or higher-capacity mostly increases foraging success without making the
-architecture-and-code transition robust. The next modeling priority is
-therefore to map the ecological corridor more carefully, especially around
-intermediate patch density, width, and capacity, where partially vertical combs
-may remain foraging-viable long enough for gravity-referenced communication to
-become useful.
+gravity-code transition in five seeds, and a local grid around that result
+found four seed-101 parameter pockets that sustain the transition. But simply
+making patches broader, richer, or higher-capacity mostly increases foraging
+success without making the architecture-and-code transition robust. The
+robustness panel reinforces this point: the best local pocket succeeds in only
+2 of 11 seeds, and the other pockets succeed only in seed 101. The next
+modeling priority is therefore to map the ecological corridor more carefully
+and identify what converts rare viable paths into reliable selection: finer
+ecological sweeps around five-site, moderate-width conditions, altered
+mutation/coupling structure, or additional mechanisms that keep partially
+vertical combs available while gravity-referenced communication becomes useful.
 
 \bibliographystyle{plain}
 \bibliography{references}

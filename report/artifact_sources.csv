@@ -5,4 +5,6 @@ table,tab:tilt-benefit-calibration,report/tables/tilt_benefit_calibration.tex,re
 table,tab:orientation-calibration,report/tables/orientation_calibration.tex,results/orientation_calibration.csv,python -u experiments/run_report_artifacts.py results --only orientation_calibration
 table,tab:vertical-coupling-probe,report/tables/vertical_coupling_probe.tex,results/vertical_coupling_probe.csv,python -u experiments/run_report_artifacts.py results --only vertical_coupling_probe
 table,tab:food-transition,report/tables/food_transition.tex,results/food_transition_summary.csv,python -u experiments/run_report_artifacts.py results --only food_transition
+table,tab:food-transition-local-grid,report/tables/food_transition_local_grid.tex,results/food_transition_local_grid.csv,python -u experiments/run_report_artifacts.py results --only food_transition_local
+table,tab:food-transition-local-robustness,report/tables/food_transition_local_robustness.tex,results/food_transition_local_robustness.csv,python -u experiments/run_report_artifacts.py results --only food_transition_local
 figure,fig:long-transition-heatmap,report/figures/long_transition_heatmap.tex,results/long_vertical_transition_summary.csv,python -u experiments/run_report_artifacts.py results --only long_vertical_transition

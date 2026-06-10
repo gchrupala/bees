@@ -159,6 +159,21 @@ def result_specs() -> dict[str, ResultSpec]:
                 RESULTS / "food_transition_seeds.csv",
             ),
         ),
+        "food_transition_local": ResultSpec(
+            name="food_transition_local",
+            command=(
+                "python",
+                "-u",
+                "experiments/run_food_transition_local_grid.py",
+                "--max-workers",
+                "4",
+            ),
+            stdout_file=None,
+            result_files=(
+                RESULTS / "food_transition_local_grid.csv",
+                RESULTS / "food_transition_local_robustness.csv",
+            ),
+        ),
     }
 
 
@@ -211,6 +226,22 @@ def table_specs() -> dict[str, TableSpec]:
             result_file=RESULTS / "food_transition_summary.csv",
             table_file=TABLES / "food_transition.tex",
             builder=build_food_transition_table,
+        ),
+        "food_transition_local_grid": TableSpec(
+            name="food_transition_local_grid",
+            label="tab:food-transition-local-grid",
+            result_name="food_transition_local",
+            result_file=RESULTS / "food_transition_local_grid.csv",
+            table_file=TABLES / "food_transition_local_grid.tex",
+            builder=build_food_transition_local_grid_table,
+        ),
+        "food_transition_local_robustness": TableSpec(
+            name="food_transition_local_robustness",
+            label="tab:food-transition-local-robustness",
+            result_name="food_transition_local",
+            result_file=RESULTS / "food_transition_local_robustness.csv",
+            table_file=TABLES / "food_transition_local_robustness.tex",
+            builder=build_food_transition_local_robustness_table,
         ),
     }
 
@@ -581,6 +612,106 @@ def build_food_transition_table() -> str:
     )
 
 
+def build_food_transition_local_grid_table() -> str:
+    rows = [
+        row
+        for row in read_csv(RESULTS / "food_transition_local_grid.csv")
+        if row["stable_vertical_gravity"] == "true"
+    ]
+    rows.sort(key=lambda row: int(row["case_index"]))
+    body = "\n".join(
+        table_row(
+            [
+                row["food_site_count"],
+                row["food_site_width"],
+                row["food_site_capacity"],
+                row["vertical_comb_benefit"],
+                row["gravity_reach_generation"],
+                row["vertical_reach_generation"],
+                row["final_min_transposition"],
+                row["final_comb_tilt"],
+                row["final_success"],
+            ]
+        )
+        for row in rows
+    )
+    return generated_table(
+        name="food_transition_local_grid",
+        result_name="food_transition_local",
+        column_spec="rrrrrrrrr",
+        header=(
+            "Sites & Width & Cap. & $\\alpha$ & Grav. gen. & Vert. gen. "
+            "& $m_f$ & $t_f$ & Succ. \\\\"
+        ),
+        body=body,
+        caption=(
+            "Stable outcomes in the 81-condition seed-101 local ecology grid.\n"
+            "All runs start horizontal, use axial orientation, "
+            "$\\rho=0.6$, value 1.0, the proportional modifier $f(t)=t$, "
+            "and 120 generations. Stable means final comb tilt at least 0.80 "
+            "and both sender and receiver transposition at least 0.50."
+        ),
+        label="tab:food-transition-local-grid",
+    )
+
+
+def build_food_transition_local_robustness_table() -> str:
+    rows = read_csv(RESULTS / "food_transition_local_robustness.csv")
+    groups: dict[tuple[str, str, str, str], list[dict[str, str]]] = {}
+    for row in rows:
+        key = (
+            row["food_site_count"],
+            row["food_site_width"],
+            row["food_site_capacity"],
+            row["vertical_comb_benefit"],
+        )
+        groups.setdefault(key, []).append(row)
+
+    body_rows = []
+    for key in sorted(groups, key=food_transition_pocket_sort_key):
+        pocket_rows = sorted(groups[key], key=lambda row: int(row["seed"]))
+        stable_rows = [
+            row for row in pocket_rows if row["stable_vertical_gravity"] == "true"
+        ]
+        stable_seeds = (
+            ",".join(row["seed"] for row in stable_rows) if stable_rows else "--"
+        )
+        body_rows.append(
+            table_row(
+                [
+                    key[0],
+                    key[1],
+                    key[2],
+                    key[3],
+                    f"{len(stable_rows)}/{len(pocket_rows)}",
+                    stable_seeds,
+                    mean_field(pocket_rows, "final_min_transposition"),
+                    mean_field(pocket_rows, "final_comb_tilt"),
+                    mean_field(pocket_rows, "final_success"),
+                ]
+            )
+        )
+
+    return generated_table(
+        name="food_transition_local_robustness",
+        result_name="food_transition_local",
+        column_spec="rrrrrlrrr",
+        header=(
+            "Sites & Width & Cap. & $\\alpha$ & Stable & Seeds "
+            "& Mean $m_f$ & Mean $t_f$ & Mean succ. \\\\"
+        ),
+        body="\n".join(body_rows),
+        caption=(
+            "Robustness panel for the four stable pockets from the seed-101 "
+            "local grid.\n"
+            "Each pocket is rerun for seeds 96--106 and 160 generations. Stable "
+            "counts final vertical gravity-code outcomes; the seed list gives "
+            "which seeds were stable."
+        ),
+        label="tab:food-transition-local-robustness",
+    )
+
+
 def build_long_transition_heatmap() -> str:
     rows = read_csv(RESULTS / "long_vertical_transition_summary.csv")
     for row in rows:
@@ -720,6 +851,13 @@ def food_transition_label(condition: str) -> str:
         "moderate_dense": "Dense",
     }
     return labels.get(condition, condition.replace("_", "\\_"))
+
+
+def food_transition_pocket_sort_key(
+    key: tuple[str, str, str, str],
+) -> tuple[int, float, int, float]:
+    site_count, width, capacity, benefit = key
+    return (int(site_count), float(width), int(capacity), float(benefit))
 
 
 def generated_table(
@@ -912,6 +1050,10 @@ def count_from_fraction(fraction: str, seeds: str) -> str:
     seed_count = int(seeds)
     count = round(float(fraction) * seed_count)
     return f"{count}/{seed_count}"
+
+
+def mean_field(rows: list[dict[str, str]], field: str) -> str:
+    return f"{sum(float(row[field]) for row in rows) / len(rows):.3f}"
 
 
 def sun_offset(mean_orientation_degrees: str) -> str:
