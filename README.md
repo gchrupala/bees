@@ -150,6 +150,15 @@ Compare successful and unsuccessful trajectories in the best Optuna pocket:
 python -u experiments/analyze_optuna_best_trajectories.py --seeds 96-120 --max-workers 4
 ```
 
+Validate the best extensive Optuna candidates on held-out seeds:
+
+```sh
+python -u experiments/validate_extensive_optuna_candidates.py \
+  --seeds 96-195 \
+  --exclude-seeds 100-104 \
+  --max-workers 4
+```
+
 Export no-threshold long-transition trajectories and event timings:
 
 ```sh
