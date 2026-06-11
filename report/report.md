@@ -652,8 +652,55 @@ sender&ndash;receiver coupling are also allowed to vary within the same model, t
 optimizer can find regimes where horizontal combs repeatedly evolve toward vertical
 combs while communication becomes gravity-referenced. However, the five seeds used here
 are also the optimization panel, so the result should be treated as a candidate regime
-rather than an independent robustness estimate. The next check is to rerun the best
-high-success trial and the repeated seven-site cluster over a wider seed panel.
+rather than an independent robustness estimate until it is tested on held-out seeds.
+
+## Held-out validation of extensive-search candidates
+
+We then validated the two most informative extensive-search candidates on held-out
+seeds: seeds 96&ndash;195, excluding the optimization seeds 100&ndash;104. This gives 95
+fresh seeds per candidate and 190 full 120-generation simulations. The
+`high_success_8site` candidate is the highest-success 5-of-5 optimization-panel trial:
+eight food sites, width 0.39, capacity 10, food value 1.0, vertical-comb advantage
+0.41, maximum distance 5.0, travel cost 0.035, ordinary mutation scale 0.08, comb-tilt
+mutation scale 0.07, and sender&ndash;receiver mutation correlation 0.9. The
+`repeated_7site` candidate is the TPE cluster that appeared in trials 114, 116, and
+117: seven food sites, width 0.37, capacity 10, food value 0.9, vertical-comb advantage
+0.44, maximum distance 5.0, travel cost 0.035, ordinary mutation scale 0.09, comb-tilt
+mutation scale 0.08, and correlation 0.9. The complete event, trajectory, group-summary,
+and generation-summary files are saved as the
+`food_transition_extensive_validation_*` CSV files under `results/`.
+
+| Candidate | Stable | Gravity reached | Vertical retained | Collapse | Mean succ. | Mean payoff | Mean $t_f$ | Mean $m_f$ |
+|:----------|-------:|----------------:|------------------:|---------:|-----------:|------------:|-----------:|-----------:|
+| high_success_8site | 73/95 | 89/95 | 78/95 | 0/95 | 0.722 | 9.487 | 0.836 | 0.727 |
+| repeated_7site | 83/95 | 93/95 | 84/95 | 0/95 | 0.668 | 7.608 | 0.843 | 0.777 |
+
+The held-out validation confirms that the extensive-search result is not merely an
+optimization-panel artifact. Both candidates make the horizontal-to-vertical
+gravity-code transition in most fresh seeds, with no collapse events. The repeated
+seven-site cluster is more robust, reaching stable vertical gravity-code outcomes in
+83 of 95 seeds (87.4%). The eight-site candidate is less robust, with 73 of 95 stable
+seeds (76.8%), but has higher final foraging success and payoff because it uses more
+sites and unit food value.
+
+The failures are mostly near misses rather than loss of viability. For the eight-site
+candidate, 16 failed seeds reached the gravity threshold but ended just below verticality,
+five retained verticality without enough final sender&ndash;receiver transposition, and only
+one stayed flat. For the repeated seven-site candidate, 10 failed seeds reached the
+gravity threshold but ended below verticality, one retained verticality without enough
+transposition, and one stayed flat. In both candidates the unsuccessful group still had
+high final success: 0.709 for `high_success_8site` and 0.648 for `repeated_7site`.
+
+The trajectories show a coordinated transition rather than a late threshold accident.
+For `high_success_8site`, the all-seed mean moved from tilt 0.612 and minimum
+sender&ndash;receiver transposition 0.296 at generation 40, to 0.801 and 0.592 at
+generation 80, and to 0.836 and 0.727 at generation 120. For `repeated_7site`, the
+corresponding trajectory was tilt 0.576 and minimum transposition 0.344 at generation
+40, 0.779 and 0.660 at generation 80, and 0.843 and 0.777 at generation 120. Thus the
+repeated seven-site candidate develops the gravity code somewhat earlier, while the
+eight-site candidate reaches slightly higher foraging performance. The shared pattern is
+that moderate verticality and partial transposition appear by generation 40, before the
+population settles into a flat direct-pointing basin.
 
 # Conclusion
 
@@ -686,11 +733,15 @@ seeds. Trajectory comparison shows that unsuccessful seeds usually retain high f
 success while remaining flat and direct-pointing. A subsequent extensive Optuna search,
 which also varied mutation scales and sender&ndash;receiver coupling, found a stronger
 nearby-patch regime in which 29 of 144 trials reached vertical gravity-code states in
-all five optimization seeds. This suggests that reliable transitions may require
-ecological opportunity and mutation structure to align: food distributions must make
-recruitment valuable near vertical combs, while coupled sender&ndash;receiver changes
-must keep the gravity code from lagging behind comb tilt. The next modeling priority is
-independent validation of the best extensive-search settings over a wider seed panel,
-followed by trajectory comparison against the earlier six-site pocket.
+all five optimization seeds. Held-out validation then confirmed that this is a robust
+candidate regime rather than only a search-panel fit: the best repeated seven-site
+cluster succeeds in 83 of 95 fresh seeds, and the high-success eight-site candidate
+succeeds in 73 of 95 fresh seeds, with no collapses in either panel. This suggests that
+reliable transitions require ecological opportunity and mutation structure to align:
+food distributions must make recruitment valuable near vertical combs, while coupled
+sender&ndash;receiver changes keep the gravity code from lagging behind comb tilt. The
+next modeling priority is to explain the mechanism of this validated regime: why the
+seven-site cluster is more robust, why the eight-site setting is more productive, and
+which parameter boundaries return the system to the flat direct-pointing basin.
 
 # References

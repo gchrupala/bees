@@ -155,6 +155,9 @@ id="toc-successful-versus-unsuccessful-trajectories">Successful versus
 unsuccessful trajectories</a></li>
 <li><a href="#extensive-adaptive-search"
 id="toc-extensive-adaptive-search">Extensive adaptive search</a></li>
+<li><a href="#held-out-validation-of-extensive-search-candidates"
+id="toc-held-out-validation-of-extensive-search-candidates">Held-out
+validation of extensive-search candidates</a></li>
 </ul></li>
 <li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
 <li><a href="#references" id="toc-references">References</a></li>
@@ -2528,9 +2531,108 @@ to vary within the same model, the optimizer can find regimes where
 horizontal combs repeatedly evolve toward vertical combs while
 communication becomes gravity-referenced. However, the five seeds used
 here are also the optimization panel, so the result should be treated as
-a candidate regime rather than an independent robustness estimate. The
-next check is to rerun the best high-success trial and the repeated
-seven-site cluster over a wider seed panel.</p>
+a candidate regime rather than an independent robustness estimate until
+it is tested on held-out seeds.</p>
+<h2 id="held-out-validation-of-extensive-search-candidates">Held-out
+validation of extensive-search candidates</h2>
+<p>We then validated the two most informative extensive-search
+candidates on held-out seeds: seeds 96–195, excluding the optimization
+seeds 100–104. This gives 95 fresh seeds per candidate and 190 full
+120-generation simulations. The <code>high_success_8site</code>
+candidate is the highest-success 5-of-5 optimization-panel trial: eight
+food sites, width 0.39, capacity 10, food value 1.0, vertical-comb
+advantage 0.41, maximum distance 5.0, travel cost 0.035, ordinary
+mutation scale 0.08, comb-tilt mutation scale 0.07, and sender–receiver
+mutation correlation 0.9. The <code>repeated_7site</code> candidate is
+the TPE cluster that appeared in trials 114, 116, and 117: seven food
+sites, width 0.37, capacity 10, food value 0.9, vertical-comb advantage
+0.44, maximum distance 5.0, travel cost 0.035, ordinary mutation scale
+0.09, comb-tilt mutation scale 0.08, and correlation 0.9. The complete
+event, trajectory, group-summary, and generation-summary files are saved
+as the <code>food_transition_extensive_validation_*</code> CSV files
+under <code>results/</code>.</p>
+<table>
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 8%" />
+<col style="width: 10%" />
+<col style="width: 11%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Candidate</th>
+<th style="text-align: right;">Stable</th>
+<th style="text-align: right;">Gravity reached</th>
+<th style="text-align: right;">Vertical retained</th>
+<th style="text-align: right;">Collapse</th>
+<th style="text-align: right;">Mean succ.</th>
+<th style="text-align: right;">Mean payoff</th>
+<th style="text-align: right;">Mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>f</mi></msub><annotation encoding="application/x-tex">t_f</annotation></semantics></math></th>
+<th style="text-align: right;">Mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>f</mi></msub><annotation encoding="application/x-tex">m_f</annotation></semantics></math></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">high_success_8site</td>
+<td style="text-align: right;">73/95</td>
+<td style="text-align: right;">89/95</td>
+<td style="text-align: right;">78/95</td>
+<td style="text-align: right;">0/95</td>
+<td style="text-align: right;">0.722</td>
+<td style="text-align: right;">9.487</td>
+<td style="text-align: right;">0.836</td>
+<td style="text-align: right;">0.727</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">repeated_7site</td>
+<td style="text-align: right;">83/95</td>
+<td style="text-align: right;">93/95</td>
+<td style="text-align: right;">84/95</td>
+<td style="text-align: right;">0/95</td>
+<td style="text-align: right;">0.668</td>
+<td style="text-align: right;">7.608</td>
+<td style="text-align: right;">0.843</td>
+<td style="text-align: right;">0.777</td>
+</tr>
+</tbody>
+</table>
+<p>The held-out validation confirms that the extensive-search result is
+not merely an optimization-panel artifact. Both candidates make the
+horizontal-to-vertical gravity-code transition in most fresh seeds, with
+no collapse events. The repeated seven-site cluster is more robust,
+reaching stable vertical gravity-code outcomes in 83 of 95 seeds
+(87.4%). The eight-site candidate is less robust, with 73 of 95 stable
+seeds (76.8%), but has higher final foraging success and payoff because
+it uses more sites and unit food value.</p>
+<p>The failures are mostly near misses rather than loss of viability.
+For the eight-site candidate, 16 failed seeds reached the gravity
+threshold but ended just below verticality, five retained verticality
+without enough final sender–receiver transposition, and only one stayed
+flat. For the repeated seven-site candidate, 10 failed seeds reached the
+gravity threshold but ended below verticality, one retained verticality
+without enough transposition, and one stayed flat. In both candidates
+the unsuccessful group still had high final success: 0.709 for
+<code>high_success_8site</code> and 0.648 for
+<code>repeated_7site</code>.</p>
+<p>The trajectories show a coordinated transition rather than a late
+threshold accident. For <code>high_success_8site</code>, the all-seed
+mean moved from tilt 0.612 and minimum sender–receiver transposition
+0.296 at generation 40, to 0.801 and 0.592 at generation 80, and to
+0.836 and 0.727 at generation 120. For <code>repeated_7site</code>, the
+corresponding trajectory was tilt 0.576 and minimum transposition 0.344
+at generation 40, 0.779 and 0.660 at generation 80, and 0.843 and 0.777
+at generation 120. Thus the repeated seven-site candidate develops the
+gravity code somewhat earlier, while the eight-site candidate reaches
+slightly higher foraging performance. The shared pattern is that
+moderate verticality and partial transposition appear by generation 40,
+before the population settles into a flat direct-pointing basin.</p>
 <h1 id="conclusion">Conclusion</h1>
 <p>The resource-distribution experiments support the idea that costly
 directional communication is favored most strongly in an intermediate
@@ -2566,14 +2668,19 @@ unsuccessful seeds usually retain high foraging success while remaining
 flat and direct-pointing. A subsequent extensive Optuna search, which
 also varied mutation scales and sender–receiver coupling, found a
 stronger nearby-patch regime in which 29 of 144 trials reached vertical
-gravity-code states in all five optimization seeds. This suggests that
-reliable transitions may require ecological opportunity and mutation
+gravity-code states in all five optimization seeds. Held-out validation
+then confirmed that this is a robust candidate regime rather than only a
+search-panel fit: the best repeated seven-site cluster succeeds in 83 of
+95 fresh seeds, and the high-success eight-site candidate succeeds in 73
+of 95 fresh seeds, with no collapses in either panel. This suggests that
+reliable transitions require ecological opportunity and mutation
 structure to align: food distributions must make recruitment valuable
-near vertical combs, while coupled sender–receiver changes must keep the
+near vertical combs, while coupled sender–receiver changes keep the
 gravity code from lagging behind comb tilt. The next modeling priority
-is independent validation of the best extensive-search settings over a
-wider seed panel, followed by trajectory comparison against the earlier
-six-site pocket.</p>
+is to explain the mechanism of this validated regime: why the seven-site
+cluster is more robust, why the eight-site setting is more productive,
+and which parameter boundaries return the system to the flat
+direct-pointing basin.</p>
 <h1 class="unnumbered" id="references">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent"
 role="list">
