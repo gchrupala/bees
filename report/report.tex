@@ -527,6 +527,66 @@ coordinated path in which moderate verticality appears early enough for
 gravity-referenced transposition to become useful before selection settles into
 the flat direct-pointing regime.
 
+\subsection{Extensive adaptive search}
+
+We then ran a broader overnight Optuna search using the same stable-state
+objective, but allowing both ecological and mutation parameters to vary. The
+run used horizontal initial combs, axial orientation, $f(t)=t$, 120 generations,
+four worker processes, 144 trials, and five seeds per trial (100--104). It
+varied food-site count (3--8), angular width (0.20--0.40), capacity (6--16),
+food value (0.8--1.3), vertical-comb advantage (0.15--0.45), maximum food
+distance (5.0--9.0), travel cost (0.01--0.05), ordinary mutation scale
+(0.04--0.11), comb-tilt mutation scale (0.04--0.11), and sender--receiver
+transposition mutation correlation (0.3--0.9). The complete trial-level and
+seed-level records are saved as the two
+\texttt{food\_transition\_optuna\_extensive\_*} CSV files under
+\texttt{results/}.
+
+All 144 trials completed, for 720 seed simulations, and no seed collapsed under
+the success threshold. The search found 29 trials that reached stable vertical
+gravity-code states in all five seeds. The distribution of stable seed counts
+per trial was 21 trials with 0 of 5 stable seeds, 15 with 1 of 5, 14 with
+2 of 5, 30 with 3 of 5, 35 with 4 of 5, and 29 with 5 of 5. The adaptive search
+also improved as trials accumulated: the first 32 startup trials contained one
+5-of-5 trial and two trials with at least four stable seeds, whereas the final
+48 trials contained 18 5-of-5 trials and 32 trials with at least four stable
+seeds.
+
+The 5-of-5 trials concentrate in a more specific regime than the earlier
+six-site pocket. Among the 29 fully stable trials, 28 used seven food sites and
+one used eight; their mean food-site width was 0.357, mean capacity 8.4, mean
+food value 0.95, mean vertical-comb advantage 0.428, mean maximum food distance
+5.03, mean travel cost 0.035, mean ordinary mutation scale 0.091, mean
+comb-tilt mutation scale 0.076, and mean sender--receiver mutation correlation
+0.841. Thus the strongest optimization-panel regime combines many moderately
+broad nearby patches, a substantial vertical-comb advantage, non-negligible
+travel costs, relatively large mutations, and fairly strong correlated changes
+to sender and receiver transposition.
+
+The highest-success fully stable trial used eight food sites, width 0.39,
+capacity 10, food value 1.0, vertical-comb advantage 0.41, maximum food distance
+5.0, travel cost 0.035, ordinary mutation scale 0.08, comb-tilt mutation scale
+0.07, and sender--receiver mutation correlation 0.9. Across seeds 100--104 it
+had mean final success 0.729, mean payoff 9.695, mean comb tilt 0.872, and mean
+minimum sender--receiver transposition 0.764. The TPE sampler also repeatedly
+returned a nearby seven-site setting: width 0.37, capacity 10, food value 0.9,
+vertical-comb advantage 0.44, maximum distance 5.0, travel cost 0.035, ordinary
+mutation scale 0.09, comb-tilt mutation scale 0.08, and correlation 0.9. This
+setting appeared in trials 114, 116, and 117, and in each repeat all five seeds
+were stable, with mean final success 0.670, mean comb tilt 0.848, and mean
+minimum transposition 0.780.
+
+These results change the status of the transition search. The earlier Optuna
+pocket showed that ecological structure could make the transition possible but
+not yet reliable across seeds. The broader search shows that, once mutation
+scale and sender--receiver coupling are also allowed to vary within the same
+model, the optimizer can find regimes where horizontal combs repeatedly evolve
+toward vertical combs while communication becomes gravity-referenced. However,
+the five seeds used here are also the optimization panel, so the result should
+be treated as a candidate regime rather than an independent robustness estimate.
+The next check is to rerun the best high-success trial and the repeated
+seven-site cluster over a wider seed panel.
+
 \section{Conclusion}
 
 The resource-distribution experiments support the idea that costly directional
@@ -554,15 +614,20 @@ found four seed-101 parameter pockets that sustain the transition. But simply
 making patches broader, richer, or higher-capacity mostly increases foraging
 success without making the architecture-and-code transition robust. The
 robustness panel reinforces this point: the best local pocket succeeds in only
-2 of 11 seeds, and the other pockets succeed only in seed 101. The Optuna
+2 of 11 seeds, and the other pockets succeed only in seed 101. The first Optuna
 search found a stronger six-site short-distance pocket, but a wider seed panel
 still succeeds in only 5 of 25 seeds. Trajectory comparison shows that
 unsuccessful seeds usually retain high foraging success while remaining flat
-and direct-pointing. The next modeling priority is therefore to identify what
-converts rare viable paths into reliable selection: local refinement around
-the six-site short-distance corridor, altered mutation/coupling structure, or
-additional mechanisms that keep partially vertical combs available while
-gravity-referenced communication becomes useful.
+and direct-pointing. A subsequent extensive Optuna search, which also varied
+mutation scales and sender--receiver coupling, found a stronger nearby-patch
+regime in which 29 of 144 trials reached vertical gravity-code states in all
+five optimization seeds. This suggests that reliable transitions may require
+ecological opportunity and mutation structure to align: food distributions must
+make recruitment valuable near vertical combs, while coupled sender--receiver
+changes must keep the gravity code from lagging behind comb tilt. The next
+modeling priority is independent validation of the best extensive-search
+settings over a wider seed panel, followed by trajectory comparison against the
+earlier six-site pocket.
 
 \bibliographystyle{plain}
 \bibliography{references}
