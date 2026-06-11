@@ -38,18 +38,23 @@ We are modeling the evolution of bee communication.
   flush=True)`, or scripts that flush CSV rows. Avoid long buffered one-liners
   that hide all output until the command exits.
 
-## LaTeX Reports
+## Reports
 
-- When editing `report/report.tex`, compile the report before finishing if a
-  LaTeX toolchain is available.
-- Build from a clean temporary copy of `report/report.tex` and
-  `report/references.bib`, so auxiliary files do not clutter the repo or reuse
-  stale local state.
-- If bibliography state may have changed, run the normal LaTeX sequence in the
-  temporary build directory: `pdflatex`, `bibtex`, `pdflatex`, `pdflatex`.
-- Keep the compiled PDF in the repository as `report/report.pdf`. After a
-  successful build, copy only the final PDF back into `report/`; do not commit
-  `.aux`, `.bbl`, `.blg`, `.log`, or `.out` files.
+- The working report is `report/report.md`, rendered to `report/report.html`
+  with `python -u experiments/render_report_html.py`.
+- When editing the working report or report rendering code, rebuild
+  `report/report.html` before finishing if Pandoc is available. If Pandoc is
+  unavailable, say so clearly.
+- Keep the HTML workflow lightweight: prefer Markdown, tracked CSV-backed
+  summaries, and simple generated HTML over heavyweight notebook or PDF
+  pipelines.
+- `report/report.tex` and `report/report.pdf` are legacy paper-style snapshots.
+  Do not update or compile them during ordinary report maintenance unless the
+  user explicitly asks for a LaTeX/PDF paper artifact.
+- The old LaTeX table fragments under `report/tables/` and
+  `report/figures/` may still be regenerated with
+  `python -u experiments/run_report_artifacts.py artifacts` when needed for
+  the legacy paper path, but they are not the primary working report output.
 
 ## Token-Conservative Workflow
 

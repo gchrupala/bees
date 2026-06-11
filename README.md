@@ -10,7 +10,7 @@ the biological question and modeling assumptions are clear.
 - `src/bees/`: Python package for model code
 - `configs/`: reproducible experiment settings
 - `experiments/`: runnable experiment scripts
-- `report/`: LaTeX scientific report draft
+- `report/`: lightweight HTML scientific report and legacy LaTeX snapshot
 - `tests/`: tests for model behavior
 - `results/`: local experiment outputs
 
@@ -165,13 +165,19 @@ Export no-threshold long-transition trajectories and event timings:
 python -u experiments/analyze_long_transition_trajectories.py
 ```
 
-Regenerate the tracked report result files and generated LaTeX report artifacts:
+Render the working report:
+
+```sh
+python -u experiments/render_report_html.py
+```
+
+Regenerate the tracked report result files and legacy LaTeX report artifacts:
 
 ```sh
 python -u experiments/run_report_artifacts.py all
 ```
 
-List the command associated with each generated report artifact:
+List the command associated with each legacy generated report artifact:
 
 ```sh
 python -u experiments/run_report_artifacts.py list

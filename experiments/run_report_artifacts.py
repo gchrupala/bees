@@ -62,15 +62,15 @@ def main() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Regenerate report result CSVs and LaTeX fragments.",
+        description="Regenerate report result CSVs and legacy LaTeX fragments.",
     )
     parser.add_argument(
         "action",
         choices=("results", "tables", "artifacts", "all", "list"),
         help=(
             "Use 'results' to run experiments, 'artifacts' or 'tables' to "
-            "rebuild LaTeX fragments from existing CSVs, 'all' for both, or "
-            "'list' to show provenance."
+            "rebuild legacy LaTeX fragments from existing CSVs, 'all' for both, "
+            "or 'list' to show provenance."
         ),
     )
     parser.add_argument(
