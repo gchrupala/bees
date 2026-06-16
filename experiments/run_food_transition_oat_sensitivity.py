@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, replace
@@ -133,7 +134,34 @@ def main() -> None:
     )
 
     results: list[PointSeedResult] = []
-    with ProcessPoolExecutor(max_workers=args.max_workers) as executor:
+    with (
+        outputs["events"].open("w", newline="") as event_handle,
+        outputs["trajectories"].open("w", newline="") as trajectory_handle,
+        ProcessPoolExecutor(max_workers=args.max_workers) as executor,
+    ):
+        event_writer = csv.DictWriter(
+            event_handle,
+            fieldnames=EVENT_OUTPUT_FIELDNAMES,
+            lineterminator="\n",
+        )
+        trajectory_writer = csv.DictWriter(
+            trajectory_handle,
+            fieldnames=TRAJECTORY_OUTPUT_FIELDNAMES,
+            lineterminator="\n",
+        )
+        event_writer.writeheader()
+        trajectory_writer.writeheader()
+        event_handle.flush()
+        trajectory_handle.flush()
+        print(
+            (
+                f"streaming event rows to {relative(outputs['events'])}; "
+                f"trajectory rows to {relative(outputs['trajectories'])}"
+            ),
+            file=sys.stderr,
+            flush=True,
+        )
+
         futures = {}
         for point in points:
             settings = point_settings(base_settings, point)
@@ -147,6 +175,9 @@ def main() -> None:
             completed += 1
             results.append(result)
             event = result.event_row
+            write_partial_result(event_writer, trajectory_writer, result)
+            event_handle.flush()
+            trajectory_handle.flush()
             print(
                 (
                     f"{completed}/{total_runs} point={result.point} "
@@ -172,8 +203,6 @@ def main() -> None:
         for row in sorted(result.trajectory_rows, key=lambda item: int(item["generation"]))
     ]
 
-    write_rows(outputs["events"], EVENT_OUTPUT_FIELDNAMES, event_rows)
-    write_rows(outputs["trajectories"], TRAJECTORY_OUTPUT_FIELDNAMES, trajectory_rows)
     write_rows(
         outputs["group_summary"],
         GROUP_OUTPUT_FIELDNAMES,
@@ -185,8 +214,14 @@ def main() -> None:
         summarize_generation_groups_by_point(trajectory_rows, point_order, point_lookup),
     )
     for name, path in outputs.items():
-        if name != "points":
+        if name not in {"points", "events", "trajectories"}:
             print(f"wrote {relative(path)}", file=sys.stderr, flush=True)
+    print(f"completed {relative(outputs['events'])}", file=sys.stderr, flush=True)
+    print(
+        f"completed {relative(outputs['trajectories'])}",
+        file=sys.stderr,
+        flush=True,
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -341,6 +376,16 @@ def run_point_seed(
         event_row=event_row,
         trajectory_rows=trajectory_rows,
     )
+
+
+def write_partial_result(
+    event_writer: csv.DictWriter,
+    trajectory_writer: csv.DictWriter,
+    result: PointSeedResult,
+) -> None:
+    event_writer.writerow(result.event_row)
+    for row in sorted(result.trajectory_rows, key=lambda item: int(item["generation"])):
+        trajectory_writer.writerow(row)
 
 
 def summarize_event_groups_by_point(

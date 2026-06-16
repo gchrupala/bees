@@ -37,6 +37,15 @@ We are modeling the evolution of bee communication.
   produced: use unbuffered Python (`python -u`), explicit `print(...,
   flush=True)`, or scripts that flush CSV rows. Avoid long buffered one-liners
   that hide all output until the command exits.
+- Long-running experiment scripts that collect per-seed or per-condition results
+  must write raw result rows incrementally and flush file handles after each
+  completed unit of work. Final summary files can still be generated at the end,
+  but partial raw CSV outputs should survive session termination or worker
+  crashes.
+- Launch unattended long jobs in a way that is not susceptible to terminal or
+  tool-session termination. Use a persistent process manager such as a user
+  `systemd-run` service when available; do not rely on an interactive tool
+  session for work that needs to continue after the current turn.
 
 ## Reports
 
