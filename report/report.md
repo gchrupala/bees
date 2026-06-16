@@ -702,6 +702,34 @@ eight-site candidate reaches slightly higher foraging performance. The shared pa
 that moderate verticality and partial transposition appear by generation 40, before the
 population settles into a flat direct-pointing basin.
 
+<!-- oat-sensitivity-start -->
+## Coarse one-parameter sensitivity
+
+We next ran a coarse one-parameter-at-a-time sensitivity panel around the held-out-validated `repeated_7site` candidate. Each point used 95 held-out seeds, with all other parameters fixed at the validated baseline. Raw event and trajectory rows are saved in `results/food_transition_oat_sensitivity_events.csv` and `results/food_transition_oat_sensitivity_trajectories.csv`; point, group-summary, and generation-summary files use the same prefix.
+
+The baseline reproduced 83/95 stable vertical gravity-code outcomes (87.4%), with mean final success 0.668, mean final comb tilt 0.843, and mean final minimum sender-receiver transposition 0.777. Across the coarse perturbations, the lowest stability occurred for `food_site_count=5` (56/95, 58.9%), whereas the highest non-baseline stability occurred for `vertical_comb_benefit=0.480` (87/95, 91.6%).
+
+| Parameter | Value | Stable | Gravity reached | Vertical retained | Collapse | Mean succ. | Mean payoff | Mean $t_f$ | Mean $m_f$ |
+|:----------|:------|-------:|----------------:|------------------:|---------:|-----------:|------------:|-----------:|-----------:|
+| baseline | - | 83/95 | 93/95 | 84/95 | 0/95 | 0.668 | 7.608 | 0.843 | 0.777 |
+| vertical_comb_benefit | 0.340 | 73/95 | 82/95 | 73/95 | 0/95 | 0.670 | 7.007 | 0.777 | 0.709 |
+| vertical_comb_benefit | 0.400 | 78/95 | 89/95 | 78/95 | 0/95 | 0.670 | 7.383 | 0.827 | 0.759 |
+| vertical_comb_benefit | 0.480 | 87/95 | 93/95 | 88/95 | 0/95 | 0.674 | 7.923 | 0.855 | 0.787 |
+| food_site_max_distance | 6.000 | 81/95 | 89/95 | 81/95 | 0/95 | 0.664 | 7.309 | 0.831 | 0.767 |
+| food_site_max_distance | 7.000 | 79/95 | 90/95 | 79/95 | 0/95 | 0.648 | 6.872 | 0.822 | 0.757 |
+| transposition_mutation_correlation | 0.500 | 75/95 | 85/95 | 75/95 | 0/95 | 0.661 | 7.406 | 0.815 | 0.719 |
+| transposition_mutation_correlation | 0.700 | 86/95 | 92/95 | 87/95 | 0/95 | 0.667 | 7.563 | 0.845 | 0.752 |
+| mutation_sd | 0.060 | 69/95 | 79/95 | 70/95 | 0/95 | 0.682 | 7.700 | 0.804 | 0.708 |
+| mutation_sd | 0.120 | 77/95 | 93/95 | 77/95 | 0/95 | 0.651 | 7.304 | 0.835 | 0.728 |
+| food_site_width | 0.300 | 84/95 | 91/95 | 84/95 | 0/95 | 0.596 | 6.345 | 0.836 | 0.783 |
+| food_site_width | 0.400 | 82/95 | 93/95 | 82/95 | 0/95 | 0.696 | 8.037 | 0.830 | 0.758 |
+| food_site_count | 5 | 56/95 | 60/95 | 56/95 | 0/95 | 0.604 | 6.023 | 0.630 | 0.595 |
+| food_site_count | 8 | 87/95 | 93/95 | 87/95 | 0/95 | 0.700 | 8.124 | 0.843 | 0.752 |
+| travel_cost_per_distance | 0.020 | 81/95 | 93/95 | 84/95 | 0/95 | 0.666 | 8.480 | 0.846 | 0.758 |
+| travel_cost_per_distance | 0.050 | 80/95 | 84/95 | 80/95 | 0/95 | 0.677 | 6.736 | 0.808 | 0.740 |
+
+This first pass is deliberately coarse: it identifies broad cliffs and candidate robust ranges rather than estimating smooth response curves. The next step is to refine only the parameter ranges where the stable fraction changes sharply.
+<!-- oat-sensitivity-end -->
 # Conclusion
 
 The resource-distribution experiments support the idea that costly directional

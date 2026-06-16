@@ -1,0 +1,17 @@
+point,parameter,parameter_value,is_baseline,food_site_count,food_site_width,food_site_capacity,food_value,vertical_comb_benefit,food_site_max_distance,travel_cost_per_distance,mutation_sd,comb_tilt_mutation_sd,transposition_mutation_correlation
+baseline,baseline,baseline,true,7,0.370,10,0.900,0.440,5.000,0.035,0.090,0.080,0.900
+vertical_comb_benefit_0p340,vertical_comb_benefit,0.340,false,7,0.370,10,0.900,0.340,5.000,0.035,0.090,0.080,0.900
+vertical_comb_benefit_0p400,vertical_comb_benefit,0.400,false,7,0.370,10,0.900,0.400,5.000,0.035,0.090,0.080,0.900
+vertical_comb_benefit_0p480,vertical_comb_benefit,0.480,false,7,0.370,10,0.900,0.480,5.000,0.035,0.090,0.080,0.900
+food_site_max_distance_6p000,food_site_max_distance,6.000,false,7,0.370,10,0.900,0.440,6.000,0.035,0.090,0.080,0.900
+food_site_max_distance_7p000,food_site_max_distance,7.000,false,7,0.370,10,0.900,0.440,7.000,0.035,0.090,0.080,0.900
+transposition_mutation_correlation_0p500,transposition_mutation_correlation,0.500,false,7,0.370,10,0.900,0.440,5.000,0.035,0.090,0.080,0.500
+transposition_mutation_correlation_0p700,transposition_mutation_correlation,0.700,false,7,0.370,10,0.900,0.440,5.000,0.035,0.090,0.080,0.700
+mutation_sd_0p060,mutation_sd,0.060,false,7,0.370,10,0.900,0.440,5.000,0.035,0.060,0.080,0.900
+mutation_sd_0p120,mutation_sd,0.120,false,7,0.370,10,0.900,0.440,5.000,0.035,0.120,0.080,0.900
+food_site_width_0p300,food_site_width,0.300,false,7,0.300,10,0.900,0.440,5.000,0.035,0.090,0.080,0.900
+food_site_width_0p400,food_site_width,0.400,false,7,0.400,10,0.900,0.440,5.000,0.035,0.090,0.080,0.900
+food_site_count_5,food_site_count,5,false,5,0.370,10,0.900,0.440,5.000,0.035,0.090,0.080,0.900
+food_site_count_8,food_site_count,8,false,8,0.370,10,0.900,0.440,5.000,0.035,0.090,0.080,0.900
+travel_cost_per_distance_0p020,travel_cost_per_distance,0.020,false,7,0.370,10,0.900,0.440,5.000,0.020,0.090,0.080,0.900
+travel_cost_per_distance_0p050,travel_cost_per_distance,0.050,false,7,0.370,10,0.900,0.440,5.000,0.050,0.090,0.080,0.900
