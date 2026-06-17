@@ -730,6 +730,48 @@ The baseline reproduced 83/95 stable vertical gravity-code outcomes (87.4%), wit
 
 This first pass is deliberately coarse: it identifies broad cliffs and candidate robust ranges rather than estimating smooth response curves. The next step is to refine only the parameter ranges where the stable fraction changes sharply.
 <!-- oat-sensitivity-end -->
+
+<!-- sensitivity-refinement-start -->
+## Refined parameter sensitivity
+
+We then refined the one-parameter panel around the coarse ranges with the largest stability changes: food-site count, mutation scale, vertical-comb benefit, and sender-receiver mutation coupling. The table combines the original coarse anchors with the new refinement points; each row uses 95 held-out seeds. New raw rows are saved in `results/food_transition_sensitivity_refinement_events.csv` and `results/food_transition_sensitivity_refinement_trajectories.csv`.
+
+Across these refined points, the lowest stability occurred for `food_site_count=4` (16/95, 16.8%), and the highest occurred for `vertical_comb_benefit=0.520` (92/95, 96.8%). Baseline rows are repeated as within-parameter anchors rather than as independent perturbations.
+
+| Parameter | Value | Baseline | Stable | Gravity reached | Vertical retained | Collapse | Mean succ. | Mean payoff | Mean $t_f$ | Mean $m_f$ |
+|:----------|:------|:---------|-------:|----------------:|------------------:|---------:|-----------:|------------:|-----------:|-----------:|
+| food_site_count | 4 | no | 16/95 | 19/95 | 16/95 | 0/95 | 0.560 | 4.791 | 0.340 | 0.339 |
+| food_site_count | 5 | no | 56/95 | 60/95 | 56/95 | 0/95 | 0.604 | 6.023 | 0.630 | 0.595 |
+| food_site_count | 6 | no | 76/95 | 84/95 | 76/95 | 0/95 | 0.639 | 6.953 | 0.788 | 0.739 |
+| food_site_count | 7 | yes | 83/95 | 93/95 | 84/95 | 0/95 | 0.668 | 7.608 | 0.843 | 0.777 |
+| food_site_count | 8 | no | 87/95 | 93/95 | 87/95 | 0/95 | 0.700 | 8.124 | 0.843 | 0.752 |
+| food_site_count | 9 | no | 78/95 | 94/95 | 80/95 | 0/95 | 0.728 | 8.608 | 0.837 | 0.753 |
+| mutation_sd | 0.045 | no | 38/95 | 49/95 | 56/95 | 0/95 | 0.647 | 7.078 | 0.789 | 0.493 |
+| mutation_sd | 0.060 | no | 69/95 | 79/95 | 70/95 | 0/95 | 0.682 | 7.700 | 0.804 | 0.708 |
+| mutation_sd | 0.075 | no | 80/95 | 87/95 | 81/95 | 0/95 | 0.680 | 7.716 | 0.819 | 0.755 |
+| mutation_sd | 0.090 | yes | 83/95 | 93/95 | 84/95 | 0/95 | 0.668 | 7.608 | 0.843 | 0.777 |
+| mutation_sd | 0.105 | no | 83/95 | 94/95 | 83/95 | 0/95 | 0.660 | 7.460 | 0.844 | 0.760 |
+| mutation_sd | 0.120 | no | 77/95 | 93/95 | 77/95 | 0/95 | 0.651 | 7.304 | 0.835 | 0.728 |
+| mutation_sd | 0.135 | no | 87/95 | 95/95 | 87/95 | 0/95 | 0.638 | 7.122 | 0.843 | 0.724 |
+| vertical_comb_benefit | 0.300 | no | 51/95 | 68/95 | 51/95 | 0/95 | 0.669 | 6.676 | 0.689 | 0.639 |
+| vertical_comb_benefit | 0.340 | no | 73/95 | 82/95 | 73/95 | 0/95 | 0.670 | 7.007 | 0.777 | 0.709 |
+| vertical_comb_benefit | 0.370 | no | 66/95 | 84/95 | 66/95 | 0/95 | 0.672 | 7.151 | 0.770 | 0.710 |
+| vertical_comb_benefit | 0.400 | no | 78/95 | 89/95 | 78/95 | 0/95 | 0.670 | 7.383 | 0.827 | 0.759 |
+| vertical_comb_benefit | 0.420 | no | 81/95 | 92/95 | 81/95 | 0/95 | 0.670 | 7.501 | 0.834 | 0.758 |
+| vertical_comb_benefit | 0.440 | yes | 83/95 | 93/95 | 84/95 | 0/95 | 0.668 | 7.608 | 0.843 | 0.777 |
+| vertical_comb_benefit | 0.460 | no | 89/95 | 93/95 | 89/95 | 0/95 | 0.675 | 7.823 | 0.853 | 0.795 |
+| vertical_comb_benefit | 0.480 | no | 87/95 | 93/95 | 88/95 | 0/95 | 0.674 | 7.923 | 0.855 | 0.787 |
+| vertical_comb_benefit | 0.520 | no | 92/95 | 95/95 | 92/95 | 0/95 | 0.674 | 8.110 | 0.858 | 0.790 |
+| transposition_mutation_correlation | 0.300 | no | 72/95 | 83/95 | 74/95 | 0/95 | 0.658 | 7.318 | 0.806 | 0.698 |
+| transposition_mutation_correlation | 0.500 | no | 75/95 | 85/95 | 75/95 | 0/95 | 0.661 | 7.406 | 0.815 | 0.719 |
+| transposition_mutation_correlation | 0.600 | no | 81/95 | 91/95 | 84/95 | 0/95 | 0.663 | 7.477 | 0.833 | 0.739 |
+| transposition_mutation_correlation | 0.700 | no | 86/95 | 92/95 | 87/95 | 0/95 | 0.667 | 7.563 | 0.845 | 0.752 |
+| transposition_mutation_correlation | 0.800 | no | 85/95 | 92/95 | 87/95 | 0/95 | 0.668 | 7.589 | 0.848 | 0.763 |
+| transposition_mutation_correlation | 0.900 | yes | 83/95 | 93/95 | 84/95 | 0/95 | 0.668 | 7.608 | 0.843 | 0.777 |
+| transposition_mutation_correlation | 1.000 | no | 80/95 | 92/95 | 80/95 | 0/95 | 0.674 | 7.670 | 0.833 | 0.778 |
+
+These are still one-parameter perturbations, so they map local stability boundaries rather than interactions among parameters.
+<!-- sensitivity-refinement-end -->
 # Conclusion
 
 The resource-distribution experiments support the idea that costly directional
