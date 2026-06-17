@@ -77,6 +77,18 @@ OAT_LADDERS: tuple[tuple[str, tuple[int | float, ...]], ...] = (
     ("travel_cost_per_distance", (0.020, 0.035, 0.050)),
 )
 
+REFINEMENT_LADDERS: tuple[tuple[str, tuple[int | float, ...]], ...] = (
+    ("food_site_count", (4, 6, 9)),
+    ("mutation_sd", (0.045, 0.075, 0.105, 0.135)),
+    ("vertical_comb_benefit", (0.30, 0.37, 0.42, 0.46, 0.52)),
+    ("transposition_mutation_correlation", (0.30, 0.60, 0.80, 1.00)),
+)
+
+SENSITIVITY_PANELS = {
+    "coarse": OAT_LADDERS,
+    "refinement": REFINEMENT_LADDERS,
+}
+
 
 @dataclass(frozen=True)
 class SensitivityPoint:
@@ -101,7 +113,7 @@ def main() -> None:
     if args.generations is not None:
         base_settings = replace(base_settings, generations=args.generations)
 
-    points = build_points()
+    points = build_points(SENSITIVITY_PANELS[args.panel])
     seeds = heldout_seeds(args.seeds, args.exclude_seeds)
     thresholds = Thresholds(
         gravity=args.gravity_threshold,
@@ -110,7 +122,7 @@ def main() -> None:
         partial_transposition=args.partial_transposition_threshold,
         collapse_success=args.collapse_success_threshold,
     )
-    outputs = output_paths(args.output_prefix)
+    outputs = output_paths(args.output_prefix or default_output_prefix(args.panel))
     for path in outputs.values():
         path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -125,7 +137,7 @@ def main() -> None:
     total_runs = len(points) * len(seeds)
     print(
         (
-            "running coarse one-parameter food-transition sensitivity: "
+            f"running {args.panel} one-parameter food-transition sensitivity: "
             f"points={len(points)} seeds={len(seeds)} total_runs={total_runs} "
             f"workers={args.max_workers} generations={base_settings.generations}"
         ),
@@ -227,9 +239,15 @@ def main() -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Run a coarse one-parameter-at-a-time sensitivity panel around the "
+            "Run a one-parameter-at-a-time sensitivity panel around the "
             "validated repeated_7site food-transition candidate."
         )
+    )
+    parser.add_argument(
+        "--panel",
+        choices=sorted(SENSITIVITY_PANELS),
+        default="coarse",
+        help="Sensitivity point set to run.",
     )
     parser.add_argument(
         "--config",
@@ -240,7 +258,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-prefix",
         type=Path,
-        default=ROOT / "results" / "food_transition_oat_sensitivity",
+        default=None,
         help="Prefix for point, event, trajectory, and summary CSV outputs.",
     )
     parser.add_argument(
@@ -273,7 +291,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def build_points() -> list[SensitivityPoint]:
+def default_output_prefix(panel: str) -> Path:
+    if panel == "coarse":
+        return ROOT / "results" / "food_transition_oat_sensitivity"
+    return ROOT / f"results/food_transition_sensitivity_{panel}"
+
+
+def build_points(
+    ladders: tuple[tuple[str, tuple[int | float, ...]], ...],
+) -> list[SensitivityPoint]:
     baseline = SensitivityPoint(
         point="baseline",
         parameter="baseline",
@@ -284,7 +310,7 @@ def build_points() -> list[SensitivityPoint]:
     points = [baseline]
     seen = {values_key(baseline.values)}
 
-    for parameter, values in OAT_LADDERS:
+    for parameter, values in ladders:
         for value in values:
             point_values = {**BASELINE_VALUES, parameter: value}
             key = values_key(point_values)
