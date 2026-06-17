@@ -43,6 +43,11 @@ class Effect:
     delta: float
     ci_low: float
     ci_high: float
+    is_baseline: bool = False
+
+    @property
+    def stable_percent(self) -> float:
+        return 100 * self.stable_count / self.runs
 
 
 def main() -> None:
@@ -113,7 +118,18 @@ def compute_effects(
     runs = len(baseline_outcomes)
     rng = random.Random(random_seed)
 
-    effects = []
+    effects = [
+        Effect(
+            point=baseline_point,
+            label="baseline",
+            stable_count=sum(baseline_outcomes.values()),
+            runs=runs,
+            delta=0.0,
+            ci_low=0.0,
+            ci_high=0.0,
+            is_baseline=True,
+        )
+    ]
     for point, outcomes in stable_by_point.items():
         if point == baseline_point:
             continue
@@ -144,7 +160,13 @@ def compute_effects(
             )
         )
 
-    effects.sort(key=lambda effect: (effect.delta, point_order[effect.point]))
+    effects.sort(
+        key=lambda effect: (
+            effect.delta,
+            0 if effect.is_baseline else 1,
+            point_order[effect.point],
+        )
+    )
     return effects, sum(baseline_outcomes.values()), runs
 
 
@@ -221,11 +243,7 @@ def write_figure(
     deltas = [effect.delta * 100 for effect in effects]
     ci_low = [effect.ci_low * 100 for effect in effects]
     ci_high = [effect.ci_high * 100 for effect in effects]
-    x_errors = [
-        [delta - low for delta, low in zip(deltas, ci_low)],
-        [high - delta for delta, high in zip(deltas, ci_high)],
-    ]
-    colors = ["#c2410c" if delta < 0 else "#047857" for delta in deltas]
+    colors = [effect_color(effect) for effect in effects]
 
     plt.rcParams.update(
         {
@@ -240,28 +258,41 @@ def write_figure(
     fig_height = max(5.2, 0.36 * len(effects) + 1.8)
     fig, ax = plt.subplots(figsize=(8.4, fig_height), constrained_layout=True)
 
-    for y, delta, color in zip(y_positions, deltas, colors):
-        ax.hlines(y, min(0, delta), max(0, delta), color=color, linewidth=3, alpha=0.55)
-    ax.errorbar(
+    for y, low, high, color, effect in zip(
+        y_positions,
+        ci_low,
+        ci_high,
+        colors,
+        effects,
+    ):
+        if not effect.is_baseline:
+            ax.hlines(y, low, high, color=color, linewidth=1.8, alpha=0.95, zorder=2)
+            ax.vlines(
+                [low, high],
+                y - 0.08,
+                y + 0.08,
+                color=color,
+                linewidth=1.8,
+                alpha=0.95,
+                zorder=2,
+            )
+    ax.scatter(
         deltas,
         y_positions,
-        xerr=x_errors,
-        fmt="none",
-        ecolor="#374151",
-        elinewidth=1,
-        capsize=3,
-        capthick=1,
-        zorder=2,
+        s=54,
+        c=colors,
+        edgecolor="white",
+        linewidth=0.8,
+        zorder=3,
     )
-    ax.scatter(deltas, y_positions, s=48, c=colors, edgecolor="white", linewidth=0.8, zorder=3)
 
     for y, delta, effect in zip(y_positions, deltas, effects):
-        offset = -1.2 if delta < 0 else 1.2
-        alignment = "right" if delta < 0 else "left"
+        offset = -1.2 if delta < 0 and not effect.is_baseline else 1.2
+        alignment = "right" if delta < 0 and not effect.is_baseline else "left"
         ax.text(
             delta + offset,
             y,
-            f"{effect.stable_count}/{effect.runs}",
+            f"{effect.stable_percent:.1f}%",
             va="center",
             ha=alignment,
             fontsize=9,
@@ -287,8 +318,8 @@ def write_figure(
     ax.set_title(
         (
             "Coarse one-parameter sensitivity: stable vertical gravity-code outcomes\n"
-            f"Baseline: {baseline_count}/{runs} stable "
-            f"({baseline_count / runs:.1%}); intervals are paired seed bootstraps"
+            f"Baseline: {100 * baseline_count / runs:.1f}% stable; "
+            "whiskers are paired seed-bootstrap intervals"
         ),
         loc="left",
         fontsize=11,
@@ -303,6 +334,14 @@ def write_figure(
     plt.close(fig)
     print(f"wrote {relative(svg_path)}", flush=True)
     print(f"wrote {relative(png_path)}", flush=True)
+
+
+def effect_color(effect: Effect) -> str:
+    if effect.is_baseline:
+        return "#4b5563"
+    if effect.delta < 0:
+        return "#c2410c"
+    return "#047857"
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
