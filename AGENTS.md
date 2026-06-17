@@ -47,6 +47,21 @@ We are modeling the evolution of bee communication.
   `systemd-run` service when available; do not rely on an interactive tool
   session for work that needs to continue after the current turn.
 
+## Snellius
+
+- Use `ssh gchrupala1@snellius.surf.nl` for Snellius access. Do not record
+  passwords, private keys, or other secrets in this repo.
+- The project checkout on Snellius is `/gpfs/home2/gchrupala1/bees`.
+- Before launching Snellius jobs, sync the remote checkout with GitHub, e.g.
+  `cd /gpfs/home2/gchrupala1/bees && git pull --rebase`.
+- Snellius uses Slurm. Submit the evolutionary interaction array from the
+  remote checkout with `./experiments/submit_evolutionary_interaction_snellius.sh`;
+  monitor with `squeue`, and inspect `slurm-*.out` / `slurm-*.err` logs in the
+  checkout.
+- The submit helper accepts `BEES_ARRAY_TASKS`, `BEES_ARRAY_CONCURRENCY`,
+  `BEES_VENV`, `BEES_PYTHON`, and `BEES_PUSH`. Set `BEES_PUSH=1` when the
+  finalizer should commit and push merged result CSVs after the array succeeds.
+
 ## Reports
 
 - The working report is `report/report.md`, rendered to `report/report.html`
