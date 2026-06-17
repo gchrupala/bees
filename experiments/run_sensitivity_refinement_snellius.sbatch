@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=bees-refine
 #SBATCH --time=36:00:00
-#SBATCH --cpus-per-task=6
+#SBATCH --cpus-per-task=16
 #SBATCH --mem=8G
 #SBATCH --output=slurm-%x-%j.out
 #SBATCH --error=slurm-%x-%j.err
