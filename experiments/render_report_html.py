@@ -161,11 +161,12 @@ def modifier_label(modifier: str) -> str:
 
 
 def render_with_pandoc(markdown: str, output: Path, css: Path) -> None:
-    pandoc = shutil.which("pandoc")
+    pandoc = find_pandoc()
     if pandoc is None:
         raise SystemExit(
             "pandoc is required to render the HTML report. "
-            "Install pandoc or edit report/report.md without rebuilding."
+            "Install pandoc or pypandoc-binary, or edit report/report.md without "
+            "rebuilding."
         )
 
     with tempfile.NamedTemporaryFile(
@@ -206,6 +207,22 @@ def render_with_pandoc(markdown: str, output: Path, css: Path) -> None:
         )
     finally:
         expanded_source.unlink(missing_ok=True)
+
+
+def find_pandoc() -> str | None:
+    pandoc = shutil.which("pandoc")
+    if pandoc is not None:
+        return pandoc
+
+    try:
+        import pypandoc
+    except ImportError:
+        return None
+
+    try:
+        return pypandoc.get_pandoc_path()
+    except OSError:
+        return None
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:

@@ -7,6 +7,7 @@ dependencies = [
     "optuna>=4,<5",
     "pandas>=2.2,<3",
     "plotnine>=0.15,<1",
+    "pypandoc-binary>=1.17,<2",
 ]
 
 [build-system]
