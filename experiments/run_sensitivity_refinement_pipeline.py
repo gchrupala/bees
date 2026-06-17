@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -44,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--max-workers",
         type=int,
-        default=6,
+        default=default_max_workers(),
         help="Maximum worker processes for the simulation phase.",
     )
     parser.add_argument(
@@ -58,6 +59,10 @@ def parse_args() -> argparse.Namespace:
         help="Push the result commit after finalization.",
     )
     return parser.parse_args()
+
+
+def default_max_workers() -> int:
+    return int(os.environ.get("SLURM_CPUS_PER_TASK", "6"))
 
 
 def run(command: list[str]) -> None:
