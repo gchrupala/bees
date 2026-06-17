@@ -709,6 +709,16 @@ We next ran a coarse one-parameter-at-a-time sensitivity panel around the held-o
 
 The baseline reproduced 83/95 stable vertical gravity-code outcomes (87.4%), with mean final success 0.668, mean final comb tilt 0.843, and mean final minimum sender-receiver transposition 0.777. Across the coarse perturbations, the lowest stability occurred for `food_site_count=5` (56/95, 58.9%), whereas the highest non-baseline stability occurred for `vertical_comb_benefit=0.480` (87/95, 91.6%).
 
+<figure id="fig:oat-sensitivity-stable-delta" class="figure">
+<img src="figures/oat_sensitivity_stable_delta.png" alt="Stable transition rates under one-parameter perturbations around the repeated seven-site baseline." />
+<figcaption>
+Coarse one-parameter sensitivity around the held-out-validated
+<code>repeated_7site</code> candidate. Boxes show seed-bootstrap distributions of the
+stable vertical gravity-code fraction for each condition; points show the observed
+95-seed stable fraction. The dashed vertical line marks the baseline.
+</figcaption>
+</figure>
+
 | Parameter | Value | Stable | Gravity reached | Vertical retained | Collapse | Mean succ. | Mean payoff | Mean $t_f$ | Mean $m_f$ |
 |:----------|:------|-------:|----------------:|------------------:|---------:|-----------:|------------:|-----------:|-----------:|
 | baseline | - | 83/95 | 93/95 | 84/95 | 0/95 | 0.668 | 7.608 | 0.843 | 0.777 |

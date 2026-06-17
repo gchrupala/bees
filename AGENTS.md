@@ -57,6 +57,8 @@ We are modeling the evolution of bee communication.
 - Keep the HTML workflow lightweight: prefer Markdown, tracked CSV-backed
   summaries, and simple generated HTML over heavyweight notebook or PDF
   pipelines.
+- For static report figures from tabular experiment results, prefer `plotnine`
+  over raw `matplotlib` unless lower-level plotting control is needed.
 - `report/report.tex` and `report/report.pdf` are legacy paper-style snapshots.
   Do not update or compile them during ordinary report maintenance unless the
   user explicitly asks for a LaTeX/PDF paper artifact.
