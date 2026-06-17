@@ -162,16 +162,16 @@ python -u experiments/validate_extensive_optuna_candidates.py \
 Run and finalize the refined one-parameter sensitivity panel on Snellius:
 
 ```sh
-sbatch -A <account> experiments/run_sensitivity_refinement_snellius.sbatch
+sbatch -A ubsr112721 experiments/run_sensitivity_refinement_snellius.sbatch
 ```
 
 The job uses `SLURM_CPUS_PER_TASK` worker processes, streams raw event and
 trajectory rows under `results/food_transition_sensitivity_refinement_*.csv`,
 updates `report/report.md`, renders `report/report.html` if Pandoc is
 available, and commits the generated artifacts when it finishes. Set
-`BEES_MODULE_LOAD`, `BEES_VENV`, or `BEES_PYTHON` at submission time if the
-Snellius environment needs a specific Python, and set `BEES_PUSH=1` to push the
-result commit after finalization.
+`BEES_MODULE_LOAD`, `BEES_VENV`, or `BEES_PYTHON` at submission time to override
+the default `2025 Python/3.13.5-GCCcore-14.3.0` module stack, and set
+`BEES_PUSH=1` to push the result commit after finalization.
 
 Export no-threshold long-transition trajectories and event timings:
 

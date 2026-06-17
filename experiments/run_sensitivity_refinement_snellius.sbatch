@@ -10,7 +10,8 @@ set -euo pipefail
 
 cd "${SLURM_SUBMIT_DIR:-$PWD}"
 
-if [[ -n "${BEES_MODULE_LOAD:-}" ]]; then
+BEES_MODULE_LOAD="${BEES_MODULE_LOAD:-2025 Python/3.13.5-GCCcore-14.3.0}"
+if [[ "${BEES_MODULE_LOAD}" != "none" ]]; then
     module load ${BEES_MODULE_LOAD}
 fi
 
