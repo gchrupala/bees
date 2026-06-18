@@ -74,7 +74,7 @@ We are modeling the evolution of bee communication.
   pipelines.
 - For static report figures from tabular experiment results, prefer `plotnine`
   over raw `matplotlib` unless lower-level plotting control is needed.
-- `paper.tex` is an empty LaTeX paper scaffold with section structure only.
+- `report/paper.tex` is an empty LaTeX paper scaffold with section structure only.
   Do not compile or expand it during ordinary report maintenance unless the
   user explicitly asks for a LaTeX/PDF paper artifact.
 - The old LaTeX table fragments under `report/tables/` and
