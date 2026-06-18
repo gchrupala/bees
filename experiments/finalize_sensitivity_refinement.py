@@ -323,7 +323,7 @@ def report_section(summaries: list[CurveSummary], output_prefix: Path) -> str:
                 "with the largest stability changes: food-site count, mutation scale, "
                 "vertical-comb benefit, and sender-receiver mutation coupling. The "
                 "table combines the original coarse anchors with the new refinement "
-                f"points; each row uses 95 held-out seeds. New raw rows are saved in "
+                f"points; each row uses 100 held-out seeds. New raw rows are saved in "
                 f"`{outputs['events']}` and `{outputs['trajectories']}`."
             ),
             "",

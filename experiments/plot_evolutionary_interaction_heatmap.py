@@ -133,7 +133,7 @@ def write_figure(frame: pd.DataFrame, output_prefix: Path) -> None:
         + coord_fixed()
         + labs(
             title="Stable transition rate across evolutionary parameter interactions",
-            subtitle="Each cell summarizes 95 held-out seeds; labels show percent stable.",
+            subtitle="Each cell summarizes 100 held-out seeds; labels show percent stable.",
             x="Sender-receiver mutation correlation",
             y="Mutation scale",
         )

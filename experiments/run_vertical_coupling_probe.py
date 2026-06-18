@@ -20,7 +20,7 @@ FIELDNAMES = [
     "seeds",
     "generations",
     "initial_comb_tilt",
-    "comb_tilt_mutation_sd",
+    "mutation_sd",
     "comb_orientation_axial",
     "reached_gravity_fraction",
     "mean_gravity_reach_generation",
@@ -160,7 +160,7 @@ def summarize_setting(
         "seeds": str(len(final_states)),
         "generations": str(settings.generations),
         "initial_comb_tilt": format_float(settings.initial_comb_tilt),
-        "comb_tilt_mutation_sd": format_float(comb_tilt_mutation_sd(settings)),
+        "mutation_sd": format_float(settings.mutation_sd),
         "comb_orientation_axial": str(settings.comb_orientation_axial).lower(),
         "mean_final_bias": mean_summary(final_states, "average_directional_bias"),
         "mean_final_attention": mean_summary(final_states, "average_receiver_attention"),
@@ -256,13 +256,6 @@ def reach_summary(prefix: str, generations: list[int | None]) -> dict[str, str]:
             else "0.000"
         ),
     }
-
-
-def comb_tilt_mutation_sd(settings: DirectionSettings) -> float:
-    if settings.comb_tilt_mutation_sd is None:
-        return settings.mutation_sd
-
-    return settings.comb_tilt_mutation_sd
 
 
 def mean_summary(states: list[GenerationSummary], attribute: str) -> str:

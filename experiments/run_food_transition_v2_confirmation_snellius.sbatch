@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=bees-evo-int
-#SBATCH --time=36:00:00
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=8G
-#SBATCH --output=slurm-%x-%A_%a.out
-#SBATCH --error=slurm-%x-%A_%a.err
+#SBATCH --job-name=bees-v2-confirm
+#SBATCH --time=48:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=16G
+#SBATCH --output=slurm-%x-%j.out
+#SBATCH --error=slurm-%x-%j.err
 
 set -euo pipefail
 
@@ -28,7 +28,9 @@ export OPENBLAS_NUM_THREADS=1
 
 PYTHON_BIN="${BEES_PYTHON:-python}"
 
-"${PYTHON_BIN}" -u experiments/run_evolutionary_interaction_array.py \
-    --baseline-points results/food_transition_v2_validation_points.csv \
-    --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
+"${PYTHON_BIN}" -u experiments/run_food_transition_v2_candidate_panel.py \
+    --source trials \
+    --max-candidates "${BEES_V2_CONFIRMATION_CANDIDATES:-20}" \
+    --seeds "${BEES_V2_CONFIRMATION_SEEDS:-110-149}" \
+    --output-prefix results/food_transition_v2_confirmation \
     --max-workers "${SLURM_CPUS_PER_TASK}"

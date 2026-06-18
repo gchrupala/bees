@@ -30,6 +30,7 @@ from run_food_transition_oat_sensitivity import (
     TRAJECTORY_OUTPUT_FIELDNAMES,
     SensitivityPoint,
     heldout_seeds,
+    load_baseline_values,
     point_metadata,
     point_param_values,
     point_row,
@@ -41,7 +42,8 @@ from run_food_transition_oat_sensitivity import (
 
 def main() -> None:
     args = parse_args()
-    points = build_interaction_points(args.max_points)
+    baseline_values = load_baseline_values(args)
+    points = build_interaction_points(args.max_points, baseline_values)
     seeds = heldout_seeds(args.seeds, args.exclude_seeds)
     if args.max_seeds is not None:
         seeds = seeds[: args.max_seeds]
@@ -121,6 +123,18 @@ def parse_args() -> argparse.Namespace:
         help="Prefix for merged output CSVs.",
     )
     parser.add_argument(
+        "--baseline-points",
+        type=Path,
+        default=None,
+        help="Candidate point CSV used to select the interaction baseline.",
+    )
+    parser.add_argument(
+        "--baseline-group-summary",
+        type=Path,
+        default=None,
+        help="Candidate group-summary CSV used to select the interaction baseline.",
+    )
+    parser.add_argument(
         "--shard-dir",
         type=Path,
         default=DEFAULT_SHARD_DIR,
@@ -134,12 +148,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--seeds",
-        default="96-195",
-        help="Comma-separated seeds and inclusive ranges, e.g. 96-195,220.",
+        default="300-399",
+        help="Comma-separated seeds and inclusive ranges, e.g. 300-399,420.",
     )
     parser.add_argument(
         "--exclude-seeds",
-        default="100-104",
+        default="",
         help="Seeds to remove from the validation panel.",
     )
     parser.add_argument(
@@ -174,7 +188,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--commit-message",
-        default="Add evolutionary interaction results",
+        default="Add v2 evolutionary interaction results",
         help="Commit message for merged result CSVs.",
     )
     parser.add_argument(

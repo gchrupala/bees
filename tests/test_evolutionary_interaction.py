@@ -18,7 +18,7 @@ from run_food_transition_oat_sensitivity import BASELINE_VALUES
 
 
 class EvolutionaryInteractionTests(unittest.TestCase):
-    def test_grid_uses_tied_mutation_scale_and_baseline_ecology(self) -> None:
+    def test_grid_uses_shared_mutation_scale_and_baseline_ecology(self) -> None:
         points = build_interaction_points()
 
         self.assertEqual(len(points), expected_point_count())
@@ -49,10 +49,6 @@ class EvolutionaryInteractionTests(unittest.TestCase):
             "travel_cost_per_distance",
         )
         for point in points:
-            self.assertEqual(
-                point.values["comb_tilt_mutation_sd"],
-                point.values["mutation_sd"],
-            )
             for parameter in ecology_parameters:
                 self.assertEqual(point.values[parameter], BASELINE_VALUES[parameter])
 

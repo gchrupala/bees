@@ -7,7 +7,6 @@
   "foraging_attempts_per_episode": 12,
   "mutation_sd": 0.07,
   "transposition_mutation_correlation": 0.6,
-  "comb_orientation_mutation_sd": 0.35,
   "stable_worker_sd": 0.08,
   "max_signal_concentration": 14.0,
   "dance_noise_sd": 0.18,

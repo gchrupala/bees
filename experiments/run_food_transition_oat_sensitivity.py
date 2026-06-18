@@ -40,7 +40,6 @@ PARAM_FIELDNAMES = [
     "food_site_max_distance",
     "travel_cost_per_distance",
     "mutation_sd",
-    "comb_tilt_mutation_sd",
     "transposition_mutation_correlation",
 ]
 POINT_FIELDNAMES = ["point", "parameter", "parameter_value", "is_baseline"]
@@ -63,7 +62,6 @@ BASELINE_VALUES: dict[str, int | float] = {
     "food_site_max_distance": 5.0,
     "travel_cost_per_distance": 0.035,
     "mutation_sd": 0.09,
-    "comb_tilt_mutation_sd": 0.08,
     "transposition_mutation_correlation": 0.9,
 }
 
@@ -113,7 +111,8 @@ def main() -> None:
     if args.generations is not None:
         base_settings = replace(base_settings, generations=args.generations)
 
-    points = build_points(SENSITIVITY_PANELS[args.panel])
+    baseline_values = load_baseline_values(args)
+    points = build_points(panel_ladders(args.panel, baseline_values), baseline_values)
     seeds = heldout_seeds(args.seeds, args.exclude_seeds)
     thresholds = Thresholds(
         gravity=args.gravity_threshold,
@@ -240,7 +239,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Run a one-parameter-at-a-time sensitivity panel around the "
-            "validated repeated_7site food-transition candidate."
+            "validated v2 food-transition candidate."
         )
     )
     parser.add_argument(
@@ -262,13 +261,25 @@ def parse_args() -> argparse.Namespace:
         help="Prefix for point, event, trajectory, and summary CSV outputs.",
     )
     parser.add_argument(
+        "--baseline-points",
+        type=Path,
+        default=None,
+        help="Candidate point CSV used to select a dynamic sensitivity baseline.",
+    )
+    parser.add_argument(
+        "--baseline-group-summary",
+        type=Path,
+        default=None,
+        help="Candidate group-summary CSV used to select the best baseline row.",
+    )
+    parser.add_argument(
         "--seeds",
-        default="96-195",
-        help="Comma-separated seeds and inclusive ranges, e.g. 96-195,220.",
+        default="300-399",
+        help="Comma-separated seeds and inclusive ranges, e.g. 300-399,420.",
     )
     parser.add_argument(
         "--exclude-seeds",
-        default="100-104",
+        default="",
         help="Seeds to remove from the validation panel.",
     )
     parser.add_argument(
@@ -293,26 +304,75 @@ def parse_args() -> argparse.Namespace:
 
 def default_output_prefix(panel: str) -> Path:
     if panel == "coarse":
-        return ROOT / "results" / "food_transition_oat_sensitivity"
-    return ROOT / f"results/food_transition_sensitivity_{panel}"
+        return ROOT / "results" / "food_transition_v2_oat_sensitivity"
+    return ROOT / f"results/food_transition_v2_sensitivity_{panel}"
+
+
+def load_baseline_values(args: argparse.Namespace) -> dict[str, int | float]:
+    if args.baseline_points is None and args.baseline_group_summary is None:
+        return dict(BASELINE_VALUES)
+    if args.baseline_points is None or args.baseline_group_summary is None:
+        raise ValueError(
+            "--baseline-points and --baseline-group-summary must be used together"
+        )
+
+    point_rows = {
+        row["candidate"]: row
+        for row in read_csv_rows(args.baseline_points)
+    }
+    summary_rows = [
+        row
+        for row in read_csv_rows(args.baseline_group_summary)
+        if row["group_kind"] == "all" and row["group"] == "all"
+    ]
+    if not summary_rows:
+        raise ValueError(f"no all-candidate rows in {args.baseline_group_summary}")
+    best = min(summary_rows, key=baseline_sort_key)
+    row = point_rows[best["candidate"]]
+    return {
+        name: parse_param_value(name, row[name])
+        for name in PARAM_FIELDNAMES
+    }
+
+
+def read_csv_rows(path: Path) -> list[dict[str, str]]:
+    with path.open(newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def baseline_sort_key(row: dict[str, str]) -> tuple[float, float, float, float, str]:
+    return (
+        -float(row["stable_fraction"]),
+        float(row["collapse_fraction"]),
+        -float(row["mean_final_min_transposition"]),
+        -float(row["mean_final_success"]),
+        row["candidate"],
+    )
+
+
+def parse_param_value(name: str, raw: str) -> int | float:
+    if name in {"food_site_count", "food_site_capacity"}:
+        return int(raw)
+    return float(raw)
 
 
 def build_points(
     ladders: tuple[tuple[str, tuple[int | float, ...]], ...],
+    baseline_values: dict[str, int | float],
 ) -> list[SensitivityPoint]:
     baseline = SensitivityPoint(
         point="baseline",
         parameter="baseline",
         parameter_value="baseline",
         is_baseline=True,
-        values=dict(BASELINE_VALUES),
+        values=dict(baseline_values),
     )
     points = [baseline]
     seen = {values_key(baseline.values)}
 
     for parameter, values in ladders:
         for value in values:
-            point_values = {**BASELINE_VALUES, parameter: value}
+            point_values = {**baseline_values, parameter: value}
             key = values_key(point_values)
             if key in seen:
                 continue
@@ -327,6 +387,72 @@ def build_points(
                 )
             )
     return points
+
+
+def panel_ladders(
+    panel: str,
+    baseline_values: dict[str, int | float],
+) -> tuple[tuple[str, tuple[int | float, ...]], ...]:
+    if panel == "coarse":
+        return coarse_ladders(baseline_values)
+    if panel == "refinement":
+        return refinement_ladders(baseline_values)
+    raise ValueError(f"unknown sensitivity panel: {panel}")
+
+
+def coarse_ladders(
+    baseline: dict[str, int | float],
+) -> tuple[tuple[str, tuple[int | float, ...]], ...]:
+    return (
+        ("vertical_comb_benefit", float_ladder(baseline, "vertical_comb_benefit", (-0.08, -0.04, 0.04, 0.08), 0.10, 0.60)),
+        ("food_site_max_distance", float_ladder(baseline, "food_site_max_distance", (-1.0, -0.5, 0.5, 1.0), 4.5, 9.0)),
+        ("transposition_mutation_correlation", float_ladder(baseline, "transposition_mutation_correlation", (-0.2, -0.1, 0.1, 0.2), 0.0, 1.0)),
+        ("mutation_sd", float_ladder(baseline, "mutation_sd", (-0.03, -0.01, 0.01, 0.03), 0.04, 0.14)),
+        ("food_site_width", float_ladder(baseline, "food_site_width", (-0.07, -0.03, 0.03, 0.07), 0.18, 0.45)),
+        ("food_site_count", int_ladder(baseline, "food_site_count", (-2, -1, 1, 2), 3, 10)),
+        ("food_site_capacity", int_ladder(baseline, "food_site_capacity", (-4, -2, 2, 4), 4, 16)),
+        ("travel_cost_per_distance", float_ladder(baseline, "travel_cost_per_distance", (-0.015, -0.005, 0.005, 0.015), 0.01, 0.06)),
+    )
+
+
+def refinement_ladders(
+    baseline: dict[str, int | float],
+) -> tuple[tuple[str, tuple[int | float, ...]], ...]:
+    return (
+        ("food_site_count", int_ladder(baseline, "food_site_count", (-3, -2, -1, 1, 2, 3), 3, 10)),
+        ("mutation_sd", float_ladder(baseline, "mutation_sd", (-0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04), 0.04, 0.14)),
+        ("vertical_comb_benefit", float_ladder(baseline, "vertical_comb_benefit", (-0.12, -0.08, -0.04, 0.04, 0.08, 0.12), 0.10, 0.60)),
+        ("transposition_mutation_correlation", float_ladder(baseline, "transposition_mutation_correlation", (-0.4, -0.2, -0.1, 0.1, 0.2, 0.4), 0.0, 1.0)),
+    )
+
+
+def float_ladder(
+    baseline: dict[str, int | float],
+    parameter: str,
+    offsets: tuple[float, ...],
+    minimum: float,
+    maximum: float,
+) -> tuple[float, ...]:
+    base = float(baseline[parameter])
+    values = {
+        round(min(max(base + offset, minimum), maximum), 3)
+        for offset in offsets
+    }
+    values.add(round(base, 3))
+    return tuple(sorted(values))
+
+
+def int_ladder(
+    baseline: dict[str, int | float],
+    parameter: str,
+    offsets: tuple[int, ...],
+    minimum: int,
+    maximum: int,
+) -> tuple[int, ...]:
+    base = int(baseline[parameter])
+    values = {min(max(base + offset, minimum), maximum) for offset in offsets}
+    values.add(base)
+    return tuple(sorted(values))
 
 
 def values_key(values: dict[str, int | float]) -> tuple[int | float, ...]:

@@ -38,7 +38,6 @@ TRIAL_FIELDNAMES = [
     "food_site_max_distance",
     "travel_cost_per_distance",
     "mutation_sd",
-    "comb_tilt_mutation_sd",
     "transposition_mutation_correlation",
     "stable_count",
     "seed_count",
@@ -64,7 +63,6 @@ SEED_FIELDNAMES = [
     "food_site_max_distance",
     "travel_cost_per_distance",
     "mutation_sd",
-    "comb_tilt_mutation_sd",
     "transposition_mutation_correlation",
     "stable",
     "collapsed",
@@ -109,9 +107,6 @@ class SearchSpace:
     mutation_sd_min: float
     mutation_sd_max: float
     mutation_sd_step: float
-    comb_tilt_mutation_sd_min: float | None
-    comb_tilt_mutation_sd_max: float | None
-    comb_tilt_mutation_sd_step: float
     transposition_mutation_correlation_min: float
     transposition_mutation_correlation_max: float
     transposition_mutation_correlation_step: float
@@ -158,9 +153,6 @@ def main() -> None:
         mutation_sd_min=args.mutation_sd_min,
         mutation_sd_max=args.mutation_sd_max,
         mutation_sd_step=args.mutation_sd_step,
-        comb_tilt_mutation_sd_min=args.comb_tilt_mutation_sd_min,
-        comb_tilt_mutation_sd_max=args.comb_tilt_mutation_sd_max,
-        comb_tilt_mutation_sd_step=args.comb_tilt_mutation_sd_step,
         transposition_mutation_correlation_min=(
             args.transposition_mutation_correlation_min
         ),
@@ -241,41 +233,41 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--journal-output",
         type=Path,
-        default=ROOT / "results" / "food_transition_optuna.journal",
+        default=ROOT / "results" / "food_transition_v2_optuna.journal",
         help="Optuna JournalStorage file for the persistent study.",
     )
     parser.add_argument(
         "--trials-output",
         type=Path,
-        default=ROOT / "results" / "food_transition_optuna_trials.csv",
+        default=ROOT / "results" / "food_transition_v2_optuna_trials.csv",
         help="CSV export of all completed/pruned trials.",
     )
     parser.add_argument(
         "--seed-output",
         type=Path,
-        default=None,
+        default=ROOT / "results" / "food_transition_v2_optuna_seed_metrics.csv",
         help="Optional CSV export of per-seed metrics for each completed trial.",
     )
     parser.add_argument(
         "--study-name",
-        default="food_transition_optuna",
+        default="food_transition_v2_optuna",
         help="Optuna study name.",
     )
     parser.add_argument(
         "--n-trials",
         type=int,
-        default=32,
+        default=512,
         help="Total number of trials across all workers.",
     )
     parser.add_argument(
         "--workers",
         type=int,
-        default=4,
+        default=16,
         help="Number of worker processes sharing the study journal.",
     )
     parser.add_argument(
         "--seeds",
-        default="100,101,102",
+        default="100-109",
         help="Comma-separated simulation seeds evaluated for each trial.",
     )
     parser.add_argument(
@@ -293,7 +285,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--startup-trials",
         type=int,
-        default=12,
+        default=64,
         help="Number of initial random TPE trials.",
     )
     parser.add_argument(
@@ -303,39 +295,36 @@ def parse_args() -> argparse.Namespace:
         help="Optional Optuna pruner. Median pruning compares partial seed panels.",
     )
     parser.add_argument("--food-site-count-min", type=int, default=3)
-    parser.add_argument("--food-site-count-max", type=int, default=6)
-    parser.add_argument("--food-site-width-min", type=float, default=0.22)
-    parser.add_argument("--food-site-width-max", type=float, default=0.36)
+    parser.add_argument("--food-site-count-max", type=int, default=10)
+    parser.add_argument("--food-site-width-min", type=float, default=0.18)
+    parser.add_argument("--food-site-width-max", type=float, default=0.45)
     parser.add_argument("--food-site-width-step", type=float, default=0.01)
-    parser.add_argument("--food-site-capacity-min", type=int, default=6)
-    parser.add_argument("--food-site-capacity-max", type=int, default=14)
+    parser.add_argument("--food-site-capacity-min", type=int, default=4)
+    parser.add_argument("--food-site-capacity-max", type=int, default=16)
     parser.add_argument("--food-value-min", type=float, default=1.0)
     parser.add_argument("--food-value-max", type=float, default=1.0)
     parser.add_argument("--food-value-step", type=float, default=0.1)
-    parser.add_argument("--vertical-comb-benefit-min", type=float, default=0.15)
-    parser.add_argument("--vertical-comb-benefit-max", type=float, default=0.35)
-    parser.add_argument("--vertical-comb-benefit-step", type=float, default=0.01)
-    parser.add_argument("--food-site-max-distance-min", type=float, default=6.0)
-    parser.add_argument("--food-site-max-distance-max", type=float, default=10.0)
+    parser.add_argument("--vertical-comb-benefit-min", type=float, default=0.10)
+    parser.add_argument("--vertical-comb-benefit-max", type=float, default=0.60)
+    parser.add_argument("--vertical-comb-benefit-step", type=float, default=0.02)
+    parser.add_argument("--food-site-max-distance-min", type=float, default=4.5)
+    parser.add_argument("--food-site-max-distance-max", type=float, default=9.0)
     parser.add_argument("--food-site-max-distance-step", type=float, default=0.5)
     parser.add_argument("--travel-cost-min", type=float, default=0.01)
-    parser.add_argument("--travel-cost-max", type=float, default=0.04)
+    parser.add_argument("--travel-cost-max", type=float, default=0.06)
     parser.add_argument("--travel-cost-step", type=float, default=0.005)
-    parser.add_argument("--mutation-sd-min", type=float, default=0.07)
-    parser.add_argument("--mutation-sd-max", type=float, default=0.07)
+    parser.add_argument("--mutation-sd-min", type=float, default=0.04)
+    parser.add_argument("--mutation-sd-max", type=float, default=0.14)
     parser.add_argument("--mutation-sd-step", type=float, default=0.01)
-    parser.add_argument("--comb-tilt-mutation-sd-min", type=float, default=None)
-    parser.add_argument("--comb-tilt-mutation-sd-max", type=float, default=None)
-    parser.add_argument("--comb-tilt-mutation-sd-step", type=float, default=0.01)
     parser.add_argument(
         "--transposition-mutation-correlation-min",
         type=float,
-        default=0.6,
+        default=0.0,
     )
     parser.add_argument(
         "--transposition-mutation-correlation-max",
         type=float,
-        default=0.6,
+        default=1.0,
     )
     parser.add_argument(
         "--transposition-mutation-correlation-step",
@@ -505,18 +494,6 @@ def sample_settings(
         search_space.mutation_sd_max,
         search_space.mutation_sd_step,
     )
-    comb_tilt_mutation_sd = suggest_optional_float_or_fixed(
-        trial,
-        "comb_tilt_mutation_sd",
-        (
-            base_settings.comb_tilt_mutation_sd
-            if base_settings.comb_tilt_mutation_sd is not None
-            else base_settings.mutation_sd
-        ),
-        search_space.comb_tilt_mutation_sd_min,
-        search_space.comb_tilt_mutation_sd_max,
-        search_space.comb_tilt_mutation_sd_step,
-    )
     transposition_mutation_correlation = suggest_float_or_fixed(
         trial,
         "transposition_mutation_correlation",
@@ -534,7 +511,6 @@ def sample_settings(
         "food_site_max_distance": food_site_max_distance,
         "travel_cost_per_distance": travel_cost,
         "mutation_sd": mutation_sd,
-        "comb_tilt_mutation_sd": comb_tilt_mutation_sd,
         "transposition_mutation_correlation": transposition_mutation_correlation,
     }
     return SampledSettings(
@@ -550,7 +526,6 @@ def sample_settings(
             vertical_comb_benefit=vertical_comb_benefit,
             travel_cost_per_distance=travel_cost,
             mutation_sd=mutation_sd,
-            comb_tilt_mutation_sd=comb_tilt_mutation_sd,
             transposition_mutation_correlation=(
                 transposition_mutation_correlation
             ),
@@ -608,20 +583,6 @@ def suggest_float_or_fixed(
         return low
 
     return trial.suggest_float(name, low, high, step=step)
-
-
-def suggest_optional_float_or_fixed(
-    trial: optuna.Trial,
-    name: str,
-    fallback: float,
-    low: float | None,
-    high: float | None,
-    step: float,
-) -> float:
-    if low is None or high is None:
-        return fallback
-
-    return suggest_float_or_fixed(trial, name, low, high, step)
 
 
 def create_study(args: argparse.Namespace, worker_index: int) -> optuna.Study:
@@ -694,7 +655,6 @@ def trial_row(trial: optuna.trial.FrozenTrial) -> dict[str, str]:
         "food_site_max_distance": param_value(trial, "food_site_max_distance"),
         "travel_cost_per_distance": param_value(trial, "travel_cost_per_distance"),
         "mutation_sd": param_value(trial, "mutation_sd"),
-        "comb_tilt_mutation_sd": param_value(trial, "comb_tilt_mutation_sd"),
         "transposition_mutation_correlation": param_value(
             trial,
             "transposition_mutation_correlation",
@@ -731,7 +691,6 @@ def seed_row(
         "food_site_max_distance": param_value(trial, "food_site_max_distance"),
         "travel_cost_per_distance": param_value(trial, "travel_cost_per_distance"),
         "mutation_sd": param_value(trial, "mutation_sd"),
-        "comb_tilt_mutation_sd": param_value(trial, "comb_tilt_mutation_sd"),
         "transposition_mutation_correlation": param_value(
             trial,
             "transposition_mutation_correlation",
@@ -771,7 +730,20 @@ def load_settings(config_path: Path) -> DirectionSettings:
 
 
 def parse_ints(raw: str) -> list[int]:
-    return [int(item.strip()) for item in raw.split(",") if item.strip()]
+    values: list[int] = []
+    for part in (item.strip() for item in raw.split(",")):
+        if not part:
+            continue
+        if "-" in part:
+            start_text, end_text = part.split("-", maxsplit=1)
+            start = int(start_text)
+            end = int(end_text)
+            if end < start:
+                raise ValueError(f"range must be increasing: {part}")
+            values.extend(range(start, end + 1))
+        else:
+            values.append(int(part))
+    return values
 
 
 def param_value(trial: optuna.trial.FrozenTrial, name: str) -> str:

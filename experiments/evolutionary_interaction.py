@@ -4,8 +4,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
-DEFAULT_PREFIX = RESULTS / "food_transition_evolutionary_interaction"
-DEFAULT_SHARD_DIR = RESULTS / "food_transition_evolutionary_interaction_shards"
+DEFAULT_PREFIX = RESULTS / "food_transition_v2_evolutionary_interaction"
+DEFAULT_SHARD_DIR = RESULTS / "food_transition_v2_evolutionary_interaction_shards"
 
 EVOLUTIONARY_PARAMETERS = (
     "vertical_comb_benefit",

@@ -28,7 +28,6 @@ SWEEPS = {
     "interpretation_noise_sd": [0.0, 0.12, 0.50],
     "initial_comb_tilt": [0.0, 0.5, 1.0],
     "vertical_comb_benefit": [0.0, 0.02, 0.08],
-    "comb_orientation_mutation_sd": [0.05, 0.35, 1.0],
     "sun_azimuth_center": [0.0, 1.5707963267948966, 3.141592653589793],
     "sun_azimuth_width": [1.5707963267948966, 3.141592653589793, 6.283185307179586],
     "food_site_count": [1, 2, 8],

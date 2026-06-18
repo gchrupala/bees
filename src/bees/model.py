@@ -64,7 +64,6 @@ class DirectionSettings:
     foraging_attempts_per_episode: int
     mutation_sd: float
     transposition_mutation_correlation: float
-    comb_orientation_mutation_sd: float
     stable_worker_sd: float
     max_signal_concentration: float
     dance_noise_sd: float
@@ -84,7 +83,6 @@ class DirectionSettings:
     base_dance_cost: float
     cue_cost: float
     attention_cost: float
-    comb_tilt_mutation_sd: float | None = None
     comb_orientation_axial: bool = False
     vertical_comb_modifier: str = "linear"
 
@@ -357,23 +355,22 @@ def evaluate_colony(
                     sites[site_index].distance * settings.travel_cost_per_distance
                 )
                 food_payoff += sites[site_index].value
-                if not follows_dance:
-                    dances.append(
-                        Dance(
-                            signal=produce_signal(
-                                sites[site_index].direction,
-                                worker,
-                                colony.traits,
-                                settings,
-                                sun_azimuth,
-                                rng,
-                            )
+                dances.append(
+                    Dance(
+                        signal=produce_signal(
+                            sites[site_index].direction,
+                            worker,
+                            colony.traits,
+                            settings,
+                            sun_azimuth,
+                            rng,
                         )
                     )
-                    dance_cost += (
-                        settings.base_dance_cost
-                        + settings.cue_cost * worker.directional_bias
-                    )
+                )
+                dance_cost += (
+                    settings.base_dance_cost
+                    + settings.cue_cost * worker.directional_bias
+                )
             else:
                 food_payoff -= worker.search_limit * settings.travel_cost_per_distance
 
@@ -469,8 +466,11 @@ def _mutate_traits(
             rng,
         )
     )
-    comb_tilt_change = rng.gauss(0.0, _comb_tilt_mutation_sd(settings))
-    comb_orientation_change = rng.gauss(0.0, settings.comb_orientation_mutation_sd)
+    comb_tilt_change = rng.gauss(0.0, settings.mutation_sd)
+    comb_orientation_change = rng.gauss(
+        0.0,
+        settings.mutation_sd * _comb_orientation_period(settings),
+    )
     search_limit_change = rng.gauss(
         0.0,
         settings.mutation_sd * settings.max_search_distance,
@@ -713,13 +713,6 @@ def _comb_normal(comb_tilt: float, comb_orientation: float) -> Vector3:
         sin(tilt_angle) * sin(comb_orientation),
         cos(tilt_angle),
     )
-
-
-def _comb_tilt_mutation_sd(settings: DirectionSettings) -> float:
-    if settings.comb_tilt_mutation_sd is None:
-        return settings.mutation_sd
-
-    return settings.comb_tilt_mutation_sd
 
 
 def _comb_orientation_period(settings: DirectionSettings) -> float:

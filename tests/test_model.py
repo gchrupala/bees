@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from math import tau
+from math import pi, tau
 from random import Random
 
 from bees.model import (
@@ -152,11 +152,8 @@ class DirectionModelTests(unittest.TestCase):
 
         self.assertEqual(overbounded, bounded)
 
-    def test_comb_tilt_mutation_scale_can_freeze_tilt(self) -> None:
-        settings = _settings(
-            mutation_sd=0.04,
-            comb_tilt_mutation_sd=0.0,
-        )
+    def test_comb_tilt_uses_shared_mutation_scale(self) -> None:
+        settings = _settings(mutation_sd=0.04)
         traits = ColonyTraits(
             directional_bias=0.5,
             receiver_attention=0.5,
@@ -166,10 +163,20 @@ class DirectionModelTests(unittest.TestCase):
             comb_tilt=0.95,
             comb_orientation=0.2,
         )
+        seed = 11
+        expected_rng = Random(seed)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_tilt = traits.comb_tilt + expected_rng.gauss(
+            0.0,
+            settings.mutation_sd,
+        )
 
-        mutated = _mutate_traits(traits, settings, Random(11))
+        mutated = _mutate_traits(traits, settings, Random(seed))
 
-        self.assertAlmostEqual(mutated.comb_tilt, traits.comb_tilt)
+        self.assertAlmostEqual(mutated.comb_tilt, expected_tilt)
 
     def test_axial_orientation_treats_opposite_normals_as_aligned(self) -> None:
         _, circular_alignment = _orientation_mean_and_alignment(
@@ -187,8 +194,8 @@ class DirectionModelTests(unittest.TestCase):
 
     def test_axial_orientation_mutation_wraps_to_half_turn_period(self) -> None:
         settings = _settings(
+            mutation_sd=0.0,
             comb_orientation_axial=True,
-            comb_orientation_mutation_sd=0.0,
         )
         traits = ColonyTraits(
             directional_bias=0.5,
@@ -203,6 +210,34 @@ class DirectionModelTests(unittest.TestCase):
         mutated = _mutate_traits(traits, settings, Random(12))
 
         self.assertAlmostEqual(mutated.comb_orientation, 0.25 * tau)
+
+    def test_orientation_mutation_uses_shared_scale_and_orientation_period(
+        self,
+    ) -> None:
+        settings = _settings(mutation_sd=0.04, comb_orientation_axial=True)
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.5,
+            comb_orientation=0.2,
+        )
+        seed = 13
+        expected_rng = Random(seed)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_orientation = (
+            traits.comb_orientation + expected_rng.gauss(0.0, settings.mutation_sd * pi)
+        ) % pi
+
+        mutated = _mutate_traits(traits, settings, Random(seed))
+
+        self.assertAlmostEqual(mutated.comb_orientation, expected_orientation)
 
     def test_random_search_can_find_any_available_food_site(self) -> None:
         sites = (
@@ -396,7 +431,7 @@ class DirectionModelTests(unittest.TestCase):
             max_signal_concentration=50.0,
             dance_noise_sd=0.0,
             interpretation_noise_sd=0.0,
-            food_site_width=0.03,
+            food_site_width=0.05,
             food_site_min_distance=2.0,
             food_site_max_distance=2.0,
             max_search_distance=5.0,
@@ -492,6 +527,40 @@ class DirectionModelTests(unittest.TestCase):
             ColonyTraits(
                 directional_bias=0.0,
                 receiver_attention=0.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertAlmostEqual(evaluation.payoff, 4.5)
+
+    def test_recruited_successes_also_produce_costly_dances(self) -> None:
+        settings = _settings(
+            episodes_per_colony=10,
+            foraging_attempts_per_episode=3,
+            stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
+            dance_noise_sd=0.0,
+            interpretation_noise_sd=0.0,
+            food_site_width=tau,
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            food_site_capacity=3,
+            food_value=2.0,
+            travel_cost_per_distance=0.0,
+            base_dance_cost=0.5,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=1.0,
+                receiver_attention=1.0,
                 sender_transposition=0.0,
                 receiver_transposition=0.0,
                 search_limit=5.0,
@@ -637,7 +706,6 @@ def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings
         "foraging_attempts_per_episode": 4,
         "mutation_sd": 0.03,
         "transposition_mutation_correlation": 0.6,
-        "comb_orientation_mutation_sd": 0.15,
         "stable_worker_sd": 0.05,
         "max_signal_concentration": 20.0,
         "dance_noise_sd": 0.08,

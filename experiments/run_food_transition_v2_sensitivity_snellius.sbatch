@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=bees-evo-final
-#SBATCH --time=04:00:00
-#SBATCH --cpus-per-task=2
-#SBATCH --mem=8G
+#SBATCH --job-name=bees-v2-sens
+#SBATCH --time=48:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=16G
 #SBATCH --output=slurm-%x-%j.out
 #SBATCH --error=slurm-%x-%j.err
 
@@ -22,18 +22,15 @@ elif [[ -f ".venv/bin/activate" ]]; then
 fi
 
 export PYTHONUNBUFFERED=1
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
 
 PYTHON_BIN="${BEES_PYTHON:-python}"
-TASK_COUNT="${BEES_ARRAY_TASKS:-64}"
+PANEL="${BEES_V2_SENSITIVITY_PANEL:-coarse}"
 
-push_arg=()
-if [[ "${BEES_PUSH:-0}" == "1" ]]; then
-    push_arg=(--push)
-fi
-
-"${PYTHON_BIN}" -u experiments/finalize_evolutionary_interaction.py \
-    --task-count "${TASK_COUNT}" \
+"${PYTHON_BIN}" -u experiments/run_food_transition_oat_sensitivity.py \
+    --panel "${PANEL}" \
     --baseline-points results/food_transition_v2_validation_points.csv \
     --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
-    --wait-for-shards \
-    "${push_arg[@]}"
+    --max-workers "${SLURM_CPUS_PER_TASK}"

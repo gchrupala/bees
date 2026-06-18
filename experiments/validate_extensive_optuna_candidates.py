@@ -39,7 +39,6 @@ PARAM_FIELDNAMES = [
     "food_site_max_distance",
     "travel_cost_per_distance",
     "mutation_sd",
-    "comb_tilt_mutation_sd",
     "transposition_mutation_correlation",
 ]
 
@@ -60,7 +59,6 @@ class Candidate:
     food_site_max_distance: float
     travel_cost_per_distance: float
     mutation_sd: float
-    comb_tilt_mutation_sd: float
     transposition_mutation_correlation: float
 
 
@@ -83,7 +81,6 @@ CANDIDATES = {
         food_site_max_distance=5.0,
         travel_cost_per_distance=0.035,
         mutation_sd=0.08,
-        comb_tilt_mutation_sd=0.07,
         transposition_mutation_correlation=0.9,
     ),
     "repeated_7site": Candidate(
@@ -96,7 +93,6 @@ CANDIDATES = {
         food_site_max_distance=5.0,
         travel_cost_per_distance=0.035,
         mutation_sd=0.09,
-        comb_tilt_mutation_sd=0.08,
         transposition_mutation_correlation=0.9,
     ),
 }
@@ -205,7 +201,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-prefix",
         type=Path,
-        default=ROOT / "results" / "food_transition_extensive_validation",
+        default=ROOT / "results" / "food_transition_v2_manual_validation",
         help="Prefix for event, trajectory, and summary CSV outputs.",
     )
     parser.add_argument(
@@ -218,12 +214,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--seeds",
-        default="96-195",
-        help="Comma-separated seeds and inclusive ranges, e.g. 96-195,220.",
+        default="200-299",
+        help="Comma-separated seeds and inclusive ranges, e.g. 200-299,420.",
     )
     parser.add_argument(
         "--exclude-seeds",
-        default="100-104",
+        default="",
         help="Seeds to remove from the validation panel.",
     )
     parser.add_argument(
@@ -298,7 +294,6 @@ def candidate_settings(
         food_site_max_distance=candidate.food_site_max_distance,
         travel_cost_per_distance=candidate.travel_cost_per_distance,
         mutation_sd=candidate.mutation_sd,
-        comb_tilt_mutation_sd=candidate.comb_tilt_mutation_sd,
         transposition_mutation_correlation=candidate.transposition_mutation_correlation,
     )
 
@@ -352,7 +347,6 @@ def candidate_param_values(candidate: Candidate) -> dict[str, str]:
         "food_site_max_distance": format_float(candidate.food_site_max_distance),
         "travel_cost_per_distance": format_float(candidate.travel_cost_per_distance),
         "mutation_sd": format_float(candidate.mutation_sd),
-        "comb_tilt_mutation_sd": format_float(candidate.comb_tilt_mutation_sd),
         "transposition_mutation_correlation": format_float(
             candidate.transposition_mutation_correlation,
         ),
