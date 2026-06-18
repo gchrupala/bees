@@ -782,6 +782,63 @@ Across these refined points, the lowest stability occurred for `food_site_count=
 
 These are still one-parameter perturbations, so they map local stability boundaries rather than interactions among parameters.
 <!-- sensitivity-refinement-end -->
+
+<!-- evolutionary-interaction-start -->
+## Evolutionary-parameter interactions
+
+The one-parameter panels suggested that vertical-comb benefit, mutation scale, and
+sender&ndash;receiver mutation coupling jointly determine whether the validated
+`repeated_7site` regime leaves the flat direct-pointing basin. We therefore ran a
+full interaction grid over `vertical_comb_benefit` values 0.10, 0.25, and 0.44;
+`mutation_sd` values 0.045, 0.075, 0.090, and 0.135; and
+`transposition_mutation_correlation` values 0.0, 0.3, 0.6, and 0.9. Each of the
+48 grid points used the same 95 held-out seeds as the sensitivity panels, with
+`comb_tilt_mutation_sd` tied to `mutation_sd` and the ecology fixed at the validated
+baseline. Raw event rows are saved in
+`results/food_transition_evolutionary_interaction_events.csv`; trajectories are saved
+as `results/food_transition_evolutionary_interaction_trajectories.csv.gz`, with point,
+job, group-summary, and generation-summary files under the same prefix.
+
+<figure id="fig:evolutionary-interaction-stable-heatmap" class="figure">
+<img src="figures/evolutionary_interaction_stable_heatmap.png" alt="Stable transition rates across the evolutionary parameter interaction grid." />
+<figcaption>
+Stable vertical gravity-code transition rates across the interaction grid. Panels vary
+vertical-comb benefit; columns vary sender&ndash;receiver mutation correlation; rows vary
+the shared mutation scale for directional and comb-tilt traits. Each cell summarizes
+95 held-out seeds.
+</figcaption>
+</figure>
+
+The grid shows a strong interaction between the architectural benefit and the mutation
+parameters. With `vertical_comb_benefit=0.10`, transitions were essentially absent:
+the mean stable rate across the 16 mutation/correlation cells was 2.5%. At
+`vertical_comb_benefit=0.25`, the mean rose to 22.0%, but no cell exceeded 40/95
+stable seeds. At the validated benefit value 0.44, the mean rose to 54.4%, with the
+best cell at `mutation_sd=0.090` and `transposition_mutation_correlation=0.9`
+reproducing 81/95 stable transitions. The very low mutation scale remained weak even
+at high vertical benefit, while the highest mutation scale reduced stability relative
+to the intermediate 0.075 and 0.090 scales.
+
+<figure id="fig:evolutionary-interaction-seed-outcomes" class="figure">
+<img src="figures/evolutionary_interaction_seed_outcomes_binary.png" alt="Seed-level stable and non-stable outcomes across the evolutionary parameter interaction grid." />
+<figcaption>
+Seed-level view of the same interaction grid. Each small dot is one held-out seed in
+one parameter cell; black dots are stable vertical gravity-code transitions and pale
+gray dots are all other outcomes. The dot layout is fixed by seed order, so cells can
+be compared visually as well as by their aggregate rates.
+</figcaption>
+</figure>
+
+The seed-level view makes the transition boundary clearer than the mean heatmap alone.
+High-rate cells are not driven by a few exceptional seeds; they contain broad blocks of
+successful held-out seeds. Conversely, changing only mutation correlation cannot rescue
+the low-benefit regime, and low mutation scale leaves many seeds in non-stable outcomes
+even when the vertical-comb benefit is favorable. The interaction pattern is therefore
+consistent with the mechanism suggested by the one-parameter panels: a sufficiently
+strong vertical-comb advantage is necessary, but robust transitions also require enough
+mutation to move comb tilt and sender&ndash;receiver transposition together without making
+the evolving code too noisy.
+<!-- evolutionary-interaction-end -->
 # Conclusion
 
 The resource-distribution experiments support the idea that costly directional
@@ -820,8 +877,11 @@ succeeds in 73 of 95 fresh seeds, with no collapses in either panel. This sugges
 reliable transitions require ecological opportunity and mutation structure to align:
 food distributions must make recruitment valuable near vertical combs, while coupled
 sender&ndash;receiver changes keep the gravity code from lagging behind comb tilt. The
-next modeling priority is to explain the mechanism of this validated regime: why the
-seven-site cluster is more robust, why the eight-site setting is more productive, and
-which parameter boundaries return the system to the flat direct-pointing basin.
+evolutionary-parameter interaction grid sharpens this interpretation: low vertical-comb
+benefit is not rescued by mutation coupling, and the favorable benefit value is robust
+only at intermediate mutation scales. The next modeling priority is to explain the
+mechanism of this validated regime: why the seven-site cluster is more robust, why the
+eight-site setting is more productive, and which parameter boundaries return the system
+to the flat direct-pointing basin.
 
 # References
