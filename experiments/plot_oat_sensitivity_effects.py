@@ -387,7 +387,10 @@ def read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def relative(path: Path) -> str:
-    return str(path.relative_to(ROOT))
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 if __name__ == "__main__":
