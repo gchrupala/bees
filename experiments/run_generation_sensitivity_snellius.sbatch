@@ -38,6 +38,16 @@ if [[ -n "${BEES_SEEDS:-}" ]]; then
     seed_arg=(--seeds "${BEES_SEEDS}")
 fi
 
+mutation_sd_arg=()
+if [[ -n "${BEES_MUTATION_SD:-}" ]]; then
+    mutation_sd_arg=(--mutation-sd "${BEES_MUTATION_SD}")
+fi
+
+output_prefix_arg=()
+if [[ -n "${BEES_OUTPUT_PREFIX:-}" ]]; then
+    output_prefix_arg=(--output-prefix "${BEES_OUTPUT_PREFIX}")
+fi
+
 push_arg=()
 if [[ "${BEES_PUSH:-0}" == "1" ]]; then
     push_arg=(--push)
@@ -49,4 +59,6 @@ fi
     --max-workers "${SLURM_CPUS_PER_TASK}" \
     "${generation_arg[@]}" \
     "${seed_arg[@]}" \
+    "${mutation_sd_arg[@]}" \
+    "${output_prefix_arg[@]}" \
     "${push_arg[@]}"
