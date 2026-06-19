@@ -94,6 +94,7 @@ The v2 Snellius pipeline ran the following sequence:
 | Held-out validation | `results/food_transition_v2_validation_*` | seeds 200-299 |
 | One-parameter sensitivity | `results/food_transition_v2_oat_sensitivity_*`, `results/food_transition_v2_sensitivity_refinement_*` | seeds 300-399 |
 | Evolutionary interaction grid | `results/food_transition_v2_evolutionary_interaction_*` | seeds 300-399 |
+| Low-benefit generation budget | `results/food_transition_v2_low_regime_generation_sensitivity_*`, `..._mut_0p075_*` | seeds 300-399 |
 
 The Optuna search evaluated 512 trials over food-site count, angular width, capacity,
 vertical-comb benefit, maximum food distance, travel cost, mutation scale, and
@@ -198,6 +199,34 @@ remain minority outcomes even at high mutation and high coupling. At $\alpha=0.4
 intermediate mutation and strong coupling produce the best cell, but the rate remains
 below the validated baseline because the grid does not include the baseline's higher
 $\alpha=0.60$ value.
+
+## Generation Budget in the Low-Benefit Regime
+
+The interaction grid showed that a low vertical-comb benefit nearly eliminates the
+transition by the default 120 generations. This experiment asks whether a much longer
+evolutionary horizon can rescue that regime. It fixes the validated ecology but sets a
+weak benefit ($\alpha=0.10$), low mutation coupling ($\rho=0.3$), and a low mutation
+scale, then runs 240, 480, and 960 generations over 100 held-out seeds. Two jobs were
+run: a baseline mutation scale of 0.045 and a higher scale of 0.075.
+
+| Mutation scale | Generations | Gravity reached | Vertical retained | Stable |
+| ---: | ---: | ---: | ---: | ---: |
+| 0.045 | 240 | 0.04 | 0.00 | 0.00 |
+| 0.045 | 480 | 0.08 | 0.00 | 0.00 |
+| 0.045 | 960 | 0.10 | 0.00 | 0.00 |
+| 0.075 | 240 | 0.02 | 0.00 | 0.00 |
+| 0.075 | 480 | 0.02 | 0.00 | 0.00 |
+| 0.075 | 960 | 0.06 | 0.01 | 0.01 |
+
+More generations do not unlock the transition in this regime. A longer horizon slowly
+raises the fraction of seeds that ever cross the gravity threshold (0.04 to 0.10 at
+mutation 0.045), but those seeds end as gravity alignment without retained verticality,
+and vertical retention stays at essentially zero throughout. Most seeds remain flat
+direct pointers, with a partial-transposition minority that grows modestly with mutation
+scale but never coordinates both traits. Across all 600 runs only a single seed (mutation
+0.075, 960 generations) reached a stable vertical gravity-code outcome. The low-benefit
+regime is therefore a genuine barrier rather than a slow approach: it is not overcome by
+time or by a modestly higher mutation scale.
 
 # Conclusion
 

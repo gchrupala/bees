@@ -131,6 +131,9 @@ Validation</a></li>
 <li><a href="#evolutionary-parameter-interaction"
 id="toc-evolutionary-parameter-interaction">Evolutionary-Parameter
 Interaction</a></li>
+<li><a href="#generation-budget-in-the-low-benefit-regime"
+id="toc-generation-budget-in-the-low-benefit-regime">Generation Budget
+in the Low-Benefit Regime</a></li>
 </ul></li>
 <li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
 <li><a href="#reproducibility"
@@ -279,6 +282,13 @@ style="text-align: left;"><code>results/food_transition_v2_oat_sensitivity_*</co
 <td style="text-align: left;">Evolutionary interaction grid</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_evolutionary_interaction_*</code></td>
+<td style="text-align: left;">seeds 300-399</td>
+</tr>
+<tr>
+<td style="text-align: left;">Low-benefit generation budget</td>
+<td
+style="text-align: left;"><code>results/food_transition_v2_low_regime_generation_sensitivity_*</code>,
+<code>..._mut_0p075_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
 </tbody>
@@ -607,6 +617,91 @@ rate remains below the validated baseline because the grid does not
 include the baseline’s higher
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.60</mn></mrow><annotation encoding="application/x-tex">\alpha=0.60</annotation></semantics></math>
 value.</p>
+<h2 id="generation-budget-in-the-low-benefit-regime">Generation Budget
+in the Low-Benefit Regime</h2>
+<p>The interaction grid showed that a low vertical-comb benefit nearly
+eliminates the transition by the default 120 generations. This
+experiment asks whether a much longer evolutionary horizon can rescue
+that regime. It fixes the validated ecology but sets a weak benefit
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.10</mn></mrow><annotation encoding="application/x-tex">\alpha=0.10</annotation></semantics></math>),
+low mutation coupling
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.3</mn></mrow><annotation encoding="application/x-tex">\rho=0.3</annotation></semantics></math>),
+and a low mutation scale, then runs 240, 480, and 960 generations over
+100 held-out seeds. Two jobs were run: a baseline mutation scale of
+0.045 and a higher scale of 0.075.</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: right;">Mutation scale</th>
+<th style="text-align: right;">Generations</th>
+<th style="text-align: right;">Gravity reached</th>
+<th style="text-align: right;">Vertical retained</th>
+<th style="text-align: right;">Stable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0.045</td>
+<td style="text-align: right;">240</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.045</td>
+<td style="text-align: right;">480</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.045</td>
+<td style="text-align: right;">960</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.075</td>
+<td style="text-align: right;">240</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.075</td>
+<td style="text-align: right;">480</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.075</td>
+<td style="text-align: right;">960</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.01</td>
+</tr>
+</tbody>
+</table>
+<p>More generations do not unlock the transition in this regime. A
+longer horizon slowly raises the fraction of seeds that ever cross the
+gravity threshold (0.04 to 0.10 at mutation 0.045), but those seeds end
+as gravity alignment without retained verticality, and vertical
+retention stays at essentially zero throughout. Most seeds remain flat
+direct pointers, with a partial-transposition minority that grows
+modestly with mutation scale but never coordinates both traits. Across
+all 600 runs only a single seed (mutation 0.075, 960 generations)
+reached a stable vertical gravity-code outcome. The low-benefit regime
+is therefore a genuine barrier rather than a slow approach: it is not
+overcome by time or by a modestly higher mutation scale.</p>
 <h1 id="conclusion">Conclusion</h1>
 <p>In the current v2 model, horizontal-start colonies can reliably
 evolve a vertical comb and a gravity-referenced sender-receiver code.

@@ -1,0 +1,4 @@
+point,parameter,parameter_value,is_baseline,generations,food_site_count,food_site_width,food_site_capacity,food_value,vertical_comb_benefit,food_site_max_distance,travel_cost_per_distance,mutation_sd,transposition_mutation_correlation
+generations_240_alpha_0p1_mut_0p075_rho_0p3,generations,240,false,240,8,0.270,9,1.000,0.100,6.500,0.055,0.075,0.300
+generations_480_alpha_0p1_mut_0p075_rho_0p3,generations,480,false,480,8,0.270,9,1.000,0.100,6.500,0.055,0.075,0.300
+generations_960_alpha_0p1_mut_0p075_rho_0p3,generations,960,false,960,8,0.270,9,1.000,0.100,6.500,0.055,0.075,0.300
