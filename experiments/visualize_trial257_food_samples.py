@@ -9,8 +9,26 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from PIL import Image, ImageDraw, ImageFont
+
+# Match plotnine's default text styling (theme_gray uses the sans-serif family,
+# which resolves to DejaVu Sans, with base size 11 and a 13.2 title).
+plt.rcParams.update(
+    {
+        "font.family": "sans-serif",
+        "font.sans-serif": ["DejaVu Sans", "Liberation Sans"],
+        "font.size": 11,
+        "axes.titlesize": 11,
+        "figure.titlesize": 13.2,
+    }
+)
 
 ROOT = Path(__file__).resolve().parents[1]
+# NotoColorEmoji is a bitmap (CBDT) font that only ships a single strike, so it
+# must be loaded at this exact pixel size; we resize the rendered glyph after.
+FONT_PATH = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
+EMOJI_STRIKE_SIZE = 109
 sys.path.insert(0, str(ROOT / "src"))
 
 from bees.model import DirectionSettings, generate_food_sites
@@ -96,6 +114,42 @@ def load_settings(config_path: Path, row: dict[str, str]) -> DirectionSettings:
     return DirectionSettings(**config)
 
 
+def render_symbol_image(text: str, size: int) -> np.ndarray:
+    font = ImageFont.truetype(FONT_PATH, EMOJI_STRIKE_SIZE)
+    canvas = EMOJI_STRIKE_SIZE * 2
+    image = Image.new("RGBA", (canvas, canvas), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(image)
+
+    bbox = draw.textbbox((0, 0), text, font=font, embedded_color=True)
+    width = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1]
+    x = (canvas - width) / 2 - bbox[0]
+    y = (canvas - height) / 2 - bbox[1]
+    draw.text((x, y), text, font=font, fill=(0, 0, 0, 255), embedded_color=True)
+
+    # Crop to the rendered glyph and scale the fixed-size strike to the
+    # requested marker size.
+    image = image.crop(image.getbbox())
+    image = image.resize((size, size), Image.LANCZOS)
+    return np.asarray(image)
+
+
+def add_image_marker(ax, theta: float, radius: float, text: str, size: int, zorder: int) -> None:
+    image = render_symbol_image(text, size)
+    offset_image = OffsetImage(image, zoom=1.0, interpolation="nearest")
+    annotation = AnnotationBbox(
+        offset_image,
+        (theta, radius),
+        xycoords="data",
+        boxcoords="data",
+        frameon=False,
+        pad=0,
+        annotation_clip=False,
+        zorder=zorder,
+    )
+    ax.add_artist(annotation)
+
+
 def draw_sample(ax, sites, settings, sample_index: int) -> None:
     ax.set_theta_zero_location("E")
     ax.set_theta_direction(-1)
@@ -106,24 +160,22 @@ def draw_sample(ax, sites, settings, sample_index: int) -> None:
     ax.set_yticklabels([f"{value:.0f}" for value in np.linspace(0, max_radius, 5)])
     ax.set_title(f"Sample {sample_index} ({settings.food_site_count} sites)")
 
+    # Put the bee at the center to represent the observer.
+    add_image_marker(ax, 0, 0, "🐝", 40, zorder=5)
+
     for site in sites:
         theta = site.direction
         radius = site.distance
         width = site.width
         capacity = site.capacity
 
-        # The previous red spans showed the angular extent of each patch.
-        # Here we use the circle diameter as a direct visual proxy for that
-        # same extent, with a scale that keeps the markers readable.
-        marker_size = max(600, 9000 * width)
-        ax.scatter(
-            [theta],
-            [radius],
-            s=marker_size,
-            c="#4e79a7",
-            alpha=0.75,
-            edgecolors="k",
-            linewidths=0.5,
+        marker_size = max(24, int(200 * width))
+        add_image_marker(
+            ax,
+            theta,
+            radius,
+            "🌼",
+            marker_size,
             zorder=3,
         )
 
