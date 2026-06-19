@@ -1,7 +1,15 @@
 \documentclass[11pt]{article}
+\usepackage{booktabs}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{cleveref}
 
-\title{Evolution of Bee Communication}
-\author{}
+\title{Emergence of a referential code in evolving populations of bee-like agents}
+\author{Grzegorz Chrupała}
 \date{}
 
 \begin{document}
@@ -12,8 +20,33 @@
 \end{abstract}
 
 \section{Introduction}
+Communication in animal species takes many forms, from the chemical signals of
+ants to the symbolic, compositional language of humans. Each of these
+communication systems has its own idiosyncratic properties, but they all share
+the property of being referential: properties, and what ecological and
+evolutionary pressures lead to their emergence has been of substantial interest
+to biologists and cognitive scientists. The waggle dance of Apis species
+\cite{vonFrisch1967DanceLanguage} is unique system where food sites discovered
+by foraging scouts are indicated to other members of the colony by means of a
+figure-of-eight dance whose axis encodes the direction of the food source, and
+whose duration codes for its distance. Different species of Apis vary in the
+specific code used to encode the direction of the food patch: in open-nesting
+species (\emph{Apis florea} and \emph{Apis dorsata}) the bees can perceive the
+sun and thus can orient the axis of the waggle dance directly towards the food
+patch. In cavity nesting species such as Apis mellifera, the worker bees do not
+see the sun, and their combs are vertical. They thus use gravity as a reference
+point, and map the azimuth of the food patch to the sun onto the angle of the
+waggle dance with respect to the vertical (see \Cref{fig:waggle}).
 
-\section{Method}
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{figures/waggle.png}   
+\caption{The waggle dance on a horizontal expose comb (left) 
+and on a vertical comb (right).}
+\label{fig:waggle}  
+\end{figure}
+
+
 
 \section{Results}
 
@@ -21,7 +54,7 @@
 
 \section{Conclusion}
 
-\bibliographystyle{plain}
-\bibliography{references}
+\bibliographystyle{apalike}
+\bibliography{biblio}
 
 \end{document}
