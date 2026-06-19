@@ -2,204 +2,177 @@
 
 Computational models for exploring the evolution of honeybee communication.
 
-This repository is intentionally starting small. We will add models only once
-the biological question and modeling assumptions are clear.
+The current work asks when populations that start with horizontal direct-pointing
+communication can evolve both a vertical comb and a gravity-referenced sender-receiver
+code. The codebase is intentionally small: model rules live in `src/bees/`, experiment
+scripts live in `experiments/`, and scientific claims should stay grounded in tracked
+configuration, seeds, and result CSVs.
 
 ## Repository Structure
 
 - `src/bees/`: Python package for model code
 - `configs/`: reproducible experiment settings
-- `experiments/`: runnable experiment scripts
-- `report/`: lightweight HTML scientific report and legacy LaTeX snapshot
-- `tests/`: tests for model behavior
-- `results/`: local experiment outputs
+- `experiments/`: runnable experiment, analysis, plotting, and Snellius scripts
+- `results/`: tracked result CSVs and local/generated experiment outputs
+- `report/`: lightweight Markdown/HTML report and figures
+- `tests/`: focused tests for model behavior and experiment helpers
 
-## Current Model
+## Current V2 Model
 
-The direction model represents food sites explicitly with direction, angular
-width, distance, value, and capacity. In each episode, workers act
-sequentially. A worker follows an existing dance with probability set by its
-receiver-attention trait; if no dance is available, or if it does not attend, it
-searches independently in a random direction. Independent searchers that find
-food add a dance to the episode. Workers search along their chosen direction up
-to a worker-specific limit; this limit varies within colonies and its colony
-mean is heritable.
+Colonies are the reproducing entities. Workers are behavioral samples from heritable
+colony means. A colony has heritable means for directional bias, receiver attention,
+sender transposition, receiver transposition, search limit, comb tilt, and comb
+orientation.
 
-Comb tilt and orientation are colony-level heritable traits. World food
-directions are projected onto the comb plane for direct pointing, while
-sun-relative directions can be encoded against the gravity projection on the
-comb. The sun azimuth is sampled once per episode from a configurable daytime
-arc. Direct pointing is strongest when the food direction projects well into
-the comb plane; gravity-referenced mapping is unavailable on a horizontal comb
-and becomes stronger as the comb becomes vertical. Sender and receiver
-transposition mutations can be correlated with
-`transposition_mutation_correlation`, making coupling strength an explicit
-experimental parameter. Comb tilt can also use its own mutation scale via
-`comb_tilt_mutation_sd`, which allows constrained probes where tilt is supplied
-rather than evolved. Setting `comb_orientation_axial` treats orientations
-separated by 180 degrees as the same comb plane. Dance production can include
-both a baseline per-dance cost and a precision-dependent cost tied to the
-dancer's directional-bias trait. The optional non-communication advantage of
-vertical combs is proportional to colony performance: payoff is multiplied by
-`1 + vertical_comb_benefit * f(t)`, with `vertical_comb_modifier` selecting
-`linear` (`f(t)=t`) or `threshold_0.8` (`f(t)=1` only when tilt is at least
-0.8). This keeps verticality from rescuing colonies whose foraging payoff has
-collapsed.
+Each foraging episode samples food sites with direction, angular width, distance, value,
+and capacity. Workers act sequentially. A worker may follow an available dance according
+to its receiver-attention trait; otherwise it searches in a random direction. Every
+successful worker produces a dance for the food site and pays the dance cost, including
+workers that were themselves recruited by a dance.
 
-## Development
+Comb geometry supplies two possible directional mappings. Direct pointing projects the
+horizontal food direction into the comb plane. Gravity-referenced signaling uses the
+projection of gravity into the comb plane together with the episode sun azimuth. The
+gravity cue is unavailable on a horizontal comb and strengthens as the comb becomes
+vertical. The v2 transition runs use axial comb orientation, so orientations separated
+by 180 degrees are treated as the same comb plane.
 
-Install the project and experiment dependencies:
+The transition experiments start from horizontal combs and use a linear multiplicative
+vertical-comb benefit:
 
-```sh
-python -m pip install -e .
+```text
+episode payoff = foraging payoff * (1 + vertical_comb_benefit * comb_tilt)
 ```
 
-Run the horizontal direction experiment:
+This benefit scales viable foraging performance; it does not rescue a colony whose
+foraging payoff has collapsed. All heritable traits, including comb tilt and comb
+orientation, mutate with the shared `mutation_sd`. Sender and receiver transposition
+mutations can be coupled with `transposition_mutation_correlation`.
 
-```sh
-python experiments/run_horizontal_direction.py
-```
+A seed is counted as a stable vertical gravity-code outcome when final mean comb tilt is
+at least `0.80` and both final mean sender and receiver transposition are at least
+`0.50`. A seed is counted as collapsed if mean foraging success reaches `0.02` or below.
 
-Generate a simple SVG demo plot:
+## Current Report
 
-```sh
-python experiments/demo_horizontal_direction.py
-```
+The working report is v2-only:
 
-Stream a one-parameter sweep:
+- source: `report/report.md`
+- rendered HTML: `report/report.html`
+- figures: `report/figures/`
+- primary result inputs: `results/food_transition_v2_*`
 
-```sh
-python experiments/sweep_horizontal_direction.py --seeds 101,102,103
-```
-
-Run the report conditions:
-
-```sh
-python experiments/run_report_conditions.py
-```
-
-Run a comb-tilt geometry sanity grid:
-
-```sh
-python experiments/run_tilt_geometry_sanity.py --seeds 101,102,103,104,105
-```
-
-Run a comb-orientation sanity grid:
-
-```sh
-python experiments/run_orientation_sanity.py
-```
-
-Run the constrained near-vertical coupling probe:
-
-```sh
-python -u experiments/run_vertical_coupling_probe.py
-```
-
-Run the longer axial-orientation vertical transition experiment:
-
-```sh
-python -u experiments/run_long_vertical_transition.py
-```
-
-Run an Optuna search over food-transition parameters:
-
-```sh
-python -u experiments/optimize_food_transition.py --workers 4 --n-trials 32
-```
-
-Run the extensive overnight Optuna search over ecology, vertical advantage,
-mutation scale, tilt-mutation scale, and sender-receiver mutation coupling:
-
-```sh
-python -u experiments/optimize_food_transition.py \
-  --journal-output results/food_transition_optuna_extensive.journal \
-  --trials-output results/food_transition_optuna_extensive_trials.csv \
-  --seed-output results/food_transition_optuna_extensive_seeds.csv \
-  --study-name food_transition_optuna_extensive \
-  --n-trials 144 \
-  --workers 4 \
-  --seeds 100,101,102,103,104 \
-  --generations 120 \
-  --startup-trials 32 \
-  --food-site-count-min 3 \
-  --food-site-count-max 8 \
-  --food-site-width-min 0.20 \
-  --food-site-width-max 0.40 \
-  --food-site-capacity-min 6 \
-  --food-site-capacity-max 16 \
-  --food-value-min 0.8 \
-  --food-value-max 1.3 \
-  --food-site-max-distance-min 5.0 \
-  --food-site-max-distance-max 9.0 \
-  --travel-cost-min 0.01 \
-  --travel-cost-max 0.05 \
-  --vertical-comb-benefit-min 0.15 \
-  --vertical-comb-benefit-max 0.45 \
-  --mutation-sd-min 0.04 \
-  --mutation-sd-max 0.11 \
-  --comb-tilt-mutation-sd-min 0.04 \
-  --comb-tilt-mutation-sd-max 0.11 \
-  --transposition-mutation-correlation-min 0.3 \
-  --transposition-mutation-correlation-max 0.9
-```
-
-Compare successful and unsuccessful trajectories in the best Optuna pocket:
-
-```sh
-python -u experiments/analyze_optuna_best_trajectories.py --seeds 96-120 --max-workers 4
-```
-
-Validate the best extensive Optuna candidates on held-out seeds:
-
-```sh
-python -u experiments/validate_extensive_optuna_candidates.py \
-  --seeds 96-195 \
-  --exclude-seeds 100-104 \
-  --max-workers 4
-```
-
-Run and finalize the refined one-parameter sensitivity panel on Snellius:
-
-```sh
-sbatch -A ubsr112721 experiments/run_sensitivity_refinement_snellius.sbatch
-```
-
-The batch wrapper requests 16 CPUs by default and uses `SLURM_CPUS_PER_TASK`
-worker processes. It streams raw event and trajectory rows under
-`results/food_transition_sensitivity_refinement_*.csv`, updates
-`report/report.md`, renders `report/report.html` if Pandoc is available, and
-commits the generated artifacts when it finishes. Set `BEES_MODULE_LOAD`,
-`BEES_VENV`, or `BEES_PYTHON` at submission time to override the default
-`2025 Python/3.13.5-GCCcore-14.3.0` module stack, and set `BEES_PUSH=1` to push
-the result commit after finalization.
-
-Export no-threshold long-transition trajectories and event timings:
-
-```sh
-python -u experiments/analyze_long_transition_trajectories.py
-```
-
-Render the working report:
+Render the report:
 
 ```sh
 python -u experiments/render_report_html.py
 ```
 
-Regenerate the tracked report result files and legacy LaTeX report artifacts:
+Regenerate the figures used by the report:
 
 ```sh
-python -u experiments/run_report_artifacts.py all
+python -u experiments/plot_oat_sensitivity_effects.py \
+  --points results/food_transition_v2_oat_sensitivity_points.csv \
+  --events results/food_transition_v2_oat_sensitivity_events.csv \
+  --output report/figures/oat_sensitivity_stable_delta
+
+python -u experiments/plot_evolutionary_interaction_heatmap.py \
+  --group-summary results/food_transition_v2_evolutionary_interaction_group_summary.csv \
+  --output report/figures/evolutionary_interaction_stable_heatmap
+
+python -u experiments/plot_evolutionary_interaction_seed_outcomes.py \
+  --events results/food_transition_v2_evolutionary_interaction_events.csv \
+  --output report/figures/evolutionary_interaction_seed_outcomes_binary
 ```
 
-List the command associated with each legacy generated report artifact:
+`report/paper.tex` is only a LaTeX scaffold. The primary maintained report artifact is
+the Markdown/HTML workflow above.
+
+## Development
+
+Install dependencies:
 
 ```sh
-python -u experiments/run_report_artifacts.py list
+python -m pip install -e .
 ```
 
 Run tests:
 
 ```sh
 PYTHONPATH=src python -m unittest discover -s tests
+```
+
+Run a small local v2 Optuna search:
+
+```sh
+python -u experiments/optimize_food_transition.py \
+  --workers 4 \
+  --n-trials 32 \
+  --seeds 100-102
+```
+
+Run a small candidate panel from Optuna trials:
+
+```sh
+python -u experiments/run_food_transition_v2_candidate_panel.py \
+  --source trials \
+  --trials results/food_transition_v2_optuna_trials.csv \
+  --max-candidates 5 \
+  --seeds 110-119 \
+  --max-workers 4 \
+  --output-prefix results/food_transition_v2_confirmation
+```
+
+Run a small v2 sensitivity panel around the current validated baseline:
+
+```sh
+python -u experiments/run_food_transition_oat_sensitivity.py \
+  --panel coarse \
+  --baseline-points results/food_transition_v2_validation_points.csv \
+  --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
+  --seeds 300-309 \
+  --max-workers 4
+```
+
+Run one local shard of the evolutionary interaction grid:
+
+```sh
+python -u experiments/run_evolutionary_interaction_array.py \
+  --task-id 0 \
+  --task-count 4 \
+  --baseline-points results/food_transition_v2_validation_points.csv \
+  --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
+  --max-workers 4 \
+  --max-seeds 10
+```
+
+## Snellius
+
+The Snellius checkout is `/gpfs/home2/gchrupala1/bees`. Sync it before launching jobs:
+
+```sh
+ssh gchrupala1@snellius.surf.nl
+cd /gpfs/home2/gchrupala1/bees
+git pull --rebase
+```
+
+Submit the full v2 pipeline from the Snellius checkout:
+
+```sh
+BEES_ARRAY_TASKS=64 BEES_ARRAY_CONCURRENCY=4 \
+./experiments/submit_food_transition_v2_snellius.sh
+```
+
+The helper submits, in order, the v2 Optuna search, confirmation panel, validation
+panel, coarse and refined sensitivity panels, evolutionary interaction array, and
+interaction finalizer. Set `BEES_PUSH=1` when the finalizer should commit and push the
+merged evolutionary-interaction result CSVs after the array succeeds. The submit helper
+and Slurm scripts also accept `BEES_VENV`, `BEES_PYTHON`, and `BEES_MODULE_LOAD` for
+environment control.
+
+Monitor jobs and logs with:
+
+```sh
+squeue -u gchrupala1
+ls -lt slurm-*.out slurm-*.err
 ```
