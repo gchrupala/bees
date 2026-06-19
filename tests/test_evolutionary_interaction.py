@@ -13,6 +13,11 @@ from evolutionary_interaction import (
     VERTICAL_COMB_BENEFIT_VALUES,
     expected_point_count,
 )
+from run_generation_sensitivity import (
+    build_generation_points,
+    build_jobs as build_generation_jobs,
+    parse_generations,
+)
 from run_evolutionary_interaction_array import build_interaction_points, build_jobs
 from run_food_transition_oat_sensitivity import BASELINE_VALUES
 
@@ -64,6 +69,38 @@ class EvolutionaryInteractionTests(unittest.TestCase):
         ]
 
         self.assertEqual(sorted(assigned), list(range(len(jobs))))
+
+    def test_generation_sensitivity_varies_only_generation_budget(self) -> None:
+        points = build_generation_points(
+            generations=[240, 480],
+            baseline_values=BASELINE_VALUES,
+        )
+
+        self.assertEqual(parse_generations("240, 480"), [240, 480])
+        self.assertEqual([point.generations for point in points], [240, 480])
+        self.assertEqual([point.is_baseline for point in points], [False, False])
+        for point in points:
+            self.assertEqual(point.values["vertical_comb_benefit"], 0.10)
+            self.assertEqual(point.values["mutation_sd"], 0.045)
+            self.assertEqual(
+                point.values["transposition_mutation_correlation"],
+                0.30,
+            )
+            self.assertEqual(
+                point.values["food_site_count"],
+                BASELINE_VALUES["food_site_count"],
+            )
+
+    def test_generation_sensitivity_jobs_cover_each_point_seed_once(self) -> None:
+        points = build_generation_points(generations=[240, 480])
+        jobs = build_generation_jobs(points, seeds=[300, 301])
+
+        self.assertEqual(len(jobs), 4)
+        self.assertEqual(
+            {(job.point.generations, job.seed) for job in jobs},
+            {(240, 300), (240, 301), (480, 300), (480, 301)},
+        )
+        self.assertEqual([job.index for job in jobs], list(range(4)))
 
 
 if __name__ == "__main__":
