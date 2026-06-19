@@ -36,7 +36,7 @@ sun and thus can orient the axis of the waggle dance directly towards the food
 patch. In cavity nesting species such as Apis mellifera, the worker bees do not
 see the sun, and their combs are vertical. They thus use gravity as a reference
 point, and map the azimuth of the food patch to the sun onto the angle of the
-waggle dance with respect to the vertical (see \Cref{fig:waggle}).
+waggle dance with respect to the vertical (see \Cref{fig:waggle}). 
 
 \begin{figure}
 \centering
@@ -46,7 +46,26 @@ and on a vertical comb (right).}
 \label{fig:waggle}  
 \end{figure}
 
+The distribution of comb orientation and waggle dance code throughout the Apis phylogeny (\Cref{fig:phylo}) suggest that the horizontal comb and direct pointing are the ancestral state (extant in the Micrapis subgenus). Cavity nesting, vertical combs and the gravity-referenced code are derived traits (present in the Apis sensu stricto subgenus). However, the exact sequence of evolutionary events that led to the emergence of the gravity-based waggle dance is not known.
 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/apis_phylogeny}
+    \caption{Apis phylogeny}
+    \label{fig:phylo}
+\end{figure}
+
+The present study investigates this transition by means of a computational model of evolving populations of bee-like agents. We model selection at the level of colonies, as well as behavior of individual bees as colony members. Our simulations show that 
+\begin{itemize}
+\item On horizontal combs, communication via direct pointing evolves readily when food distribution makes it moderately hard to find it via random search only.
+\item Under evolutionary pressure for vertical combs, the following factors contribute to the evolutionary transition from direct pointing to gravity referenced code: 
+\begin{itemize}
+    \item the magnitude of the benefit of vertical combs
+    \item the mutation rate
+    \item  the strength of the coupling between the signaling behavior between senders and receivers
+\end{itemize}
+\end{itemize}
 
 \section{Results}
 
