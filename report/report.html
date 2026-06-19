@@ -186,29 +186,48 @@ no gravity reference in the dance plane; the gravity cue strengthens as
 the comb becomes vertical. The reported v2 transition experiments use
 axial comb orientation, so orientations that differ by 180 degrees
 represent the same comb plane.</p>
-<p>For a worker with sender transposition (s), the encoded dance angle
-is a weighted circular mean of direct and gravity-referenced angles:</p>
-<p>[ = ( (D, (1-s)q_D),, (G, sq_G) ). ]</p>
+<p>For a worker with sender transposition
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>,
+the encoded dance angle is a weighted circular mean of direct and
+gravity-referenced angles:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mrow><mi mathvariant="normal">cmean</mi><mo>&#8289;</mo></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mo stretchy="false" form="prefix">(</mo><mi>D</mi><mo>,</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><msub><mi>q</mi><mi>D</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="0.167em"></mspace><mo stretchy="false" form="prefix">(</mo><mi>G</mi><mo>,</mo><mi>s</mi><msub><mi>q</mi><mi>G</mi></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\mu =
+\operatorname{cmean}\left(
+  (D, (1-s)q_D),\,
+  (G, sq_G)
+\right).
+</annotation></semantics></math></p>
 <p>The emitted signal is sampled from a von Mises distribution centered
-on (), with concentration proportional to directional-bias investment,
-and then perturbed by production noise. A receiver with transposition
-(r) applies the analogous weighted decoding rule and interpretation
+on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>,
+with concentration proportional to directional-bias investment, and then
+perturbed by production noise. A receiver with transposition
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>
+applies the analogous weighted decoding rule and interpretation
 noise.</p>
 <p>Episode payoff is food value minus search/travel cost, dance cost,
 and attention cost. A vertical comb can multiply net episode payoff:</p>
-<p>[ P_e = F_e (1 + t), ]</p>
-<p>where (t) is comb tilt and () is the vertical-comb benefit. This
-benefit does not rescue a colony whose foraging payoff has collapsed.
-Daughter colonies are sampled in proportion to payoff. All heritable
-traits mutate with the shared mutation scale; sender and receiver
-transposition mutations may be correlated by ().</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mi>e</mi></msub><mo>=</mo><msub><mi>F</mi><mi>e</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>α</mi><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">
+P_e = F_e (1 + \alpha t),
+</annotation></semantics></math></p>
+<p>where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+is comb tilt and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
+is the vertical-comb benefit. This benefit does not rescue a colony
+whose foraging payoff has collapsed. Daughter colonies are sampled in
+proportion to payoff. All heritable traits mutate with the shared
+mutation scale; sender and receiver transposition mutations may be
+correlated by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>.</p>
 <p>Unless stated otherwise, v2 runs use 60 colonies, 80 workers per
 colony, 120 generations, 50 foraging episodes per colony per generation,
 12 foraging attempts per episode, maximum search distance 8, food value
 1, baseline dance cost 0, directional cue cost 0.02, attention cost
 0.01, dance-production noise 0.18, interpretation noise 0.12,
 within-colony worker variation 0.08, horizontal initial combs, axial
-orientation, and the linear vertical-comb modifier (1+t).</p>
+orientation, and the linear vertical-comb modifier
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>+</mo><mi>α</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">1+\alpha t</annotation></semantics></math>.</p>
 <p>A seed is counted as a stable vertical gravity-code outcome when
 final mean comb tilt is at least 0.80 and both final mean sender and
 receiver transposition are at least 0.50. Gravity reached means both
@@ -298,15 +317,19 @@ gravity-code transitions and no collapse events.</p>
 <th style="text-align: right;">Sites</th>
 <th style="text-align: right;">Width</th>
 <th style="text-align: right;">Cap.</th>
-<th style="text-align: right;">()</th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></th>
 <th style="text-align: right;">Max dist.</th>
 <th style="text-align: right;">Travel cost</th>
 <th style="text-align: right;">Mut. sd</th>
-<th style="text-align: right;">()</th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math></th>
 <th style="text-align: right;">Stable</th>
 <th style="text-align: right;">Success</th>
-<th style="text-align: right;">(t_f)</th>
-<th style="text-align: right;">(m_f)</th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>f</mi></msub><annotation encoding="application/x-tex">t_f</annotation></semantics></math></th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>f</mi></msub><annotation encoding="application/x-tex">m_f</annotation></semantics></math></th>
 </tr>
 </thead>
 <tbody>
@@ -387,13 +410,17 @@ gravity-code transitions and no collapse events.</p>
 </tr>
 </tbody>
 </table>
-<p>Here (t_f) is final mean comb tilt and (m_f) is final mean of the
-lower sender or receiver transposition value. The strongest held-out
-candidate, <code>trial_257</code>, reached stable vertical gravity-code
-outcomes in 99 of 100 seeds. The candidates share a narrow region of
-parameter space: eight food sites, moderate angular widths, high
-vertical-comb benefit, non-negligible travel cost, moderate-to-high
-mutation scale, and strong sender-receiver mutation coupling.</p>
+<p>Here
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>f</mi></msub><annotation encoding="application/x-tex">t_f</annotation></semantics></math>
+is final mean comb tilt and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>f</mi></msub><annotation encoding="application/x-tex">m_f</annotation></semantics></math>
+is final mean of the lower sender or receiver transposition value. The
+strongest held-out candidate, <code>trial_257</code>, reached stable
+vertical gravity-code outcomes in 99 of 100 seeds. The candidates share
+a narrow region of parameter space: eight food sites, moderate angular
+widths, high vertical-comb benefit, non-negligible travel cost,
+moderate-to-high mutation scale, and strong sender-receiver mutation
+coupling.</p>
 <h2 id="sensitivity">Sensitivity</h2>
 <p>The sensitivity panels use <code>trial_257</code> as the baseline. On
 the later 100-seed sensitivity panel, the baseline produced 91 stable
@@ -528,7 +555,8 @@ summarizes 100 held-out seeds.
 </colgroup>
 <thead>
 <tr>
-<th style="text-align: right;">()</th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></th>
 <th style="text-align: right;">Mean stable rate across cells</th>
 <th style="text-align: left;">Best cell</th>
 <th style="text-align: right;">Best stable count</th>
@@ -538,19 +566,22 @@ summarizes 100 held-out seeds.
 <tr>
 <td style="text-align: right;">0.10</td>
 <td style="text-align: right;">1.3%</td>
-<td style="text-align: left;">mutation 0.090, ()</td>
+<td style="text-align: left;">mutation 0.090,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">\rho=0.9</annotation></semantics></math></td>
 <td style="text-align: right;">7/100</td>
 </tr>
 <tr>
 <td style="text-align: right;">0.25</td>
 <td style="text-align: right;">13.6%</td>
-<td style="text-align: left;">mutation 0.135, ()</td>
+<td style="text-align: left;">mutation 0.135,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">\rho=0.9</annotation></semantics></math></td>
 <td style="text-align: right;">37/100</td>
 </tr>
 <tr>
 <td style="text-align: right;">0.44</td>
 <td style="text-align: right;">39.6%</td>
-<td style="text-align: left;">mutation 0.090, ()</td>
+<td style="text-align: left;">mutation 0.090,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">\rho=0.9</annotation></semantics></math></td>
 <td style="text-align: right;">76/100</td>
 </tr>
 </tbody>
@@ -564,11 +595,18 @@ and pale gray dots are other outcomes.
 </figcaption>
 </figure>
 <p>Low vertical-comb benefit is not rescued by sender-receiver coupling.
-At (), stable outcomes are almost absent. At (), transitions remain
-minority outcomes even at high mutation and high coupling. At (),
+At
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.10</mn></mrow><annotation encoding="application/x-tex">\alpha=0.10</annotation></semantics></math>,
+stable outcomes are almost absent. At
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.25</mn></mrow><annotation encoding="application/x-tex">\alpha=0.25</annotation></semantics></math>,
+transitions remain minority outcomes even at high mutation and high
+coupling. At
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.44</mn></mrow><annotation encoding="application/x-tex">\alpha=0.44</annotation></semantics></math>,
 intermediate mutation and strong coupling produce the best cell, but the
 rate remains below the validated baseline because the grid does not
-include the baseline’s higher () value.</p>
+include the baseline’s higher
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.60</mn></mrow><annotation encoding="application/x-tex">\alpha=0.60</annotation></semantics></math>
+value.</p>
 <h1 id="conclusion">Conclusion</h1>
 <p>In the current v2 model, horizontal-start colonies can reliably
 evolve a vertical comb and a gravity-referenced sender-receiver code.

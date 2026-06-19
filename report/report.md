@@ -43,40 +43,40 @@ horizontal comb has no gravity reference in the dance plane; the gravity cue str
 as the comb becomes vertical. The reported v2 transition experiments use axial comb
 orientation, so orientations that differ by 180 degrees represent the same comb plane.
 
-For a worker with sender transposition \(s\), the encoded dance angle is a weighted
+For a worker with sender transposition $s$, the encoded dance angle is a weighted
 circular mean of direct and gravity-referenced angles:
 
-\[
+$$
 \mu =
 \operatorname{cmean}\left(
   (D, (1-s)q_D),\,
   (G, sq_G)
 \right).
-\]
+$$
 
-The emitted signal is sampled from a von Mises distribution centered on \(\mu\), with
+The emitted signal is sampled from a von Mises distribution centered on $\mu$, with
 concentration proportional to directional-bias investment, and then perturbed by
-production noise. A receiver with transposition \(r\) applies the analogous weighted
+production noise. A receiver with transposition $r$ applies the analogous weighted
 decoding rule and interpretation noise.
 
 Episode payoff is food value minus search/travel cost, dance cost, and attention cost.
 A vertical comb can multiply net episode payoff:
 
-\[
+$$
 P_e = F_e (1 + \alpha t),
-\]
+$$
 
-where \(t\) is comb tilt and \(\alpha\) is the vertical-comb benefit. This benefit does
+where $t$ is comb tilt and $\alpha$ is the vertical-comb benefit. This benefit does
 not rescue a colony whose foraging payoff has collapsed. Daughter colonies are sampled
 in proportion to payoff. All heritable traits mutate with the shared mutation scale;
-sender and receiver transposition mutations may be correlated by \(\rho\).
+sender and receiver transposition mutations may be correlated by $\rho$.
 
 Unless stated otherwise, v2 runs use 60 colonies, 80 workers per colony, 120
 generations, 50 foraging episodes per colony per generation, 12 foraging attempts per
 episode, maximum search distance 8, food value 1, baseline dance cost 0, directional
 cue cost 0.02, attention cost 0.01, dance-production noise 0.18, interpretation noise
 0.12, within-colony worker variation 0.08, horizontal initial combs, axial orientation,
-and the linear vertical-comb modifier \(1+\alpha t\).
+and the linear vertical-comb modifier $1+\alpha t$.
 
 A seed is counted as a stable vertical gravity-code outcome when final mean comb tilt is
 at least 0.80 and both final mean sender and receiver transposition are at least 0.50.
@@ -110,7 +110,7 @@ The top confirmation candidates were rerun on 100 held-out seeds. All five valid
 candidates produced frequent stable vertical gravity-code transitions and no collapse
 events.
 
-| Candidate | Sites | Width | Cap. | \(\alpha\) | Max dist. | Travel cost | Mut. sd | \(\rho\) | Stable | Success | \(t_f\) | \(m_f\) |
+| Candidate | Sites | Width | Cap. | $\alpha$ | Max dist. | Travel cost | Mut. sd | $\rho$ | Stable | Success | $t_f$ | $m_f$ |
 |:----------|------:|------:|-----:|-----------:|----------:|------------:|--------:|---------:|-------:|--------:|--------:|--------:|
 | trial_257 | 8 | 0.270 | 9 | 0.600 | 6.5 | 0.055 | 0.090 | 1.0 | 99/100 | 0.563 | 0.856 | 0.832 |
 | trial_471 | 8 | 0.240 | 8 | 0.580 | 6.5 | 0.055 | 0.090 | 1.0 | 95/100 | 0.516 | 0.848 | 0.822 |
@@ -118,7 +118,7 @@ events.
 | trial_243 | 8 | 0.280 | 9 | 0.540 | 7.0 | 0.055 | 0.090 | 1.0 | 88/100 | 0.572 | 0.841 | 0.823 |
 | trial_139 | 8 | 0.290 | 9 | 0.540 | 8.0 | 0.055 | 0.110 | 1.0 | 86/100 | 0.547 | 0.834 | 0.805 |
 
-Here \(t_f\) is final mean comb tilt and \(m_f\) is final mean of the lower sender or
+Here $t_f$ is final mean comb tilt and $m_f$ is final mean of the lower sender or
 receiver transposition value. The strongest held-out candidate, `trial_257`, reached
 stable vertical gravity-code outcomes in 99 of 100 seeds. The candidates share a narrow
 region of parameter space: eight food sites, moderate angular widths, high
@@ -177,11 +177,11 @@ the shared mutation scale. Each cell summarizes 100 held-out seeds.
 </figcaption>
 </figure>
 
-| \(\alpha\) | Mean stable rate across cells | Best cell | Best stable count |
+| $\alpha$ | Mean stable rate across cells | Best cell | Best stable count |
 |-----------:|------------------------------:|:----------|------------------:|
-| 0.10 | 1.3% | mutation 0.090, \(\rho=0.9\) | 7/100 |
-| 0.25 | 13.6% | mutation 0.135, \(\rho=0.9\) | 37/100 |
-| 0.44 | 39.6% | mutation 0.090, \(\rho=0.9\) | 76/100 |
+| 0.10 | 1.3% | mutation 0.090, $\rho=0.9$ | 7/100 |
+| 0.25 | 13.6% | mutation 0.135, $\rho=0.9$ | 37/100 |
+| 0.44 | 39.6% | mutation 0.090, $\rho=0.9$ | 76/100 |
 
 <figure id="fig:evolutionary-interaction-seed-outcomes" class="figure">
 <img src="figures/evolutionary_interaction_seed_outcomes_binary.png" alt="Seed-level stable and non-stable outcomes across the v2 evolutionary interaction grid." />
@@ -193,11 +193,11 @@ outcomes.
 </figure>
 
 Low vertical-comb benefit is not rescued by sender-receiver coupling. At
-\(\alpha=0.10\), stable outcomes are almost absent. At \(\alpha=0.25\), transitions
-remain minority outcomes even at high mutation and high coupling. At \(\alpha=0.44\),
+$\alpha=0.10$, stable outcomes are almost absent. At $\alpha=0.25$, transitions
+remain minority outcomes even at high mutation and high coupling. At $\alpha=0.44$,
 intermediate mutation and strong coupling produce the best cell, but the rate remains
 below the validated baseline because the grid does not include the baseline's higher
-\(\alpha=0.60\) value.
+$\alpha=0.60$ value.
 
 # Conclusion
 

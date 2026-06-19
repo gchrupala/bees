@@ -189,6 +189,7 @@ def render_with_pandoc(markdown: str, output: Path, css: Path) -> None:
                 (
                     "markdown+citations+fenced_divs+markdown_in_html_blocks"
                     "+pipe_tables+raw_html+tex_math_dollars"
+                    "+tex_math_single_backslash"
                 ),
                 "--to",
                 "html5",
