@@ -1,0 +1,47 @@
+\documentclass[border=6pt]{standalone}
+\usepackage[edges]{forest}
+\begin{document}
+\begin{forest}
+  for tree={
+    grow'=east,
+    calign=first,
+    parent anchor=east,
+    child anchor=west,
+    anchor=west,
+    edge={thick, rounded corners=2pt},
+    edge path={
+      \noexpand\path[\forestoption{edge}]
+        (!u.parent anchor) -- +(6pt,0) |- (.child anchor)\forestoption{edge label};
+    },
+    l sep=16pt,
+    s sep=3pt,
+    font=\small,
+  }
+  [\textit{Apis}, font=\itshape\bfseries
+    [Micrapis (dwarf honey bees)
+      [\textit{A.\ andreniformis}]
+      [\textit{A.\ florea}]
+    ]
+    [, phantom
+      [Megapis (giant honey bees)
+        [\textit{A.\ laboriosa}]
+        [\textit{A.\ dorsata} complex
+          [\textit{A.\ dorsata}]
+          [\textit{A.\ binghami}]
+          [\textit{A.\ breviligula}]
+        ]
+      ]
+      [\textit{Apis} sensu stricto (cavity nesters)
+        [\textit{A.\ mellifera}]
+        [Asian cavity nesters
+          [\textit{A.\ koschevnikovi}]
+          [\textit{A.\ cerana}]
+          [\textit{A.\ indica}]
+          [\textit{A.\ nuluensis}]
+          [\textit{A.\ nigrocincta}]
+        ]
+      ]
+    ]
+  ]
+\end{forest}
+\end{document}
