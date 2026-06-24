@@ -7,8 +7,9 @@
 \usepackage{hyperref}
 \usepackage{geometry}
 \usepackage{cleveref}
-
-\title{Emergence of a referential code in evolving populations of bee-like agents}
+\usepackage{todonotes}
+\title{The emergence and evolution of a referential code in
+  populations of bee-like agents}
 \author{Grzegorz Chrupała}
 \date{}
 
@@ -20,58 +21,118 @@
 \end{abstract}
 
 \section{Introduction}
-Communication in animal species takes many forms, from the chemical signals of
-ants to the symbolic, compositional language of humans. Each of these
-communication systems has its own idiosyncratic properties, but they all share
-the property of being referential: properties, and what ecological and
-evolutionary pressures lead to their emergence has been of substantial interest
-to biologists and cognitive scientists. The waggle dance of Apis species
-\cite{vonFrisch1967DanceLanguage} is unique system where food sites discovered
-by foraging scouts are indicated to other members of the colony by means of a
-figure-of-eight dance whose axis encodes the direction of the food source, and
-whose duration codes for its distance. Different species of Apis vary in the
-specific code used to encode the direction of the food patch: in open-nesting
-species (\emph{Apis florea} and \emph{Apis dorsata}) the bees can perceive the
-sun and thus can orient the axis of the waggle dance directly towards the food
-patch. In cavity nesting species such as Apis mellifera, the worker bees do not
-see the sun, and their combs are vertical. They thus use gravity as a reference
-point, and map the azimuth of the food patch to the sun onto the angle of the
-waggle dance with respect to the vertical (see \Cref{fig:waggle}). 
+\label{sec:intro}
+Communication in animal species takes many forms, from the chemical
+signals of ants to the symbolic, compositional language of
+humans. Each of these communication systems has its own idiosyncratic
+properties. What ecological and evolutionary pressures shaped these
+systems has been of substantial interest to biologists and cognitive
+scientists.  Communication in general assumes some kind of shared code
+between senders and receivers. The emergence of such a code this
+requires some degree of alignment between the these two roles.
+Likewise, any change or modification to the code needs to be
+coordinated between senders and receivers if the breakdown of
+communication is to be avoided.
+
+In many cases it is possible to think of a plausible pathway for the
+coordinated emergence and development of a shared code, but a verbally
+formulated scenario leaves many details underspecified and make it
+hard to be precise about the specific conditions code change
+trajectories feasible. For this reason computational models of the
+evolution of communication systems can provide insights which hard to
+obtain by other means. In this paper we model a transition of a
+particularly intriguing communicative system in invertebrates: the
+waggle dance of honey bees.
+
+The communicative code of Apis species \cite{vonFrisch1967DanceLanguage} is
+unique system where food sites discovered by foraging scouts are
+indicated to other members of the colony by means of a figure-of-eight
+dance whose axis encodes the direction of the food source, and whose
+duration stands for its distance. Different species of Apis vary in the
+specific dance variant used to encode the direction of the food patch: in
+open-nesting species (\emph{Apis florea} and \emph{Apis dorsata}) the
+bees can perceive the sun and thus can orient the axis of the waggle
+dance directly towards the food patch. In cavity nesting species such
+as \emph{Apis mellifera}, the worker bees do not see the sun, and their combs
+are vertical. They thus use gravity as a reference point, and map the
+azimuth of the food patch relative to the sun onto the angle of the waggle
+dance with respect to the vertical (see \Cref{fig:waggle}).
 
 \begin{figure}
 \centering
-\includegraphics[width=0.5\textwidth]{figures/waggle.png}   
-\caption{The waggle dance on a horizontal expose comb (left) 
-and on a vertical comb (right).}
+\includegraphics[width=0.7\textwidth]{figures/waggle.png}   
+\caption{The waggle dance of honeybees on a horizontal expose comb (left) 
+and on a vertical comb (right). On a vertical comb the waggle does not
+point directly to the food site, but rather indicates the site's
+azimuth relative to the sun by means of the waggle's angle to the vertical.}
 \label{fig:waggle}  
 \end{figure}
-
-The distribution of comb orientation and waggle dance code throughout the Apis phylogeny (\Cref{fig:phylo}) suggest that the horizontal comb and direct pointing are the ancestral state (extant in the Micrapis subgenus). Cavity nesting, vertical combs and the gravity-referenced code are derived traits (present in the Apis sensu stricto subgenus). However, the exact sequence of evolutionary events that led to the emergence of the gravity-based waggle dance is not known.
+\todo{Remove the parenthesis with the angles from the image}
+  
+The distribution of comb orientation and waggle dance code throughout
+the Apis phylogeny (\Cref{fig:phylo}) suggest that the horizontal comb
+and direct pointing are the ancestral state (extant in the Micrapis
+subgenus). Cavity nesting, vertical combs and the gravity-referenced
+code are derived traits (present in the \emph{Apis} sensu stricto
+subgenus). The stem bees of the subgenus Mircrapis, on the other hand,
+perform the direct pointing dance. 
+Nevertheless, the exact sequence of evolutionary events that led
+to the emergence of the gravity-based waggle dance is not known. It is
+also not clear how the transition from one version of the code to the
+other could happen gradually, while maintaining communicative success
+at all stages, and how this process interacted with the change in the
+orientation of honeycombs.
 
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\textwidth]{figures/apis_phylogeny}
-    \caption{Apis phylogeny}
+    \includegraphics[width=0.7\textwidth]{figures/apis_phylogeny}
+    \caption{Apis phylogeny, with the three subgenera Micrapis,
+      Megapis and Apis sensu stricto. Drawn after ...}
     \label{fig:phylo}
 \end{figure}
 
-The present study investigates this transition by means of a computational model of evolving populations of bee-like agents. We model selection at the level of colonies, as well as behavior of individual bees as colony members. Our simulations show that 
-\begin{itemize}
-\item On horizontal combs, communication via direct pointing evolves readily when food distribution makes it moderately hard to find it via random search only.
-\item Under evolutionary pressure for vertical combs, the following factors contribute to the evolutionary transition from direct pointing to gravity referenced code: 
+The present study investigates this transition by means of a
+computational model of evolving populations of bee-like agents. We
+model selection at the level of colonies, and individual behavior at
+the level of worker bees as colony members.
+
+Our starting point are colonies with horizontal combs, which show some
+genomic variation in traits controling the inclination to direct
+signaling and attending to signals. In this initial stage we
+investigate under what circumstances a direct pointing code evolves
+and stabilizes. We show that on horizontal combs, communication via
+direct pointing evolves readily when food distribution makes it
+moderately hard to find it via random search only.
+
+In the second stage we introduce extrinsic evolutionary pressure for
+vertical combs, which degrades the signal of the direct-pointing
+code. We show that in this scenario, the following factors correlate with
+ the evolutionary transition towards gravity referenced code:
 \begin{itemize}
     \item the magnitude of the benefit of vertical combs
     \item the mutation rate
-    \item  the strength of the coupling between the signaling behavior between senders and receivers
+    \item the strength of the coupling between the signaling behavior
+      between senders and receivers
 \end{itemize}
-\end{itemize}
+
+The pattern of results from these simulations indicates that a basic
+referential code based on iconic, direct pointing signal evolves
+readily given favorable ecological conditions. On the other hand, the
+transition from this basic ancestral system  to the more abstract code
+based on gravity referenced pointing only happens under a narrow set
+of circumstances involving the confluence of several key favorable
+ecological and evolutionary factors.
+
 
 \section{Results}
+\label{sec:results}
 
 \section{Discussion}
+\label{sec:discussion}
 
 \section{Conclusion}
+\label{sec:conclusion}
 
 \bibliographystyle{apalike}
 \bibliography{biblio}
