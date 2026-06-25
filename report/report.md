@@ -95,6 +95,7 @@ The v2 Snellius pipeline ran the following sequence:
 | One-parameter sensitivity | `results/food_transition_v2_oat_sensitivity_*`, `results/food_transition_v2_sensitivity_refinement_*` | seeds 300-399 |
 | Evolutionary interaction grid | `results/food_transition_v2_evolutionary_interaction_*` | seeds 300-399 |
 | Low-benefit generation budget | `results/food_transition_v2_low_regime_generation_sensitivity_*`, `..._mut_0p075_*` | seeds 300-399 |
+| Food-distribution communication | `results/food_distribution_v2_*` | seeds 400-449 |
 
 The Optuna search evaluated 512 trials over food-site count, angular width, capacity,
 vertical-comb benefit, maximum food distance, travel cost, mutation scale, and
@@ -104,6 +105,73 @@ collapse. Of the 512 completed trials, 61 were stable in all ten optimization se
 another 109 were stable in nine of ten seeds.
 
 # Results
+
+## Direct-Pointing Communication and Food Distribution
+
+Before the vertical transition, a more basic question is when the direct-pointing
+dance is worth maintaining at all. We test this on a comb held flat
+(`evolve_comb_tilt` off, `initial_comb_tilt` 0), which leaves the gravity
+reference strength at zero and the transposition traits inert, so only the
+direct-pointing dance is in play. The colony otherwise uses the baseline v2
+ecology with mutation scale 0.07 over 60 generations, and we vary only the food
+distribution across 50 held-out seeds (400-449).
+
+The outcome is the in-run *recruitment advantage*: among foraging attempts where
+a dance was available, the success rate of dance-followers minus that of matched
+non-followers (workers who could have followed but, by the receiver-attention
+coin flip, searched at random). Because the follow decision is randomized within
+the same episodes, this is a contemporaneous estimate of what the dance actually
+buys, and it separates useful communication from a directional-bias trait that
+has merely drifted upward under weak selection. The latter matters here: in the
+hardest ecology mean directional bias still drifts to 0.375, which would clear a
+naive trait threshold, yet the dance is essentially useless (recruitment
+advantage 0.057, useful in only 64% of seeds, foraging success 0.010).
+
+<figure id="fig:food-distribution-recruitment-advantage" class="figure">
+<img src="figures/food_distribution_recruitment_advantage.png" alt="Recruitment advantage across the v2 food-distribution sweeps." />
+<figcaption>
+In-run recruitment advantage on a flat comb across two one-dimensional food
+sweeps, 50 seeds each. Gray points are per-seed tail means; green is the
+across-seed mean. Communication value peaks at low-to-intermediate food-site
+counts and rises with patch width at low site count.
+</figcaption>
+</figure>
+
+| Condition | Sites | Width | Recruit. adv. | Useful | Bias | Success | Payoff |
+|:----------|------:|------:|--------------:|-------:|-----:|--------:|-------:|
+| Hard (anchor) | 1 | 0.08 | 0.057 | 0.64 | 0.375 | 0.010 | 0.001 |
+| Baseline (anchor) | 2 | 0.20 | 0.224 | 1.00 | 0.877 | 0.191 | 0.638 |
+| Easy (anchor) | 8 | 0.50 | 0.119 | 1.00 | 0.530 | 0.724 | 7.505 |
+| Sites sweep | 1 | 0.20 | 0.188 | 1.00 | 0.661 | 0.064 | 0.010 |
+| Sites sweep | 3 | 0.20 | 0.203 | 1.00 | 0.856 | 0.247 | 1.347 |
+| Sites sweep | 6 | 0.20 | 0.154 | 1.00 | 0.795 | 0.368 | 2.889 |
+| Sites sweep | 8 | 0.20 | 0.128 | 1.00 | 0.707 | 0.425 | 3.620 |
+| Width sweep | 2 | 0.08 | 0.056 | 0.58 | 0.398 | 0.024 | 0.001 |
+| Width sweep | 2 | 0.15 | 0.175 | 1.00 | 0.876 | 0.133 | 0.099 |
+| Width sweep | 2 | 0.30 | 0.293 | 1.00 | 0.853 | 0.287 | 1.850 |
+| Width sweep | 2 | 0.50 | 0.349 | 1.00 | 0.798 | 0.426 | 3.614 |
+
+Recruitment advantage is the final-generation-tail mean of the in-run
+follower-minus-matched-searcher success difference. Useful is the fraction of
+seeds whose tail advantage exceeds 0.05. Bias, success, and payoff are
+final-generation means. The two sweeps share the baseline point (2 sites, width
+0.20).
+
+The result supports a resource-distribution reading, but the two ecological axes
+are not symmetric. Adding food sites makes independent discovery easier and
+steadily erodes the value of recruitment: advantage falls from 0.224 at two
+sites to 0.128 at eight, even as foraging success and payoff climb. The single
+narrowest ecology is suppressed from the other direction, because successful
+foragers are too rare to seed dances at all. Widening patches at a fixed low
+site count has the opposite effect from adding sites: a broad target tolerates a
+noisily decoded dance direction, so the follower advantage rises monotonically
+with width, from 0.056 to 0.349. Communication is therefore most valuable when
+food is directionally concentrated but hard to stumble onto, and it is
+suppressed at both the undiscoverable extreme (no dances seeded) and the
+abundant extreme (random search already succeeds, with a matched-searcher
+success rate of 0.68 in the easy anchor). Unlike a directional-bias threshold,
+the recruitment-advantage measure reports this directly and does not mistake
+neutral drift for evolved communication.
 
 ## Held-Out Validation
 
@@ -269,6 +337,16 @@ python -u experiments/plot_evolutionary_interaction_heatmap.py \
 python -u experiments/plot_evolutionary_interaction_seed_outcomes.py \
   --events results/food_transition_v2_evolutionary_interaction_events.csv \
   --output report/figures/evolutionary_interaction_seed_outcomes_binary
+
+python -u experiments/plot_food_distribution_effects.py \
+  --events results/food_distribution_v2_events.csv \
+  --output report/figures/food_distribution_recruitment_advantage
+```
+
+The food-distribution communication experiment is produced on Snellius with:
+
+```sh
+sbatch experiments/run_food_distribution_v2_snellius.sbatch
 ```
 
 # References

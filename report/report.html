@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
@@ -7,9 +7,6 @@
   <meta name="author" content="Grzegorz Chrupala" />
   <title>Evolution of vertical-comb communication in a minimal bee model</title>
   <style>
-    /* Default styles provided by pandoc.
-    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-    */
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -25,9 +22,8 @@
       vertical-align: middle;
     }
     /* CSS for syntax highlighting */
-    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -125,6 +121,9 @@ Model</a></li>
 <li><a href="#experiments" id="toc-experiments">Experiments</a></li>
 <li><a href="#results" id="toc-results">Results</a>
 <ul>
+<li><a href="#direct-pointing-communication-and-food-distribution"
+id="toc-direct-pointing-communication-and-food-distribution">Direct-Pointing
+Communication and Food Distribution</a></li>
 <li><a href="#held-out-validation" id="toc-held-out-validation">Held-Out
 Validation</a></li>
 <li><a href="#sensitivity" id="toc-sensitivity">Sensitivity</a></li>
@@ -193,7 +192,7 @@ represent the same comb plane.</p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>,
 the encoded dance angle is a weighted circular mean of direct and
 gravity-referenced angles:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mrow><mi mathvariant="normal">cmean</mi><mo>&#8289;</mo></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mo stretchy="false" form="prefix">(</mo><mi>D</mi><mo>,</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><msub><mi>q</mi><mi>D</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="0.167em"></mspace><mo stretchy="false" form="prefix">(</mo><mi>G</mi><mo>,</mo><mi>s</mi><msub><mi>q</mi><mi>G</mi></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mo>cmean</mo><mrow><mo stretchy="true" form="prefix">(</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>D</mi><mo>,</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>q</mi><mi>D</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mi>G</mi><mo>,</mo><mi>s</mi><msub><mi>q</mi><mi>G</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
 \mu =
 \operatorname{cmean}\left(
   (D, (1-s)q_D),\,
@@ -210,7 +209,7 @@ applies the analogous weighted decoding rule and interpretation
 noise.</p>
 <p>Episode payoff is food value minus search/travel cost, dance cost,
 and attention cost. A vertical comb can multiply net episode payoff:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mi>e</mi></msub><mo>=</mo><msub><mi>F</mi><mi>e</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>α</mi><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mi>e</mi></msub><mo>=</mo><msub><mi>F</mi><mi>e</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>α</mi><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
 P_e = F_e (1 + \alpha t),
 </annotation></semantics></math></p>
 <p>where
@@ -245,51 +244,57 @@ as collapsed if mean success falls to 0.02 or below.</p>
 <col style="width: 36%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: left;">Stage</th>
 <th style="text-align: left;">Source files</th>
 <th style="text-align: left;">Seed panel</th>
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Optuna search</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_optuna_trials.csv</code>,
 <code>results/food_transition_v2_optuna_seed_metrics.csv</code></td>
 <td style="text-align: left;">seeds 100-109</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Candidate confirmation</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_confirmation_*</code></td>
 <td style="text-align: left;">seeds 110-149</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Held-out validation</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_validation_*</code></td>
 <td style="text-align: left;">seeds 200-299</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">One-parameter sensitivity</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_oat_sensitivity_*</code>,
 <code>results/food_transition_v2_sensitivity_refinement_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Evolutionary interaction grid</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_evolutionary_interaction_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Low-benefit generation budget</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_low_regime_generation_sensitivity_*</code>,
 <code>..._mut_0p075_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Food-distribution communication</td>
+<td
+style="text-align: left;"><code>results/food_distribution_v2_*</code></td>
+<td style="text-align: left;">seeds 400-449</td>
 </tr>
 </tbody>
 </table>
@@ -301,6 +306,197 @@ then a bounded near-miss progress score, and penalized collapse. Of the
 512 completed trials, 61 were stable in all ten optimization seeds and
 another 109 were stable in nine of ten seeds.</p>
 <h1 id="results">Results</h1>
+<h2
+id="direct-pointing-communication-and-food-distribution">Direct-Pointing
+Communication and Food Distribution</h2>
+<p>Before the vertical transition, a more basic question is when the
+direct-pointing dance is worth maintaining at all. We test this on a
+comb held flat (<code>evolve_comb_tilt</code> off,
+<code>initial_comb_tilt</code> 0), which leaves the gravity reference
+strength at zero and the transposition traits inert, so only the
+direct-pointing dance is in play. The colony otherwise uses the baseline
+v2 ecology with mutation scale 0.07 over 60 generations, and we vary
+only the food distribution across 50 held-out seeds (400-449).</p>
+<p>The outcome is the in-run <em>recruitment advantage</em>: among
+foraging attempts where a dance was available, the success rate of
+dance-followers minus that of matched non-followers (workers who could
+have followed but, by the receiver-attention coin flip, searched at
+random). Because the follow decision is randomized within the same
+episodes, this is a contemporaneous estimate of what the dance actually
+buys, and it separates useful communication from a directional-bias
+trait that has merely drifted upward under weak selection. The latter
+matters here: in the hardest ecology mean directional bias still drifts
+to 0.375, which would clear a naive trait threshold, yet the dance is
+essentially useless (recruitment advantage 0.057, useful in only 64% of
+seeds, foraging success 0.010).</p>
+<figure id="fig:food-distribution-recruitment-advantage" class="figure">
+<img src="figures/food_distribution_recruitment_advantage.png" alt="Recruitment advantage across the v2 food-distribution sweeps." />
+<figcaption>
+In-run recruitment advantage on a flat comb across two one-dimensional
+food sweeps, 50 seeds each. Gray points are per-seed tail means; green
+is the across-seed mean. Communication value peaks at
+low-to-intermediate food-site counts and rises with patch width at low
+site count.
+</figcaption>
+</figure>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 21%" />
+<col style="width: 11%" />
+<col style="width: 8%" />
+<col style="width: 12%" />
+<col style="width: 11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Condition</th>
+<th style="text-align: right;">Sites</th>
+<th style="text-align: right;">Width</th>
+<th style="text-align: right;">Recruit. adv.</th>
+<th style="text-align: right;">Useful</th>
+<th style="text-align: right;">Bias</th>
+<th style="text-align: right;">Success</th>
+<th style="text-align: right;">Payoff</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Hard (anchor)</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.057</td>
+<td style="text-align: right;">0.64</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Baseline (anchor)</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.224</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.877</td>
+<td style="text-align: right;">0.191</td>
+<td style="text-align: right;">0.638</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Easy (anchor)</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">0.119</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.530</td>
+<td style="text-align: right;">0.724</td>
+<td style="text-align: right;">7.505</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sites sweep</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.188</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.661</td>
+<td style="text-align: right;">0.064</td>
+<td style="text-align: right;">0.010</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sites sweep</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.203</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.856</td>
+<td style="text-align: right;">0.247</td>
+<td style="text-align: right;">1.347</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sites sweep</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.154</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.795</td>
+<td style="text-align: right;">0.368</td>
+<td style="text-align: right;">2.889</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sites sweep</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.128</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.707</td>
+<td style="text-align: right;">0.425</td>
+<td style="text-align: right;">3.620</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Width sweep</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.056</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.398</td>
+<td style="text-align: right;">0.024</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Width sweep</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.175</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.876</td>
+<td style="text-align: right;">0.133</td>
+<td style="text-align: right;">0.099</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Width sweep</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">0.293</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.853</td>
+<td style="text-align: right;">0.287</td>
+<td style="text-align: right;">1.850</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Width sweep</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">0.349</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.798</td>
+<td style="text-align: right;">0.426</td>
+<td style="text-align: right;">3.614</td>
+</tr>
+</tbody>
+</table>
+<p>Recruitment advantage is the final-generation-tail mean of the in-run
+follower-minus-matched-searcher success difference. Useful is the
+fraction of seeds whose tail advantage exceeds 0.05. Bias, success, and
+payoff are final-generation means. The two sweeps share the baseline
+point (2 sites, width 0.20).</p>
+<p>The result supports a resource-distribution reading, but the two
+ecological axes are not symmetric. Adding food sites makes independent
+discovery easier and steadily erodes the value of recruitment: advantage
+falls from 0.224 at two sites to 0.128 at eight, even as foraging
+success and payoff climb. The single narrowest ecology is suppressed
+from the other direction, because successful foragers are too rare to
+seed dances at all. Widening patches at a fixed low site count has the
+opposite effect from adding sites: a broad target tolerates a noisily
+decoded dance direction, so the follower advantage rises monotonically
+with width, from 0.056 to 0.349. Communication is therefore most
+valuable when food is directionally concentrated but hard to stumble
+onto, and it is suppressed at both the undiscoverable extreme (no dances
+seeded) and the abundant extreme (random search already succeeds, with a
+matched-searcher success rate of 0.68 in the easy anchor). Unlike a
+directional-bias threshold, the recruitment-advantage measure reports
+this directly and does not mistake neutral drift for evolved
+communication.</p>
 <h2 id="held-out-validation">Held-Out Validation</h2>
 <p>The top confirmation candidates were rerun on 100 held-out seeds. All
 five validation candidates produced frequent stable vertical
@@ -322,7 +518,7 @@ gravity-code transitions and no collapse events.</p>
 <col style="width: 7%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: left;">Candidate</th>
 <th style="text-align: right;">Sites</th>
 <th style="text-align: right;">Width</th>
@@ -343,7 +539,7 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">trial_257</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.270</td>
@@ -358,7 +554,7 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 <td style="text-align: right;">0.856</td>
 <td style="text-align: right;">0.832</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">trial_471</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.240</td>
@@ -373,7 +569,7 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 <td style="text-align: right;">0.848</td>
 <td style="text-align: right;">0.822</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">trial_425</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.340</td>
@@ -388,7 +584,7 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 <td style="text-align: right;">0.852</td>
 <td style="text-align: right;">0.805</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">trial_243</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.280</td>
@@ -403,7 +599,7 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 <td style="text-align: right;">0.841</td>
 <td style="text-align: right;">0.823</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">trial_139</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.290</td>
@@ -458,7 +654,7 @@ perturbations are less damaging within the tested ranges.</p>
 <col style="width: 9%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: left;">Parameter</th>
 <th style="text-align: left;">Baseline</th>
 <th style="text-align: left;">Weakest tested value</th>
@@ -468,7 +664,7 @@ perturbations are less damaging within the tested ranges.</p>
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Food-site count</td>
 <td style="text-align: left;">8</td>
 <td style="text-align: left;">5</td>
@@ -476,7 +672,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">9</td>
 <td style="text-align: right;">93/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Food-site width</td>
 <td style="text-align: left;">0.270</td>
 <td style="text-align: left;">0.200</td>
@@ -484,7 +680,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.300</td>
 <td style="text-align: right;">96/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Food-site capacity</td>
 <td style="text-align: left;">9</td>
 <td style="text-align: left;">5</td>
@@ -492,7 +688,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">11</td>
 <td style="text-align: right;">94/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Max food distance</td>
 <td style="text-align: left;">6.5</td>
 <td style="text-align: left;">5.5 or 7.5</td>
@@ -500,7 +696,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">7.0</td>
 <td style="text-align: right;">96/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Travel cost</td>
 <td style="text-align: left;">0.055</td>
 <td style="text-align: left;">0.040</td>
@@ -508,7 +704,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.050, 0.055, or 0.060</td>
 <td style="text-align: right;">91/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Vertical-comb benefit</td>
 <td style="text-align: left;">0.600</td>
 <td style="text-align: left;">0.480</td>
@@ -516,7 +712,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.560</td>
 <td style="text-align: right;">94/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Mutation scale</td>
 <td style="text-align: left;">0.090</td>
 <td style="text-align: left;">0.050</td>
@@ -524,7 +720,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.080</td>
 <td style="text-align: right;">94/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Sender-receiver correlation</td>
 <td style="text-align: left;">1.0</td>
 <td style="text-align: left;">0.600</td>
@@ -564,7 +760,7 @@ summarizes 100 held-out seeds.
 <col style="width: 26%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th
 style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></th>
 <th style="text-align: right;">Mean stable rate across cells</th>
@@ -573,21 +769,21 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.10</td>
 <td style="text-align: right;">1.3%</td>
 <td style="text-align: left;">mutation 0.090,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">\rho=0.9</annotation></semantics></math></td>
 <td style="text-align: right;">7/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.25</td>
 <td style="text-align: right;">13.6%</td>
 <td style="text-align: left;">mutation 0.135,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">\rho=0.9</annotation></semantics></math></td>
 <td style="text-align: right;">37/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.44</td>
 <td style="text-align: right;">39.6%</td>
 <td style="text-align: left;">mutation 0.090,
@@ -638,7 +834,7 @@ and a low mutation scale, then runs 240, 480, and 960 generations over
 <col style="width: 20%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: right;">Mutation scale</th>
 <th style="text-align: right;">Generations</th>
 <th style="text-align: right;">Gravity reached</th>
@@ -647,42 +843,42 @@ and a low mutation scale, then runs 240, 480, and 960 generations over
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.045</td>
 <td style="text-align: right;">240</td>
 <td style="text-align: right;">0.04</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.045</td>
 <td style="text-align: right;">480</td>
 <td style="text-align: right;">0.08</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.045</td>
 <td style="text-align: right;">960</td>
 <td style="text-align: right;">0.10</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.075</td>
 <td style="text-align: right;">240</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.075</td>
 <td style="text-align: right;">480</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.075</td>
 <td style="text-align: right;">960</td>
 <td style="text-align: right;">0.06</td>
@@ -738,7 +934,14 @@ with:</p>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-u</span> experiments/plot_evolutionary_interaction_seed_outcomes.py <span class="dt">\</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">--events</span> results/food_transition_v2_evolutionary_interaction_events.csv <span class="dt">\</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> report/figures/evolutionary_interaction_seed_outcomes_binary</span></code></pre></div>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> report/figures/evolutionary_interaction_seed_outcomes_binary</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-u</span> experiments/plot_food_distribution_effects.py <span class="dt">\</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">--events</span> results/food_distribution_v2_events.csv <span class="dt">\</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> report/figures/food_distribution_recruitment_advantage</span></code></pre></div>
+<p>The food-distribution communication experiment is produced on
+Snellius with:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> experiments/run_food_distribution_v2_snellius.sbatch</span></code></pre></div>
 <h1 class="unnumbered" id="references">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent"
 role="list">

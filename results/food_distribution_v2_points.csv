@@ -1,0 +1,15 @@
+condition,sweep,food_site_count,food_site_width,food_site_capacity,food_value
+hard,anchor,1,0.080000,6,1.000000
+baseline,anchor,2,0.200000,6,1.000000
+easy,anchor,8,0.500000,6,1.000000
+sites_1,site_count,1,0.200000,6,1.000000
+sites_2,site_count,2,0.200000,6,1.000000
+sites_3,site_count,3,0.200000,6,1.000000
+sites_4,site_count,4,0.200000,6,1.000000
+sites_6,site_count,6,0.200000,6,1.000000
+sites_8,site_count,8,0.200000,6,1.000000
+width_0.08,patch_width,2,0.080000,6,1.000000
+width_0.15,patch_width,2,0.150000,6,1.000000
+width_0.20,patch_width,2,0.200000,6,1.000000
+width_0.30,patch_width,2,0.300000,6,1.000000
+width_0.50,patch_width,2,0.500000,6,1.000000
