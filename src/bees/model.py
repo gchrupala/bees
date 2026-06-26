@@ -85,12 +85,17 @@ class DirectionSettings:
     attention_cost: float
     comb_orientation_axial: bool = False
     vertical_comb_modifier: str = "linear"
+    evolve_comb_tilt: bool = True
 
 
 @dataclass(frozen=True)
 class ColonyEvaluation:
     payoff: float
     success_rate: float
+    follower_attempts: int = 0
+    follower_successes: int = 0
+    matched_searcher_attempts: int = 0
+    matched_searcher_successes: int = 0
 
 
 @dataclass(frozen=True)
@@ -106,6 +111,10 @@ class GenerationSummary:
     average_search_limit: float
     average_success_rate: float
     average_payoff: float
+    follower_success_rate: float
+    matched_searcher_success_rate: float
+    recruitment_advantage: float
+    dance_follow_share: float
 
 
 def angular_distance(first: float, second: float) -> float:
@@ -313,6 +322,10 @@ def evaluate_colony(
     total_attempts = (
         settings.episodes_per_colony * settings.foraging_attempts_per_episode
     )
+    follower_attempts = 0
+    follower_successes = 0
+    matched_searcher_attempts = 0
+    matched_searcher_successes = 0
 
     for _ in range(settings.episodes_per_colony):
         sites = generate_food_sites(settings, rng)
@@ -326,7 +339,8 @@ def evaluate_colony(
 
         for _ in range(settings.foraging_attempts_per_episode):
             worker = rng.choice(colony.workers)
-            follows_dance = bool(dances) and rng.random() < worker.receiver_attention
+            dance_available = bool(dances)
+            follows_dance = dance_available and rng.random() < worker.receiver_attention
 
             if follows_dance:
                 dance = rng.choice(dances)
@@ -348,6 +362,13 @@ def evaluate_colony(
                 sites,
                 remaining_capacity,
             )
+            succeeded = site_index is not None
+            if follows_dance:
+                follower_attempts += 1
+                follower_successes += int(succeeded)
+            elif dance_available:
+                matched_searcher_attempts += 1
+                matched_searcher_successes += int(succeeded)
             if site_index is not None:
                 remaining_capacity[site_index] -= 1
                 success_count += 1
@@ -389,6 +410,10 @@ def evaluate_colony(
     return ColonyEvaluation(
         payoff=max(0.001, total_payoff / settings.episodes_per_colony),
         success_rate=total_successes / total_attempts,
+        follower_attempts=follower_attempts,
+        follower_successes=follower_successes,
+        matched_searcher_attempts=matched_searcher_attempts,
+        matched_searcher_successes=matched_searcher_successes,
     )
 
 
@@ -466,7 +491,9 @@ def _mutate_traits(
             rng,
         )
     )
-    comb_tilt_change = rng.gauss(0.0, settings.mutation_sd)
+    comb_tilt_change = (
+        rng.gauss(0.0, settings.mutation_sd) if settings.evolve_comb_tilt else 0.0
+    )
     comb_orientation_change = rng.gauss(
         0.0,
         settings.mutation_sd * _comb_orientation_period(settings),
@@ -543,6 +570,25 @@ def _summarize(
         axial=settings.comb_orientation_axial,
     )
 
+    follower_attempts = sum(
+        evaluation.follower_attempts for evaluation in evaluations
+    )
+    follower_successes = sum(
+        evaluation.follower_successes for evaluation in evaluations
+    )
+    matched_searcher_attempts = sum(
+        evaluation.matched_searcher_attempts for evaluation in evaluations
+    )
+    matched_searcher_successes = sum(
+        evaluation.matched_searcher_successes for evaluation in evaluations
+    )
+    follower_success_rate = _safe_ratio(follower_successes, follower_attempts)
+    matched_searcher_success_rate = _safe_ratio(
+        matched_searcher_successes,
+        matched_searcher_attempts,
+    )
+    decision_attempts = follower_attempts + matched_searcher_attempts
+
     return GenerationSummary(
         generation=generation,
         average_directional_bias=sum(
@@ -571,6 +617,10 @@ def _summarize(
         )
         / count,
         average_payoff=sum(evaluation.payoff for evaluation in evaluations) / count,
+        follower_success_rate=follower_success_rate,
+        matched_searcher_success_rate=matched_searcher_success_rate,
+        recruitment_advantage=follower_success_rate - matched_searcher_success_rate,
+        dance_follow_share=_safe_ratio(follower_attempts, decision_attempts),
     )
 
 
@@ -829,3 +879,10 @@ def _correlated_gaussian_pair(
 
 def _clamp(value: float, minimum: float, maximum: float) -> float:
     return min(max(value, minimum), maximum)
+
+
+def _safe_ratio(numerator: float, denominator: float) -> float:
+    if denominator <= 0:
+        return 0.0
+
+    return numerator / denominator

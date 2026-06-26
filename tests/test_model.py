@@ -682,6 +682,117 @@ class DirectionModelTests(unittest.TestCase):
         self.assertAlmostEqual(below.payoff, 2.0)
         self.assertAlmostEqual(threshold.payoff, 2.5)
 
+    def test_frozen_comb_tilt_does_not_mutate(self) -> None:
+        settings = _settings(mutation_sd=0.5, evolve_comb_tilt=False)
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.3,
+            comb_orientation=0.2,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(11))
+
+        self.assertEqual(mutated.comb_tilt, 0.3)
+
+    def test_frozen_comb_tilt_is_held_across_generations(self) -> None:
+        settings = _settings(
+            colony_count=8,
+            generations=5,
+            mutation_sd=0.2,
+            initial_comb_tilt=0.0,
+            evolve_comb_tilt=False,
+        )
+
+        history = simulate(settings, seed=4)
+
+        self.assertTrue(
+            all(state.average_comb_tilt == 0.0 for state in history)
+        )
+
+    def test_recruitment_advantage_is_positive_when_dances_are_useful(self) -> None:
+        settings = _settings(
+            episodes_per_colony=400,
+            foraging_attempts_per_episode=50,
+            stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
+            dance_noise_sd=0.0,
+            interpretation_noise_sd=0.0,
+            food_site_width=0.05,
+            food_site_min_distance=2.0,
+            food_site_max_distance=2.0,
+            max_search_distance=5.0,
+            food_site_capacity=50,
+            travel_cost_per_distance=0.0,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=1.0,
+                receiver_attention=0.5,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertGreater(evaluation.follower_attempts, 0)
+        self.assertGreater(evaluation.matched_searcher_attempts, 0)
+        follower_rate = evaluation.follower_successes / evaluation.follower_attempts
+        searcher_rate = (
+            evaluation.matched_searcher_successes
+            / evaluation.matched_searcher_attempts
+        )
+        self.assertGreater(follower_rate, searcher_rate + 0.1)
+
+    def test_recruitment_advantage_is_negligible_for_uninformative_dances(self) -> None:
+        settings = _settings(
+            episodes_per_colony=400,
+            foraging_attempts_per_episode=50,
+            stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
+            dance_noise_sd=0.0,
+            interpretation_noise_sd=0.0,
+            food_site_width=0.05,
+            food_site_min_distance=2.0,
+            food_site_max_distance=2.0,
+            max_search_distance=5.0,
+            food_site_capacity=50,
+            travel_cost_per_distance=0.0,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.0,
+                receiver_attention=0.5,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertGreater(evaluation.follower_attempts, 0)
+        self.assertGreater(evaluation.matched_searcher_attempts, 0)
+        follower_rate = evaluation.follower_successes / evaluation.follower_attempts
+        searcher_rate = (
+            evaluation.matched_searcher_successes
+            / evaluation.matched_searcher_attempts
+        )
+        self.assertLess(abs(follower_rate - searcher_rate), 0.1)
+
     def test_simulation_is_reproducible(self) -> None:
         settings = _settings(
             colony_count=8,
