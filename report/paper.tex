@@ -196,21 +196,185 @@ traits which are transmitted to offspring colonies subject to mutation, and
 individual agents express these traits with some non-heritable individual
 variation.
 
-% AGENTS: flesh out the description of the model based on the code in
-% src/bees/model.py 
-% AGENTS: Use mathematical notation, but keep it readable by
-% using it with moderation and accompanying it with verbal desctriptions and
-% examples when appropriate.
+\subsection{Colonies, workers, and traits}
+\label{sec:traits}
+A colony is characterized by a small set of heritable, real-valued traits.
+Five of these govern the behavior of its workers: the \emph{directional bias}
+$b$, which controls how precisely a dance points; the \emph{receiver attention}
+$a$, the propensity to attend to a dance rather than search at random; the
+\emph{sender transposition} $t_s$ and \emph{receiver transposition} $t_r$, which
+control the degree to which a worker relies on the gravity-referenced code
+rather than the direct-pointing code when producing and interpreting signals,
+respectively; and the \emph{search limit} $\ell$, the maximum distance a worker
+is willing to travel. Two further traits describe the colony's nest:
+the \emph{comb tilt} $\gamma \in [0,1]$, where $\gamma = 0$ is a horizontal comb
+and $\gamma = 1$ a vertical one, and the \emph{comb orientation} $\phi$, the
+azimuthal heading of the comb. The behavioral traits $b$, $a$, $t_s$, $t_r$ are
+bounded to $[0,1]$ and $\ell$ to $[0, D]$, where $D$ is the maximum search
+distance.
+
+Workers express the colony traits with non-heritable individual variation. A
+worker $i$ realizes each behavioral trait $x \in \{b, a, t_s, t_r, \ell\}$ as
+\begin{equation}
+  x_i = \mathrm{clip}\bigl(x + \varepsilon_i\bigr), \qquad
+  \varepsilon_i \sim \mathcal{N}(0, \eta^2),
+\end{equation}
+where $\eta$ is a fixed worker-variation scale (scaled by $D$ for the search
+limit) and $\mathrm{clip}$ returns the value to its admissible range. The comb
+traits $\gamma$ and $\phi$ are properties of the colony's nest and are shared by
+all its workers.
+
+\subsection{Comb geometry and the two codes}
+\label{sec:geometry}
+The comb is a flat surface on which dances are performed. Its tilt $\gamma$ maps
+to a physical angle $\theta = \gamma\,\pi/2$ from the horizontal, and together
+with its orientation $\phi$ it defines a unit normal
+\begin{equation}
+  \mathbf{n} = (\sin\theta\cos\phi,\; \sin\theta\sin\phi,\; \cos\theta).
+\end{equation}
+A horizontal comb ($\gamma=0$) has $\mathbf{n} = (0,0,1)$; a vertical comb
+($\gamma=1$) has a horizontal normal pointing along $\phi$. A signal is an angle
+measured within the comb plane, and the two codes correspond to two reference
+directions a worker can use to anchor that angle.
+
+In the \emph{direct} (iconic) code the worker projects the world-space direction
+of the food, $\mathbf{f}_d = (\cos d, \sin d, 0)$ for food azimuth $d$, onto the
+comb plane and reads off its in-plane angle. The reliability of this code is the
+length of the projection,
+\begin{equation}
+  s_{\mathrm{dir}} = \sqrt{1 - \sin^2\theta\,\cos^2(d-\phi)},
+\end{equation}
+which equals $1$ on a horizontal comb (the food direction lies entirely in the
+plane) but shrinks on a tilted comb, vanishing for food directions aligned with
+the comb normal. In the \emph{gravity-referenced} code the worker instead
+projects the vertical (gravity) direction $\mathbf{g} = (0,0,1)$ onto the comb
+plane to obtain a reference angle, and encodes the food azimuth measured
+relative to the sun azimuth. Its reliability,
+\begin{equation}
+  s_{\mathrm{grav}} = \sin\theta = \sin(\gamma\,\pi/2),
+\end{equation}
+is exactly the complement of the direct code's: it is zero on a horizontal comb,
+where gravity is normal to the surface and offers no in-plane reference, and
+grows to $1$ as the comb becomes vertical. The two codes are thus geometrically
+complementary: the horizontal comb supports only direct pointing, while a fully
+vertical comb makes the gravity reference maximally available. When a channel's
+strength is below $1$, the recovered angle is correspondingly degraded, modeled
+as a circular interpolation between the true angle and a uniformly random one
+with weight equal to the strength.
+
+\subsection{Producing and interpreting signals}
+\label{sec:signals}
+A worker that has found food produces a dance by combining the two codes. Let
+$\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$ be the in-plane angles given
+by the direct and gravity codes for the food just visited. The intended dance
+direction is their circular mean, weighted both by the worker's sender
+transposition and by each channel's geometric strength,
+\begin{equation}
+  \delta = \mathrm{circmean}\bigl(
+    \delta_{\mathrm{dir}},\, (1-t_{s,i})\,s_{\mathrm{dir}};\;
+    \delta_{\mathrm{grav}},\, t_{s,i}\,s_{\mathrm{grav}}
+  \bigr).
+\end{equation}
+A worker with $t_{s,i}=0$ therefore signals purely by direct pointing, one with
+$t_{s,i}=1$ purely by the gravity reference, and the weighting ensures that a
+code with no geometric support contributes nothing regardless of $t_s$. The
+emitted signal is then drawn from a von Mises distribution centered on $\delta$
+with concentration $\kappa = b_i\,\kappa_{\max}$, plus a small wrapped Gaussian
+dance noise. The directional bias $b$ thus controls the sharpness of the dance:
+a low bias yields a near-uniform, uninformative signal, while a high bias yields
+a tightly concentrated one.
+
+A worker interpreting a dance performs the inverse operation, decoding the
+observed signal under both codes and recombining the two recovered world
+directions by a circular mean weighted by $(1-t_{r,i})\,s_{\mathrm{dir}}$ and
+$t_{r,i}\,s_{\mathrm{grav}}$, with added interpretation noise. Successful
+communication therefore requires senders and receivers to use compatible codes:
+a dance produced under the gravity reference is only correctly understood by a
+receiver who also decodes it that way.
+
+\subsection{Foraging and colony payoff}
+\label{sec:foraging}
+A colony is evaluated over a number of independent foraging episodes. Each
+episode places a fixed number of food sites at random azimuths and distances,
+each with an angular width, a value $v$, and a finite capacity, and samples a
+sun azimuth. The colony then makes a sequence of foraging attempts. On each
+attempt a worker is drawn at random; if at least one dance has already been
+deposited in the episode, the worker follows a randomly chosen dance with
+probability equal to its attention $a_i$, decoding it into a search direction,
+and otherwise searches in a uniformly random direction. The worker locates the
+nearest food site whose direction falls within its angular width of the search
+direction and whose distance is within the worker's search limit $\ell_i$, if any
+such site with remaining capacity exists.
+
+Payoff accrues per episode. A successful forage yields the site's value $v$ less
+a travel cost proportional to the site's distance, and causes the worker to
+deposit a dance (advertising the site to later foragers) at a cost
+$c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$ that increases with the precision of
+the dance. A failed forage costs travel proportional to the full search limit
+$\ell_i$, and each act of attending to a dance incurs an attention cost. The raw
+episode payoff is the sum of food values minus travel, dance, and attention
+costs. This payoff is finally scaled by a vertical-comb factor
+\begin{equation}
+  1 + B\,h(\gamma),
+\end{equation}
+where $B$ is the magnitude of the vertical-comb benefit and $h$ is either the
+identity (a linear benefit in tilt) or a threshold at $\gamma \ge 0.8$; this term
+represents an extrinsic ecological advantage of vertical combs that is unrelated
+to communication. A colony's fitness is its mean episode payoff (floored at a
+small positive value). For diagnostic purposes we also record a
+\emph{recruitment advantage}, the difference between the success rate of workers
+that followed a dance and that of contemporaneous workers that searched at
+random while dances were available; a positive value indicates that the code is
+functioning.
+
+\subsection{Evolutionary dynamics}
+\label{sec:evolution}
+Evolution proceeds in non-overlapping generations over a fixed-size population of
+colonies. In each generation every colony is evaluated, and the next generation
+is produced by repeated fitness-proportional (roulette-wheel) selection of
+parents, whose traits are copied subject to mutation. Each trait is perturbed by
+an independent Gaussian step of standard deviation $\sigma_m$ (scaled by $D$ for
+the search limit and by the orientation period for $\phi$) and then clipped to
+its range. New workers are regenerated from the offspring colony's traits as in
+\Cref{sec:traits}.
+
+The mutations of the sender and receiver transposition traits are not
+independent: they are drawn as a correlated Gaussian pair with correlation
+coefficient $\rho$,
+\begin{equation}
+  \Delta t_s = z_1, \qquad
+  \Delta t_r = \rho\,z_1 + \sqrt{1-\rho^2}\;z_2, \qquad
+  z_1, z_2 \sim \mathcal{N}(0, \sigma_m^2),
+\end{equation}
+which preserves the marginal mutation scale of each trait while tuning how
+tightly the two co-vary. This coefficient $\rho$ controls the coupling between
+sender and receiver behavior: when $\rho$ is high, a mutation that shifts senders
+toward the gravity code tends to shift receivers by the same amount, so the two
+sides of the code can change in a coordinated fashion rather than drifting
+apart. The comb tilt $\gamma$ mutates only when comb evolution is enabled;
+otherwise it is held fixed.
 
 \subsection{Horizontal comb}
-The first basic version of the model keeps combs horizontal. We use this version
-in the experiment investigating the emergence of the direct pointing code.
+The first version of the model keeps combs horizontal, fixing $\gamma = 0$ and
+disabling comb-tilt evolution, with no vertical-comb benefit ($B = 0$). By the
+geometry of \Cref{sec:geometry} the gravity reference then has zero strength
+($s_{\mathrm{grav}} = 0$), so only the direct-pointing code is functional and the
+transposition traits are effectively inert. We use this version to investigate
+the conditions under which a direct-pointing referential code emerges and
+stabilizes from an initial population with little communicative ability (low
+directional bias and attention, and no transposition).
 
 \subsection{Evolution of vertical combs}
-In the second version of the model we add a selective pressure for vertical
-combs, and enable the colony-level trait {\sc comb-tilt}. We use this model to
-investigate the transition from the direct pointing code to the
-gravity-referenced code.
+In the second version we add an extrinsic selective pressure for vertical combs
+by setting $B > 0$, and enable evolution of the colony-level comb-tilt trait
+$\gamma$. As $\gamma$ increases under this pressure, the direct channel degrades
+while the gravity channel becomes available, so maintaining communicative
+success requires the population to shift from the direct to the
+gravity-referenced code. Because that shift must be matched on both the sender
+and receiver sides, it constitutes the coordination problem of interest, and we
+use this version to investigate how the benefit magnitude $B$, the mutation rate
+$\sigma_m$, and the sender--receiver coupling $\rho$ govern whether the
+transition proceeds without a breakdown of communication.
 
 \section{Results}
 \label{sec:results}
