@@ -77,10 +77,14 @@ We are modeling the evolution of bee communication.
 - `report/paper.tex` is an empty LaTeX paper scaffold with section structure only.
   Do not compile or expand it during ordinary report maintenance unless the
   user explicitly asks for a LaTeX/PDF paper artifact.
-- The old LaTeX table fragments under `report/tables/` and
-  `report/figures/` may still be regenerated with
-  `python -u experiments/run_report_artifacts.py artifacts` when needed for
-  the legacy paper path, but they are not the primary working report output.
+
+## Paper
+- The paper for publication is in report/paper.tex, with other related files. 
+You can only touch the paper when explicitly asked to do so. In general, when editing the
+text of the paper try to  maintain the writing style the structure of the argument. Confirm 
+important textual changes before editing.
+Inside the paper, follow instructions indicated by the string "% AGENTS:".
+
 
 ## Token-Conservative Workflow
 

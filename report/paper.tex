@@ -152,6 +152,7 @@ ecological and evolutionary factors.
 \section{Related work}
 \label{sec:related}
 
+\subsection{Communication in agent societies}
 A long line of computational work has studied how communication
 systems can emerge and stabilize in populations of interacting agents.
 The signaling game introduced by \citet{lewis1969convention} provides
@@ -175,7 +176,41 @@ cooperative referential tasks \citep{lazaridou2017multi}.
   Language}; and the Wagner et al. (2003, Adaptive Behavior) survey of
   emergent-communication simulations.}
 
+\subsection{Computational models of the waggle dance}
+\citet{10.1371/journal.pcbi.1010487}: displaced communication, evolving neural agents.
+\citet{siregar2026emergent}: compositionality, interacting neural agents, gradient descent.
+
 \section{Method}
+\label{sec:method}
+Our  model is inspired by bee colonies and their waggle dance, but it is
+simplified in many important ways, as our goal was not to model bee biology in
+detail but rather investigate scenarios for the emergence and evolution of
+referential communicative codes, adopting the case of the waggle dance as a way
+to ground the modeling in the real world and ensuring that it evolutionarily
+plausible.
+
+We model evolution at the level of colonies, and behavior at the level of
+individual bee-like agents. There is no sexual reproduction: colonies reproduce
+without genetic input from other colonies. Colonies have a number of heritable
+traits which are transmitted to offspring colonies subject to mutation, and
+individual agents express these traits with some non-heritable individual
+variation.
+
+% AGENTS: flesh out the description of the model based on the code in
+% src/bees/model.py 
+% AGENTS: Use mathematical notation, but keep it readable by
+% using it with moderation and accompanying it with verbal desctriptions and
+% examples when appropriate.
+
+\subsection{Horizontal comb}
+The first basic version of the model keeps combs horizontal. We use this version
+in the experiment investigating the emergence of the direct pointing code.
+
+\subsection{Evolution of vertical combs}
+In the second version of the model we add a selective pressure for vertical
+combs, and enable the colony-level trait {\sc comb-tilt}. We use this model to
+investigate the transition from the direct pointing code to the
+gravity-referenced code.
 
 \section{Results}
 \label{sec:results}
