@@ -198,6 +198,7 @@ variation.
 
 \subsection{Colonies, workers, and traits}
 \label{sec:traits}
+\todo{Start with only the traits relevant to the horizontal traits, and only introducing the tilt and projection machinery in the description of version 2. Probably easier to follow for a human.}
 A colony is characterized by a small set of heritable, real-valued traits.
 Five of these govern the behavior of its workers: the \emph{directional bias}
 $b$, which controls how precisely a dance points; the \emph{receiver attention}
@@ -232,6 +233,7 @@ with its orientation $\phi$ it defines a unit normal
 \begin{equation}
   \mathbf{n} = (\sin\theta\cos\phi,\; \sin\theta\sin\phi,\; \cos\theta).
 \end{equation}
+\todo{GC: too cryptic, needs unpacking}
 A horizontal comb ($\gamma=0$) has $\mathbf{n} = (0,0,1)$; a vertical comb
 ($\gamma=1$) has a horizontal normal pointing along $\phi$. A signal is an angle
 measured within the comb plane, and the two codes correspond to two reference
@@ -275,6 +277,7 @@ transposition and by each channel's geometric strength,
     \delta_{\mathrm{grav}},\, t_{s,i}\,s_{\mathrm{grav}}
   \bigr).
 \end{equation}
+\todo{GC: Too cryptic, needs further unpacking}
 A worker with $t_{s,i}=0$ therefore signals purely by direct pointing, one with
 $t_{s,i}=1$ purely by the gravity reference, and the weighting ensures that a
 code with no geometric support contributes nothing regardless of $t_s$. The
@@ -317,6 +320,7 @@ costs. This payoff is finally scaled by a vertical-comb factor
 \begin{equation}
   1 + B\,h(\gamma),
 \end{equation}
+\todo{GC: I don't think we use h anywhere in the current experiments.}
 where $B$ is the magnitude of the vertical-comb benefit and $h$ is either the
 identity (a linear benefit in tilt) or a threshold at $\gamma \ge 0.8$; this term
 represents an extrinsic ecological advantage of vertical combs that is unrelated
