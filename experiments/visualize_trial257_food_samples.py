@@ -31,7 +31,7 @@ FONT_PATH = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
 EMOJI_STRIKE_SIZE = 109
 sys.path.insert(0, str(ROOT / "src"))
 
-from bees.model import DirectionSettings, generate_food_sites
+from bees.model import DirectionSettings, generate_food_sites, sample_sun_azimuth
 
 
 DEFAULT_CONFIG = ROOT / "configs" / "long_vertical_transition.json"
@@ -150,7 +150,7 @@ def add_image_marker(ax, theta: float, radius: float, text: str, size: int, zord
     ax.add_artist(annotation)
 
 
-def draw_sample(ax, sites, settings, sample_index: int) -> None:
+def draw_sample(ax, sites, settings, sample_index: int, sun_azimuth: float) -> None:
     ax.set_theta_zero_location("E")
     ax.set_theta_direction(-1)
 
@@ -163,23 +163,23 @@ def draw_sample(ax, sites, settings, sample_index: int) -> None:
     # Put the bee at the center to represent the observer.
     add_image_marker(ax, 0, 0, "🐝", 40, zorder=5)
 
-    for site in sites:
-        theta = site.direction
-        radius = site.distance
-        width = site.width
-        capacity = site.capacity
+    # Mark the sun's azimuth just outside the outer ring; it is the external
+    # reference for the gravity-based code and is drawn fresh each episode.
+    add_image_marker(ax, sun_azimuth, max_radius * 1.12, "☀️", 46, zorder=6)
 
-        marker_size = max(24, int(200 * width))
+    # Fixed, small marker: site size in the model is a directional tolerance, not
+    # a spatial extent, so we do not map it to icon size here.
+    for site in sites:
         add_image_marker(
             ax,
-            theta,
-            radius,
-            "🌼",
-            marker_size,
+            site.direction,
+            site.distance,
+            "🌸",
+            26,
             zorder=3,
         )
 
-    # show the site-width span as a faint angular band around the full circle
+    # faint dashed ring marking the maximum food distance (outer boundary)
     ax.plot(
         np.linspace(0, 2 * math.pi, 360),
         [max_radius] * 360,
@@ -212,7 +212,8 @@ def main() -> None:
     for sample_index in range(args.samples):
         rng = __import__("random").Random(args.seed + sample_index)
         drawn = generate_food_sites(settings, rng)
-        draw_sample(axes[sample_index], drawn, settings, sample_index + 1)
+        sun_azimuth = sample_sun_azimuth(settings, rng)
+        draw_sample(axes[sample_index], drawn, settings, sample_index + 1, sun_azimuth)
 
     for ax in axes[args.samples:]:
         ax.axis("off")
