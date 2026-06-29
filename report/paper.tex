@@ -238,13 +238,29 @@ A worker that follows a dance reads its direction as a search direction, subject
 to a small added interpretation noise. Communication is successful when this
 recovered direction is close enough to a food site to lead the follower to it.
 
+\subsection{Foraging environment}
+\label{sec:environment}
+A colony is evaluated over a fixed number of independent foraging episodes, and
+its fitness is averaged over them (\Cref{sec:foraging}). Each episode draws a
+fresh environment. A fixed number of food sites are placed at azimuths drawn
+uniformly around the colony and at distances drawn uniformly from
+$[d_{\min}, d_{\max}] \subseteq [0, D]$, where $D$ is the maximum search distance
+of \Cref{sec:traits}; every site has the same angular width, value $v$, and
+finite capacity, the last limiting how many foragers it can supply before being
+exhausted.
+
+Each episode also fixes the position of the sun, which serves as the external
+reference for the gravity-based code introduced in \Cref{sec:vertical}. The
+sun's azimuth is drawn uniformly from an arc of width $\Delta_{\mathrm{sun}}$
+centered on a fixed heading $\mu_{\mathrm{sun}}$, so it is constant within an
+episode but varies between episodes: a narrow arc makes the sun a nearly fixed
+landmark, a wide one an unreliable one.
+
 \subsection{Foraging and colony payoff}
 \label{sec:foraging}
-A colony is evaluated over a number of independent foraging episodes. Each
-episode places a fixed number of food sites at random azimuths and distances,
-each with an angular width, a value $v$, and a finite capacity. The colony then
-makes a sequence of foraging attempts. On each attempt a worker is drawn at
-random; if at least one dance has already been deposited in the current episode,
+Within each episode (\Cref{sec:environment}) the colony makes a sequence of
+foraging attempts. On each attempt a worker is drawn at random; if at least one
+dance has already been deposited in the current episode,
 the worker follows a randomly chosen dance with probability equal to its
 attention $a_i$, decoding it into a search direction, and otherwise searches in a
 uniformly random direction. The worker locates the nearest food site whose
