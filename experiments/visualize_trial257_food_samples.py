@@ -157,8 +157,17 @@ def draw_sample(ax, sites, settings, sample_index: int, sun_azimuth: float) -> N
     max_radius = settings.food_site_max_distance
     ax.set_ylim(0, max_radius)
     ax.set_yticks(np.linspace(0, max_radius, 5))
-    ax.set_yticklabels([f"{value:.0f}" for value in np.linspace(0, max_radius, 5)])
-    ax.set_title(f"Sample {sample_index} ({settings.food_site_count} sites)")
+    ax.set_yticklabels(
+        [f"{value:.0f}" for value in np.linspace(0, max_radius, 5)],
+        fontsize=18,
+    )
+    # Drop the angular (degree) tick labels; they add clutter without aiding
+    # readability of the food-site layout.
+    ax.set_xticklabels([])
+    ax.set_title(
+        f"Sample {sample_index} ({settings.food_site_count} sites)",
+        fontsize=22,
+    )
 
     # Put the bee at the center to represent the observer.
     add_image_marker(ax, 0, 0, "🐝", 40, zorder=5)
@@ -222,7 +231,7 @@ def main() -> None:
         f"Food-site samples for {args.candidate} "
         f"(n={settings.food_site_count}, width={settings.food_site_width:.3f}, "
         f"max distance={settings.food_site_max_distance:.1f}, capacity={settings.food_site_capacity})",
-        fontsize=12,
+        fontsize=23,
     )
     plt.tight_layout()
     fig.savefig(args.output, dpi=180)
