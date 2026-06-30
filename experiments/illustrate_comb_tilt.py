@@ -130,7 +130,9 @@ def main() -> None:
     lift = SURFACE_LIFT * normal
 
     fig = plt.figure(figsize=(7.5, 6.2))
-    ax = fig.add_subplot(111, projection="3d")
+    # Disable depth-based z-ordering so our explicit zorders are honoured and the
+    # line segments paint on top of (mask) the translucent comb.
+    ax = fig.add_subplot(111, projection="3d", computed_zorder=False)
 
     draw_comb(ax, basis)
 
