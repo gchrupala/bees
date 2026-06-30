@@ -132,21 +132,19 @@ def main() -> None:
     fig = plt.figure(figsize=(7.5, 6.2))
     ax = fig.add_subplot(111, projection="3d")
 
-    # Faint horizontal reference ring and east/north markers (drawn first, under
-    # the comb) to anchor the horizontal plane without a cluttering box.
+    draw_comb(ax, basis)
+
+    # Horizontal reference ring drawn above the comb, with dots (not radial
+    # lines) marking east and north, to anchor the horizontal plane cleanly.
     ring_angle = np.linspace(0.0, 2 * pi, 200)
     ax.plot(
         0.95 * np.cos(ring_angle), 0.95 * np.sin(ring_angle), 0.0,
-        color="#aaaaaa", linewidth=0.9, zorder=-1,
+        color="#aaaaaa", linewidth=0.9, zorder=4,
     )
     for axis_dir, name in (((1.0, 0.0, 0.0), "east"), ((0.0, 1.0, 0.0), "north")):
         end = 0.95 * np.asarray(axis_dir)
-        ax.plot(
-            [0, end[0]], [0, end[1]], [0, 0], color="#bbbbbb", linewidth=0.8, zorder=-1
-        )
-        ax.text(end[0] * 1.05, end[1] * 1.05, 0.0, name, color="#888888", fontsize=10)
-
-    draw_comb(ax, basis)
+        ax.scatter([end[0]], [end[1]], [0.0], color="#888888", s=20, zorder=5)
+        ax.text(end[0] * 1.08, end[1] * 1.08, 0.0, name, color="#888888", fontsize=10)
 
     # Comb normal and gravity (the vertical world direction).
     draw_arrow(ax, normal, NORMAL_COLOR, r"$\mathbf{n}$", label_offset=(0.05, 0.0, 0.04))
