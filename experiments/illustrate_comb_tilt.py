@@ -51,7 +51,7 @@ DIRECT_COLOR = "#1f77b4"
 GRAVITY_COLOR = "#d62728"
 NORMAL_COLOR = "#2c2c2c"
 GRAVITY_REF_COLOR = "#7f7f7f"
-COMB_FACE = (0.953, 0.851, 0.627, 0.5)  # translucent wax so in-plane arrows show through
+COMB_FACE = (0.953, 0.851, 0.627, 1.0)  # opaque wax; in-plane arrows are layered on top
 COMB_EDGE = "#c79a3f"
 
 
