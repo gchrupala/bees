@@ -61,6 +61,7 @@ SUN_AZIMUTH = 2.16  # chosen so delta_grav is well separated from delta_dir
 T_S_VALUES = (0.25, 0.75)  # direct-dominated and gravity-dominated blends
 
 COMB_RADIUS = 0.78
+FACE_COMB_RADIUS = 0.60  # face-on comb sits inside the ring with padding
 HEX_RADIUS = 0.13
 SURFACE_LIFT = 0.04  # lift 3D in-plane arrows just off the comb so they stay visible
 
@@ -190,9 +191,10 @@ def draw_3d_panel(ax, basis) -> None:
 # ---------------------------------------------------------------------------
 def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
                     scale) -> None:
-    # Honeycomb disc seen face-on (the comb's own 2D frame). Reuse the exact
-    # pointy-top vertices from the 3D panel so the tiling matches and tessellates.
-    for cx, cy in hex_centers(COMB_RADIUS, HEX_RADIUS):
+    # Honeycomb disc seen face-on (the comb's own 2D frame), drawn inside the ring
+    # with padding. Reuse the exact pointy-top vertices from the 3D panel so the
+    # tiling matches and tessellates.
+    for cx, cy in hex_centers(FACE_COMB_RADIUS, HEX_RADIUS):
         ax.add_patch(
             Polygon(
                 hex_vertices(cx, cy, HEX_RADIUS), closed=True,
@@ -279,8 +281,9 @@ def main() -> None:
         (projected_angle_and_strength((0.0, 1.0, 0.0), basis)[0], "north"),
     ]
 
-    # Scale so the stronger reference reaches near the comb edge.
-    scale = (COMB_RADIUS * 0.95) / max(s_dir, s_grav)
+    # Scale so the stronger reference reaches near the face-on comb's edge,
+    # keeping the arrows on the wax and inside the ring.
+    scale = (FACE_COMB_RADIUS * 0.95) / max(s_dir, s_grav)
 
     fig = plt.figure(figsize=(14.0, 4.8))
     gs = fig.add_gridspec(1, 3, width_ratios=[1.25, 1.0, 1.0])
