@@ -1,17 +1,18 @@
 """Schematic of the comb-tilt geometry used by the two dance codes.
 
-Renders three panels at increasing tilt (horizontal, half, vertical), drawing
-the comb surface, its unit normal, the gravity direction, and the two in-plane
-reference directions (the projected food direction for the direct code and the
-projected gravity direction for the gravity code). The geometry is taken
-directly from the model so the figure stays faithful to ``bees.model``.
+Renders a single tilted comb, drawn as a honeycomb tile, together with its unit
+normal, the gravity direction, an example world food direction, and the two
+in-plane reference directions obtained by projecting onto the comb (the
+direct-code reference, length ``s_dir``, and the gravity-code reference, length
+``s_grav``). The geometry is taken directly from the model so the figure stays
+faithful to ``bees.model``.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
-from math import cos, pi, sin
+from math import cos, hypot, pi, sin, sqrt
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -22,7 +23,7 @@ plt.rcParams.update(
     {
         "font.family": "sans-serif",
         "font.sans-serif": ["DejaVu Sans", "Liberation Sans"],
-        "font.size": 11,
+        "font.size": 12,
     }
 )
 
@@ -39,14 +40,19 @@ from bees.model import (  # noqa: E402
 DEFAULT_OUTPUT = ROOT / "report" / "figures" / "comb_tilt_geometry.png"
 
 # Fixed scene parameters chosen only for legibility of the schematic.
+COMB_TILT = 0.5  # gamma: a half-tilted comb (theta = pi/4)
 COMB_ORIENTATION = pi / 6.0  # phi: compass heading the comb faces
-FOOD_AZIMUTH = 1.9  # d: example food direction (radians)
-PLANE_HALF_WIDTH = 1.1
+FOOD_AZIMUTH = 1.0  # d: example food direction (radians), near the facing heading
+COMB_RADIUS = 0.78
+HEX_RADIUS = 0.13
+SURFACE_LIFT = 0.04  # lift in-plane arrows just off the comb so they stay visible
 
 DIRECT_COLOR = "#1f77b4"
 GRAVITY_COLOR = "#d62728"
 NORMAL_COLOR = "#2c2c2c"
 GRAVITY_REF_COLOR = "#7f7f7f"
+COMB_FACE = (0.953, 0.851, 0.627, 0.5)  # translucent wax so in-plane arrows show through
+COMB_EDGE = "#c79a3f"
 
 
 def parse_args() -> argparse.Namespace:
@@ -55,104 +61,122 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def comb_plane_corners(basis) -> np.ndarray:
+def hex_centers(radius: float, hex_radius: float) -> list[tuple[float, float]]:
+    """Pointy-top hexagon centres tiling a disc of the given radius."""
+    dx = sqrt(3.0) * hex_radius
+    dy = 1.5 * hex_radius
+    rows = int(np.ceil(radius / dy)) + 1
+    cols = int(np.ceil(radius / dx)) + 1
+    centers = []
+    for j in range(-rows, rows + 1):
+        y = j * dy
+        x_offset = dx / 2.0 if j % 2 else 0.0
+        for i in range(-cols, cols + 1):
+            x = i * dx + x_offset
+            if hypot(x, y) <= radius:
+                centers.append((x, y))
+    return centers
+
+
+def hex_vertices(cx: float, cy: float, hex_radius: float) -> list[tuple[float, float]]:
+    angles = np.deg2rad([30, 90, 150, 210, 270, 330])
+    return [(cx + hex_radius * cos(a), cy + hex_radius * sin(a)) for a in angles]
+
+
+def draw_comb(ax, basis) -> None:
     first = np.asarray(basis.first_axis)
     second = np.asarray(basis.second_axis)
-    signs = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
-    return np.array(
-        [PLANE_HALF_WIDTH * (a * first + b * second) for a, b in signs]
+    polygons = [
+        [u * first + v * second for u, v in hex_vertices(cx, cy, HEX_RADIUS)]
+        for cx, cy in hex_centers(COMB_RADIUS, HEX_RADIUS)
+    ]
+    comb = Poly3DCollection(
+        polygons, facecolor=COMB_FACE, edgecolor=COMB_EDGE, linewidth=0.7
     )
+    comb.set_zorder(0)
+    ax.add_collection3d(comb)
 
 
-def draw_arrow(ax, vector, color, label, *, dashed=False, width=2.5, label_offset=(0, 0, 0)):
-    vector = np.asarray(vector)
+def draw_arrow(
+    ax, vector, color, label, *, base=(0, 0, 0), dashed=False, width=2.6, label_offset=(0, 0, 0)
+):
+    base = np.asarray(base, dtype=float)
+    vector = np.asarray(vector, dtype=float)
+    tip = base + vector
     ax.quiver(
-        0,
-        0,
-        0,
+        base[0],
+        base[1],
+        base[2],
         vector[0],
         vector[1],
         vector[2],
         color=color,
         linewidth=width,
-        arrow_length_ratio=0.15,
+        arrow_length_ratio=0.16,
         linestyle="--" if dashed else "-",
+        zorder=5,
     )
     if label:
-        tip = vector * 1.08 + np.asarray(label_offset)
-        ax.text(tip[0], tip[1], tip[2], label, color=color, fontsize=12)
-
-
-def draw_panel(ax, gamma: float, title: str) -> None:
-    theta = gamma * pi / 2.0
-    basis = _comb_basis(gamma, COMB_ORIENTATION)
-    normal = np.asarray(_comb_normal(gamma, COMB_ORIENTATION))
-
-    # Comb surface.
-    corners = comb_plane_corners(basis)
-    surface = Poly3DCollection(
-        [corners], alpha=0.18, facecolor="#cccccc", edgecolor="#888888"
-    )
-    ax.add_collection3d(surface)
-
-    # Faint horizontal ground plane for reference.
-    ground = PLANE_HALF_WIDTH * np.array(
-        [[1, 1, 0], [-1, 1, 0], [-1, -1, 0], [1, -1, 0]], dtype=float
-    )
-    ax.add_collection3d(
-        Poly3DCollection([ground], alpha=0.05, facecolor="#000000", edgecolor="none")
-    )
-
-    # Comb normal and gravity. Nudge the normal label aside so it stays legible
-    # on the horizontal comb, where the normal coincides with gravity.
-    draw_arrow(ax, normal, NORMAL_COLOR, r"$\mathbf{n}$", label_offset=(0.12, 0.0, 0.06))
-    draw_arrow(ax, (0, 0, 1), GRAVITY_REF_COLOR, r"$\mathbf{g}$", dashed=True, width=1.8)
-
-    # World food direction (lies in the ground plane), drawn short, and its
-    # in-plane projection (the direct-code reference, with length s_dir).
-    food = 0.65 * np.asarray(_world_direction_vector(FOOD_AZIMUTH))
-    draw_arrow(ax, food, DIRECT_COLOR, r"$\mathbf{f}_d$", dashed=True, width=1.6)
-    direct_ref = np.asarray(_project_onto_plane(_world_direction_vector(FOOD_AZIMUTH), tuple(normal)))
-    draw_arrow(
-        ax, direct_ref, DIRECT_COLOR, r"$s_{\mathrm{dir}}$", label_offset=(0.0, 0.18, 0.0)
-    )
-
-    # Gravity reference: projection of the vertical onto the comb surface
-    # (the gravity-code reference, with length s_grav).
-    gravity_ref = np.asarray(_project_onto_plane((0.0, 0.0, 1.0), tuple(normal)))
-    draw_arrow(
-        ax, gravity_ref, GRAVITY_COLOR, r"$s_{\mathrm{grav}}$", label_offset=(-0.1, 0.0, 0.08)
-    )
-
-    ax.set_title(title, fontsize=13)
-    ax.set_xlim(-1.2, 1.2)
-    ax.set_ylim(-1.2, 1.2)
-    ax.set_zlim(0, 1.2)
-    ax.set_box_aspect((1, 1, 0.7))
-    ax.view_init(elev=22, azim=-60)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.set_zticks([])
-    ax.set_xlabel("east", fontsize=9, labelpad=-12)
-    ax.set_ylabel("north", fontsize=9, labelpad=-12)
+        pos = base + vector * 1.1 + np.asarray(label_offset)
+        ax.text(pos[0], pos[1], pos[2], label, color=color, fontsize=13, zorder=6)
 
 
 def main() -> None:
     args = parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
 
-    panels = [
-        (0.0, r"Horizontal ($\theta=0$)"),
-        (0.5, r"Tilted ($\theta=\pi/4$)"),
-        (1.0, r"Vertical ($\theta=\pi/2$)"),
-    ]
-    fig = plt.figure(figsize=(13, 4.6))
-    for index, (gamma, title) in enumerate(panels, start=1):
-        ax = fig.add_subplot(1, 3, index, projection="3d")
-        draw_panel(ax, gamma, title)
+    basis = _comb_basis(COMB_TILT, COMB_ORIENTATION)
+    normal = np.asarray(_comb_normal(COMB_TILT, COMB_ORIENTATION))
+    lift = SURFACE_LIFT * normal
+
+    fig = plt.figure(figsize=(7.5, 6.2))
+    ax = fig.add_subplot(111, projection="3d")
+
+    # Faint horizontal reference ring and east/north markers (drawn first, under
+    # the comb) to anchor the horizontal plane without a cluttering box.
+    ring_angle = np.linspace(0.0, 2 * pi, 200)
+    ax.plot(
+        0.95 * np.cos(ring_angle), 0.95 * np.sin(ring_angle), 0.0,
+        color="#aaaaaa", linewidth=0.9, zorder=-1,
+    )
+    for axis_dir, name in (((1.0, 0.0, 0.0), "east"), ((0.0, 1.0, 0.0), "north")):
+        end = 0.95 * np.asarray(axis_dir)
+        ax.plot(
+            [0, end[0]], [0, end[1]], [0, 0], color="#bbbbbb", linewidth=0.8, zorder=-1
+        )
+        ax.text(end[0] * 1.05, end[1] * 1.05, 0.0, name, color="#888888", fontsize=10)
+
+    draw_comb(ax, basis)
+
+    # Comb normal and gravity (the vertical world direction).
+    draw_arrow(ax, normal, NORMAL_COLOR, r"$\mathbf{n}$", label_offset=(0.05, 0.0, 0.04))
+    draw_arrow(ax, (0, 0, 1), GRAVITY_REF_COLOR, r"$\mathbf{g}$", dashed=True, width=1.8)
+
+    # World food direction (in the ground plane) and its in-plane projection,
+    # the direct-code reference (lifted just off the comb so it stays visible).
+    food = 0.75 * np.asarray(_world_direction_vector(FOOD_AZIMUTH))
+    draw_arrow(ax, food, DIRECT_COLOR, r"$\mathbf{f}_d$", dashed=True, width=1.8,
+               label_offset=(0.05, -0.05, -0.04))
+    direct_ref = np.asarray(
+        _project_onto_plane(_world_direction_vector(FOOD_AZIMUTH), tuple(normal))
+    )
+    draw_arrow(ax, direct_ref, DIRECT_COLOR, r"$s_{\mathrm{dir}}$", base=lift,
+               label_offset=(0.05, 0.0, 0.1))
+
+    # Gravity reference: projection of the vertical onto the comb surface.
+    gravity_ref = np.asarray(_project_onto_plane((0.0, 0.0, 1.0), tuple(normal)))
+    draw_arrow(ax, gravity_ref, GRAVITY_COLOR, r"$s_{\mathrm{grav}}$", base=lift,
+               label_offset=(-0.08, 0.0, 0.08))
+
+    ax.set_xlim(-0.95, 0.95)
+    ax.set_ylim(-0.95, 0.95)
+    ax.set_zlim(-0.45, 1.15)
+    ax.set_box_aspect((1, 1, 0.85))
+    ax.view_init(elev=20, azim=-55)
+    ax.set_axis_off()
 
     fig.tight_layout()
-    fig.savefig(args.output, dpi=180)
+    fig.savefig(args.output, dpi=190)
     print(f"saved {args.output}")
 
 

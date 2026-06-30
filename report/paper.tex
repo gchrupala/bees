@@ -385,17 +385,19 @@ reference direction, lying in that surface, against which the angle is read
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{figures/comb_tilt_geometry.png}
-  \caption{Comb geometry at three tilts: horizontal ($\theta = 0$), half-tilted
-    ($\theta = \pi/4$), and vertical ($\theta = \pi/2$). The grey square is the
-    comb surface, $\mathbf{n}$ its unit normal, and $\mathbf{g}$ the vertical
-    (gravity) direction. The two in-plane reference directions are obtained by
-    projecting onto the surface: $s_{\mathrm{dir}}$ projects the world food
-    direction $\mathbf{f}_d$ (direct code) and $s_{\mathrm{grav}}$ projects
-    gravity (gravity code); each arrow's length equals the corresponding
-    geometric strength. On a horizontal comb $\mathbf{n}$ coincides with
-    $\mathbf{g}$, so $s_{\mathrm{grav}} = 0$ and only direct pointing is
-    available; on a vertical comb the food direction nearly leaves the surface
-    while gravity lies fully within it, so the two codes' strengths are
+  \caption{Geometry of a half-tilted comb ($\theta = \pi/4$), drawn as a
+    honeycomb tile within the horizontal plane (grey ring, with east and north
+    marked). The comb's unit normal is $\mathbf{n}$, and $\mathbf{g}$ is the
+    vertical (gravity) direction. Each code reads a dance angle against an
+    in-plane reference obtained by projecting a world direction onto the comb:
+    the direct code projects the food direction $\mathbf{f}_d$, giving the
+    reference $s_{\mathrm{dir}}$, and the gravity code projects $\mathbf{g}$,
+    giving $s_{\mathrm{grav}}$; each projected arrow's length equals the
+    corresponding geometric strength. As the comb tilts from horizontal to
+    vertical the normal swings from vertical down to the horizon: on a horizontal
+    comb $\mathbf{n} = \mathbf{g}$ and $s_{\mathrm{grav}} = 0$ (only direct
+    pointing works), whereas on a vertical comb gravity lies fully within the
+    surface while the food direction nearly leaves it, so the two strengths are
     complementary.}
   \label{fig:comb-tilt}
 \end{figure}
