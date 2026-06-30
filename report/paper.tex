@@ -424,7 +424,14 @@ In the \emph{direct} (iconic) code the worker takes the world-space direction of
 the food as a three-dimensional unit vector,
 $\mathbf{f}_d = (\cos d, \sin d, 0)$ for food azimuth $d$ (the vertical component
 is zero because food lies in the horizontal plane), and projects
-it onto the comb surface, reading off the resulting in-plane angle. How well this
+it onto the comb surface, reading off the resulting in-plane angle.
+Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
+surface and $M$ the $2\times 2$ matrix whose rows are their horizontal
+(east--north) parts, the encoded signal is $\delta_{\mathrm{dir}} =
+\operatorname{atan2}(b,a)$ where $(a,b)^\top = M(\cos d,\sin d)^\top$; the
+determinant $\det M = \cos\theta$ collapses to zero at vertical, consistent with
+the strength vanishing there.
+How well this
 works depends on how much of the food direction survives the projection, which we
 measure by the length of the projected vector,
 \begin{equation}
@@ -450,6 +457,26 @@ available. When a channel's
 strength falls below $1$, the direction it recovers is correspondingly degraded,
 modeled as a circular interpolation between the true angle and a uniformly random
 one, with weight equal to the strength.
+
+\paragraph{Decoding the direct code.}
+Recovering a world heading from an observed direct-code signal means inverting
+the projection used to encode it, and two variants are modelled, bracketing
+uncertainty over whether a receiver performs this geometric correction in full.
+\begin{description}
+  \item[Flatten] The receiver lifts the signal $\delta$ back to an in-surface
+    vector $\mathbf{v} = \cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$
+    and reads its horizontal heading $\operatorname{atan2}(v_y, v_x)$; this
+    applies $M^\top$ to the unit signal vector
+    $(\cos\delta,\sin\delta)^\top$ and introduces a systematic angular bias
+    on any tilted comb, since $M^\top \ne M^{-1}$ there.
+  \item[Unproject] The receiver instead applies $M^{-1}$, which exactly
+    inverts the encoding; since $\det M = \cos\theta > 0$ for
+    $\theta < \pi/2$, the heading is recovered without bias.
+\end{description}
+On a flat comb both variants coincide because $M$ is then a rotation matrix.
+The gravity code, by contrast, is always decoded by exact inversion: the
+projected gravity direction is available to any receiver as a reference, so
+the sun-relative food azimuth is read back directly.
 
 \paragraph{Transposition and blending the codes.}
 Which code a worker uses is governed by two further heritable behavioral traits,
@@ -478,13 +505,12 @@ with $t_{s,i} = 1$ purely by the gravity reference, while the strength factors
 ensure that a code with no geometric support (such as the gravity code on a
 horizontal comb) contributes nothing regardless of $t_s$. The signal is then
 emitted from a von Mises distribution about $\delta$ as in \Cref{sec:signals}. A
-receiver inverts this process, decoding the observed signal under both codes and
-recombining the two recovered world directions by the same kind of weighted
-circular mean, now with weights $(1 - t_{r,i})\,s_{\mathrm{dir}}$ and
-$t_{r,i}\,s_{\mathrm{grav}}$. Successful communication therefore requires senders
-and receivers to use compatible codes: a dance produced under the gravity
-reference is understood correctly only by a receiver who also decodes it that
-way.
+receiver decodes the observed signal under both codes and recombines the recovered
+world directions by the same weighted circular mean, with weights
+$(1 - t_{r,i})\,s_{\mathrm{dir}}$ and $t_{r,i}\,s_{\mathrm{grav}}$. Successful
+communication therefore requires senders and receivers to use compatible codes: a
+dance produced under the gravity reference is understood correctly only by a
+receiver who also decodes it that way.
 
 \paragraph{Coupling of sender and receiver.}
 Because a working code must change on both sides at once, we allow the mutations
