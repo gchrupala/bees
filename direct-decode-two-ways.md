@@ -68,3 +68,7 @@ the fix)? v3 adopts B because it matches the documented intent (tilt = reliabili
 loss, not bias) and avoids an undocumented ~18° handicap, but this is a
 modeling-interpretation choice to revisit. The paper should not silently imply
 bees perform exact inverse projection on tilted combs.
+
+**Decision.**
+
+We'll make Decode A (Flatten) vs Decode B (Unproject) a switchable configuration option. So current experiments use Flatten. We'll need to run equivalent experiments under Unproject to check what effect this has. 
