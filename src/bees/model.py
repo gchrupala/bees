@@ -140,6 +140,64 @@ def gravity_reference_strength(comb_tilt: float, comb_orientation: float) -> flo
     return _length(_project_onto_plane((0.0, 0.0, 1.0), basis.normal))
 
 
+def direct_world_to_signal(
+    direction: float,
+    comb_tilt: float,
+    comb_orientation: float,
+) -> tuple[float, float]:
+    """Encode a world food heading as a direct-code in-plane signal angle (and its
+    cue strength) by projecting the heading onto the comb surface. This is the
+    noise-free forward map inverted by :func:`direct_signal_to_world`.
+    """
+    basis = _comb_basis(comb_tilt, comb_orientation)
+    projected = _project_onto_plane(_world_direction_vector(direction), basis.normal)
+    strength = _length(projected)
+    if strength <= EPSILON:
+        return 0.0, 0.0
+
+    first_component = _dot(projected, basis.first_axis)
+    second_component = _dot(projected, basis.second_axis)
+    return atan2(second_component, first_component) % tau, strength
+
+
+def direct_signal_to_world(
+    signal: float,
+    comb_tilt: float,
+    comb_orientation: float,
+) -> tuple[float, float]:
+    """Recover the world food heading (and its cue strength) from a direct-code
+    in-plane signal angle, by inverting the projection used to encode it.
+
+    Encoding maps a world heading ``(cos d, sin d)`` to in-plane coordinates
+    ``(a, b) = M (cos d, sin d)``, where the rows of ``M`` are the horizontal
+    parts of the two comb-plane axes, and reports the angle ``atan2(b, a)``.
+    Recovering ``d`` therefore needs the matrix inverse ``M^-1``. The determinant
+    of ``M`` equals ``cos(theta)`` (``theta`` the comb's tilt angle), so the map
+    is invertible for any non-vertical comb; a vertical comb leaves the heading
+    unrecoverable and yields zero strength.
+    """
+    basis = _comb_basis(comb_tilt, comb_orientation)
+    first = basis.first_axis
+    second = basis.second_axis
+
+    determinant = first[0] * second[1] - first[1] * second[0]
+    if abs(determinant) <= EPSILON:
+        return 0.0, 0.0
+
+    cos_signal = cos(signal)
+    sin_signal = sin(signal)
+    world_x = (second[1] * cos_signal - first[1] * sin_signal) / determinant
+    world_y = (first[0] * sin_signal - second[0] * cos_signal) / determinant
+
+    length = hypot(world_x, world_y)
+    if length <= EPSILON:
+        return 0.0, 0.0
+
+    # |M^-1 u| is the reciprocal of the projected cue strength at the recovered
+    # heading, so the strength is 1 / |M^-1 u|, lying in [cos(theta), 1].
+    return atan2(world_y, world_x) % tau, 1.0 / length
+
+
 def create_colony(
     traits: ColonyTraits,
     settings: DirectionSettings,
@@ -655,9 +713,14 @@ def _direct_world_direction_from_signal(
     colony_traits: ColonyTraits,
     rng: Random,
 ) -> tuple[float, float]:
-    basis = _comb_basis(colony_traits.comb_tilt, colony_traits.comb_orientation)
-    signal_vector = _comb_vector(signal, basis)
-    return _horizontal_angle_and_strength(signal_vector, rng)
+    angle, strength = direct_signal_to_world(
+        signal,
+        colony_traits.comb_tilt,
+        colony_traits.comb_orientation,
+    )
+    if strength <= EPSILON:
+        return rng.random() * tau, 0.0
+    return _degrade_angle_by_strength(angle, strength, rng), strength
 
 
 def _gravity_world_direction_from_signal(
@@ -695,19 +758,6 @@ def _projected_angle_and_strength(
     first_component = _dot(projected, basis.first_axis)
     second_component = _dot(projected, basis.second_axis)
     angle = atan2(second_component, first_component) % tau
-    return _degrade_angle_by_strength(angle, strength, rng), strength
-
-
-def _horizontal_angle_and_strength(
-    vector: Vector3,
-    rng: Random,
-) -> tuple[float, float]:
-    strength = hypot(vector[0], vector[1])
-
-    if strength <= EPSILON:
-        return rng.random() * tau, 0.0
-
-    angle = atan2(vector[1], vector[0]) % tau
     return _degrade_angle_by_strength(angle, strength, rng), strength
 
 
@@ -795,13 +845,6 @@ def _orientation_mean_and_alignment(
     return mean_orientation, alignment
 
 
-def _comb_vector(angle: float, basis: CombBasis) -> Vector3:
-    return _add(
-        _scale(basis.first_axis, cos(angle)),
-        _scale(basis.second_axis, sin(angle)),
-    )
-
-
 def _world_direction_vector(direction: float) -> Vector3:
     return (cos(direction), sin(direction), 0.0)
 
@@ -836,14 +879,6 @@ def _cross(first: Vector3, second: Vector3) -> Vector3:
         first[1] * second[2] - first[2] * second[1],
         first[2] * second[0] - first[0] * second[2],
         first[0] * second[1] - first[1] * second[0],
-    )
-
-
-def _add(first: Vector3, second: Vector3) -> Vector3:
-    return (
-        first[0] + second[0],
-        first[1] + second[1],
-        first[2] + second[2],
     )
 
 

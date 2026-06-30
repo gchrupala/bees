@@ -13,6 +13,8 @@ from bees.model import (
     circular_interpolate,
     create_colony,
     direct_projection_strength,
+    direct_signal_to_world,
+    direct_world_to_signal,
     encode_dance_direction,
     evaluate_colony,
     find_food_site,
@@ -297,6 +299,54 @@ class DirectionModelTests(unittest.TestCase):
     def test_vertical_direct_projection_depends_on_comb_orientation(self) -> None:
         self.assertAlmostEqual(direct_projection_strength(0.0, 1.0, 0.0), 0.0)
         self.assertAlmostEqual(direct_projection_strength(tau / 4, 1.0, 0.0), 1.0)
+
+    def test_direct_decode_inverts_encode_at_intermediate_tilt(self) -> None:
+        # The decode must invert the projection (M^-1), not merely read the
+        # in-plane vector's horizontal shadow (M^T). Those agree only on a flat
+        # comb, so the round trip must recover the heading exactly across a range
+        # of intermediate tilts, orientations, and food directions.
+        for comb_tilt in (0.2, 0.5, 0.8):
+            for comb_orientation in (0.0, pi / 6, 1.3, 2.7):
+                for direction in (0.3, 1.2, 2.5, 4.0, 5.6):
+                    signal, encode_strength = direct_world_to_signal(
+                        direction, comb_tilt, comb_orientation
+                    )
+                    world, decode_strength = direct_signal_to_world(
+                        signal, comb_tilt, comb_orientation
+                    )
+                    with self.subTest(
+                        comb_tilt=comb_tilt,
+                        comb_orientation=comb_orientation,
+                        direction=direction,
+                    ):
+                        self.assertAlmostEqual(
+                            angular_distance(world, direction), 0.0, places=9
+                        )
+                        # The recovered cue strength matches the encode strength
+                        # and the standalone projection-strength helper.
+                        self.assertAlmostEqual(encode_strength, decode_strength)
+                        self.assertAlmostEqual(
+                            decode_strength,
+                            direct_projection_strength(
+                                direction, comb_tilt, comb_orientation
+                            ),
+                        )
+
+    def test_direct_decode_differs_from_naive_shadow_on_a_tilt(self) -> None:
+        # Guard against regressing to the old transpose-based decode: on a tilted
+        # comb the correct inverse must differ from feeding the signal straight
+        # back as if it were already a world heading.
+        comb_tilt, comb_orientation, direction = 0.5, pi / 6, 1.0
+        signal, _ = direct_world_to_signal(direction, comb_tilt, comb_orientation)
+        world, _ = direct_signal_to_world(signal, comb_tilt, comb_orientation)
+        self.assertAlmostEqual(angular_distance(world, direction), 0.0, places=9)
+        self.assertGreater(angular_distance(signal, direction), 0.1)
+
+    def test_direct_decode_strength_zero_on_vertical_comb(self) -> None:
+        # A vertical comb makes the projection matrix singular (det = cos theta =
+        # 0), so the heading is unrecoverable and strength collapses to zero.
+        _, strength = direct_signal_to_world(0.7, 1.0, 0.0)
+        self.assertEqual(strength, 0.0)
 
     def test_daytime_sun_sampling_stays_within_configured_arc(self) -> None:
         settings = _settings(
