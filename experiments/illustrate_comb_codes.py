@@ -130,6 +130,23 @@ def draw_3d_panel(ax, basis) -> None:
     comb.set_zorder(0)
     ax.add_collection3d(comb)
 
+    # Horizontal reference ring around the comb: the near arc (camera side of the
+    # comb plane, p . n > 0) masks the comb, the far arc passes behind it. Dots
+    # mark east and north.
+    ring_angle = np.linspace(0.0, 2 * pi, 400)
+    ring_x = 0.95 * np.cos(ring_angle)
+    ring_y = 0.95 * np.sin(ring_angle)
+    ring_z = np.zeros_like(ring_angle)
+    near_side = np.cos(ring_angle - COMB_ORIENTATION) >= 0.0
+    near = np.where(near_side, 1.0, np.nan)
+    far = np.where(near_side, np.nan, 1.0)
+    ax.plot(ring_x * far, ring_y * far, ring_z, color="#bbbbbb", linewidth=0.9, zorder=-1)
+    ax.plot(ring_x * near, ring_y * near, ring_z, color="#aaaaaa", linewidth=0.9, zorder=3)
+    for axis_dir, name in (((1.0, 0.0, 0.0), "east"), ((0.0, 1.0, 0.0), "north")):
+        end = 0.95 * np.asarray(axis_dir)
+        ax.scatter([end[0]], [end[1]], [0.0], color="#888888", s=20, zorder=5)
+        ax.text(end[0] * 1.08, end[1] * 1.08, 0.0, name, color="#888888", fontsize=10)
+
     def arrow(vector, color, label, *, base=(0, 0, 0), dashed=False, width=2.6,
               label_offset=(0, 0, 0)):
         base = np.asarray(base, dtype=float)
@@ -162,7 +179,7 @@ def draw_3d_panel(ax, basis) -> None:
     ax.set_xlim(-0.95, 0.95)
     ax.set_ylim(-0.95, 0.95)
     ax.set_zlim(-0.45, 1.15)
-    ax.set_box_aspect((1, 1, 0.85))
+    ax.set_box_aspect((1, 1, 0.85), zoom=1.35)
     ax.view_init(elev=20, azim=-55)
     ax.set_axis_off()
     ax.set_title("(a) comb geometry", fontsize=13, y=0.97)
