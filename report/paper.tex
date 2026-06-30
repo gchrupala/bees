@@ -211,7 +211,8 @@ bias} $b$ controls how precisely a dance points; the \emph{receiver attention}
 $a$ is the propensity to attend to a dance rather than to search at random; and
 the \emph{search limit} $\ell$ is the maximum distance a worker is willing to
 travel. The first two are bounded to $[0,1]$ and the search limit to $[0,D]$,
-where $D$ is the maximum search distance.\todo{GC: Does this vary? What are the units?}
+where $D$ is the maximum search distance, a fixed model parameter (set to
+$D = 8$ in all our experiments) expressed in arbitrary distance units.
 
 Workers express the colony traits with non-heritable individual variation. A
 worker $i$ realizes each trait $x \in \{b, a, \ell\}$ as
@@ -219,8 +220,10 @@ worker $i$ realizes each trait $x \in \{b, a, \ell\}$ as
   x_i = \mathrm{clip}\bigl(x + \varepsilon_i\bigr), \qquad
   \varepsilon_i \sim \mathcal{N}(0, \eta^2),
 \end{equation}
-where $\eta$ is a fixed worker-variation scale (scaled by $D$ for the search
-limit \todo{GC: How?}) and $\mathrm{clip}$ returns the value to its admissible range. A colony
+where $\eta$ is a fixed worker-variation scale and $\mathrm{clip}$ returns the
+value to its admissible range. For the search limit, whose range is $[0,D]$
+rather than $[0,1]$, the scale is multiplied by $D$, so that $\varepsilon_i \sim
+\mathcal{N}(0, (\eta D)^2)$. A colony
 thus behaves as a noisy ensemble of workers sharing the same underlying
 genotype.
 
@@ -230,9 +233,14 @@ On a horizontal comb the dance points directly at the food: this is the iconic,
 direct-pointing code. A worker that has just foraged successfully at azimuth $d$
 produces a dance whose intended direction is $d$ itself. The emitted signal is
 drawn from a von Mises distribution centered on $d$ with concentration
-$\kappa = b_i\,\kappa_{\max}$, plus a small wrapped Gaussian dance noise. (The von
-Mises distribution is the circular analogue of a Gaussian, and its concentration
-plays the role of an inverse variance.) \todo{GC: Add more explicit definition of this distribution here.} 
+$\kappa = b_i\,\kappa_{\max}$, plus a small wrapped Gaussian dance noise. The von
+Mises distribution is the circular analogue of a Gaussian: a signal $\theta$
+centered on $\mu$ with concentration $\kappa$ has density
+\begin{equation}
+  f(\theta;\mu,\kappa) = \frac{\exp\bigl(\kappa\cos(\theta-\mu)\bigr)}{2\pi I_0(\kappa)},
+\end{equation}
+where $I_0$ is the modified Bessel function of order zero and $\kappa$ plays the
+role of an inverse variance; here $\mu = d$ and $\kappa = b_i\,\kappa_{\max}$.
 The directional bias $b$ therefore
 controls the sharpness of the dance: a low bias leads to a near-uniform,
 uninformative signal, while a high bias gives rise to a tightly concentrated one that
@@ -251,16 +259,22 @@ uniformly around the colony and at distances drawn uniformly from
 $[d_{\min}, d_{\max}] \subseteq [0, D]$, where $D$ is the maximum search distance
 of \Cref{sec:traits}; every site has the same angular width, value $v$, and
 finite capacity, the last limiting how many foragers it can supply before being
-exhausted.\todo{GC: Does this vary? What is the default value?}
+exhausted. These are held fixed across our experiments, with angular width
+$0.2$, value $v = 1$, and capacity $6$.
 
 Each episode also fixes the position of the sun, which serves as the external
 reference for the gravity-based code introduced in \Cref{sec:vertical}. The
 sun's azimuth is drawn uniformly from an arc of width $\Delta_{\mathrm{sun}}$
-centered on a fixed heading $\mu_{\mathrm{sun}}$, so it is constant within an
-episode but varies between episodes: a narrow arc makes the sun a nearly fixed
-landmark, a wide one an unreliable one.
-\todo{CG: Check what the width setting is in the actual experiments
-  and adjust the text}
+centered on a fixed heading $\mu_{\mathrm{sun}}$ (in our experiments
+$\mu_{\mathrm{sun}} = \pi/2$ and $\Delta_{\mathrm{sun}} = \pi$), so it is constant
+within an episode but varies between episodes. Within an episode the same sun is
+shared by every worker, so a dancer and a follower always read the
+gravity-referenced code against an identical reference: the sun azimuth enters
+encoding and decoding with opposite sign and cancels, and communication is
+therefore unaffected by where the sun happens to fall. The between-episode
+variation thus does not by itself degrade the gravity code; making the sun a
+genuine source of unreliability would require giving individuals independent
+perception of it, which we leave to future work.
 
 \begin{figure}
   \centering
@@ -287,14 +301,26 @@ a travel cost proportional to the site's distance, and prompts the worker to
 perform a dance advertising the site to later foragers, at a cost
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$ that grows with the precision of the
 dance. A failed forage costs travel proportional to the full search limit
-$\ell_i$, and each act of attending to a dance incurs an attention cost. A
-colony's fitness is its mean episode payoff (floored at a small positive value).
+$\ell_i$, and each act of attending to a dance incurs an attention cost.
+Collecting these terms, an episode with successful attempts $S$ (each at distance
+$r_k$, performed by a worker with bias $b_k$), failed attempts $F$ (each with
+search limit $\ell_j$), and $n_a$ dance-following attempts yields raw payoff
+\begin{equation}
+  \pi_{\mathrm{raw}} = \sum_{k \in S}\bigl(v - c_{\mathrm{travel}}\,r_k\bigr)
+    - \sum_{k \in S}\bigl(c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_k\bigr)
+    - \sum_{j \in F} c_{\mathrm{travel}}\,\ell_j
+    - c_{\mathrm{att}}\,n_a,
+\end{equation}
+where the dance-cost sum runs over $S$ because one dance is produced per success.
+The scaled episode payoff is $\pi = \bigl(1 + B\,m(\gamma)\bigr)\,\pi_{\mathrm{raw}}$,
+with the vertical-comb modifier $m(\gamma) = \gamma$ by default
+(\Cref{sec:vertical}). A colony's fitness is its mean episode payoff (floored at a
+small positive value).
 For diagnostic purposes we also record a \emph{recruitment advantage}: the
 difference between the success rate of workers that followed a dance and that of
 contemporaneous workers that searched at random while dances were available. A
 positive recruitment advantage indicates that the code is functioning, since
-following a dance then beats searching blindly.\todo{GC: The paragraph  about payoff should be 
-written with an explicit formula}
+following a dance then beats searching blindly.
 
 \subsection{Evolutionary dynamics}
 \label{sec:evolution}
@@ -326,11 +352,12 @@ colony-level traits describing the nest: the \emph{comb tilt} $\gamma \in [0,1]$
 where $\gamma = 0$ is a horizontal comb and $\gamma = 1$ a vertical one, and the
 \emph{comb orientation} $\phi$, the compass heading the comb faces. Like the
 behavioral traits these are heritable and mutate by an independent Gaussian step
-each generation (the orientation step scaled by its period), but they are
+each generation, but they are
 properties of the nest and so are shared by all of a colony's workers rather than
-expressed with individual variation.
-\todo{GC: What exactly does this mean: independent Gaussian step
-each generation (the orientation step scaled by its period)}
+expressed with individual variation. Because the orientation $\phi$ is an angle
+defined on a circle of period $P$ (the full circle $\tau$, or $\pi$ when the comb
+is treated as axially symmetric), its mutation step has standard deviation
+$\sigma_m P$ rather than $\sigma_m$.
 
 \paragraph{Comb geometry.}
 The comb is a flat surface on which dances are performed, and its tilt determines
@@ -357,8 +384,9 @@ reference direction, lying in that surface, against which the angle is read.
 
 \paragraph{The two codes.}
 In the \emph{direct} (iconic) code the worker takes the world-space direction of
-the food, $\mathbf{f}_d = (\cos d, \sin d, 0)$ for food azimuth $d$, \todo{GC: why are three numbers need to specify the food direction?}
-and projects
+the food as a three-dimensional unit vector,
+$\mathbf{f}_d = (\cos d, \sin d, 0)$ for food azimuth $d$ (the vertical component
+is zero because food lies in the horizontal plane), and projects
 it onto the comb surface, reading off the resulting in-plane angle. How well this
 works depends on how much of the food direction survives the projection, which we
 measure by the length of the projected vector,
@@ -369,7 +397,8 @@ On a horizontal comb $s_{\mathrm{dir}} = 1$: the food direction lies entirely
 within the surface and is represented faithfully. On a tilted comb it shrinks,
 and vanishes for food lying in the direction the comb faces, whose horizontal
 heading is then lost in the projection. In the \emph{gravity-referenced} code the
-worker instead projects the vertical (gravity) direction $\mathbf{g} = (0,0,1)$ \todo{GC: Again, why do we need three numbers for the angle from vertical?}
+worker instead projects the vertical (gravity) direction
+$\mathbf{g} = (0,0,1)$, likewise a world-space vector,
 onto the comb surface to obtain a reference direction, and encodes the food's
 azimuth measured relative to the sun's azimuth as an angle from that reference.
 The analogous reliability is
@@ -395,7 +424,11 @@ and interpreting a dance. Let $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}
 be the in-plane angles the two codes assign to the food just visited. The
 intended dance direction $\delta$ is a weighted circular mean of the two:
 each angle is turned into a unit vector, scaled by its weight, the two vectors
-are summed, and $\delta$ is the heading of the resultant. \todo{GC: This should be expressed via a formula.} 
+are summed, and $\delta$ is the heading of the resultant,
+\begin{equation}
+  \delta = \operatorname{atan2}\Bigl(\textstyle\sum_k w_k \sin\delta_k,\;
+    \sum_k w_k \cos\delta_k\Bigr), \qquad k \in \{\mathrm{dir}, \mathrm{grav}\}.
+\end{equation}
 The weights combine the
 worker's transposition with each channel's geometric strength,
 \begin{equation}
