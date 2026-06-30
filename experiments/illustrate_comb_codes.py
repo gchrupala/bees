@@ -183,10 +183,17 @@ def draw_3d_panel(ax, basis) -> None:
     far = np.where(near_side, np.nan, 1.0)
     ax.plot(ring_x * far, ring_y * far, ring_z, color="#bbbbbb", linewidth=0.9, zorder=-1)
     ax.plot(ring_x * near, ring_y * near, ring_z, color="#aaaaaa", linewidth=0.9, zorder=3)
-    for axis_dir, name in (((1.0, 0.0, 0.0), "east"), ((0.0, 1.0, 0.0), "north")):
+    cardinals = (((1.0, 0.0, 0.0), "E"), ((0.0, 1.0, 0.0), "N"),
+                 ((-1.0, 0.0, 0.0), "W"), ((0.0, -1.0, 0.0), "S"))
+    for axis_dir, name in cardinals:
         end = 0.95 * np.asarray(axis_dir)
-        ax.scatter([end[0]], [end[1]], [0.0], color="#888888", s=20, zorder=5)
-        ax.text(end[0] * 1.08, end[1] * 1.08, 0.0, name, color="#888888", fontsize=10)
+        # Dots respect the comb's occlusion (far side behind it); labels sit just
+        # outside the ring and stay visible.
+        near = end[0] * normal[0] + end[1] * normal[1] >= 0.0
+        ax.scatter([end[0]], [end[1]], [0.0], color="#888888", s=18,
+                   zorder=3 if near else -1)
+        ax.text(end[0] * 1.12, end[1] * 1.12, 0.0, name, color="#888888",
+                fontsize=10, ha="center", va="center", zorder=6)
 
     def arrow(vector, color, label, *, base=(0, 0, 0), dashed=False, width=2.6,
               label_offset=(0, 0, 0)):
@@ -256,8 +263,8 @@ def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
     # 3D panel's compass.
     for bearing, name in compass:
         dx, dy = COMB_RADIUS * cos(bearing), COMB_RADIUS * sin(bearing)
-        ax.scatter([dx], [dy], color="#888888", s=18, zorder=5)
-        ax.text(dx * 1.12, dy * 1.12, name, color="#888888", fontsize=9,
+        ax.scatter([dx], [dy], color="#888888", s=16, zorder=5)
+        ax.text(dx * 1.14, dy * 1.14, name, color="#888888", fontsize=10,
                 ha="center", va="center")
 
     w_dir = (1.0 - t_s) * s_dir
@@ -330,8 +337,13 @@ def main() -> None:
 
     # In-plane bearings of world east and north, to mark the ring face-on.
     compass = [
-        (projected_angle_and_strength((1.0, 0.0, 0.0), basis)[0], "east"),
-        (projected_angle_and_strength((0.0, 1.0, 0.0), basis)[0], "north"),
+        (projected_angle_and_strength(world_dir, basis)[0], name)
+        for world_dir, name in (
+            ((1.0, 0.0, 0.0), "E"),
+            ((0.0, 1.0, 0.0), "N"),
+            ((-1.0, 0.0, 0.0), "W"),
+            ((0.0, -1.0, 0.0), "S"),
+        )
     ]
 
     # Scale so the stronger reference reaches near the face-on comb's edge,
