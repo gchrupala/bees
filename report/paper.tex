@@ -254,7 +254,8 @@ recovered direction is close enough to a food site to lead the follower to it.
 \label{sec:environment}
 A colony is evaluated over a fixed number of independent foraging episodes, and
 its fitness is averaged over them (\Cref{sec:foraging}). Each episode draws a
-fresh environment. A fixed number of food sites are placed at azimuths drawn
+fresh environment (\Cref{fig:environment}). A fixed number of food sites are
+placed at azimuths drawn
 uniformly around the colony and at distances drawn uniformly from
 $[d_{\min}, d_{\max}] \subseteq [0, D]$, where $D$ is the maximum search distance
 of \Cref{sec:traits}; every site has the same angular width, value $v$, and
@@ -275,10 +276,14 @@ therefore unaffected by where the sun happens to fall.
 \begin{figure}
   \centering
     \includegraphics[width=0.7\textwidth]{figures/trial_257_food_samples.png}
-    \caption{Six samples of the foraging environment for a particular trial.}\
+    \caption{Six samples of the foraging environment for a particular trial.
+      Each panel shows the colony (bee) at the centre, the food sites (flowers)
+      at their drawn azimuths and distances, and the sun, which marks the
+      external reference for the gravity-based code. Here each environment has
+      $8$ food sites of angular width $0.27$ and capacity $9$, drawn out to a
+      maximum distance of $6.5$; radial rings mark distance from the colony.}
     \label{fig:environment}
 \end{figure}
-\todo{GC: Move figure title info to caption to further declutter.}
 
 \subsection{Foraging and colony payoff}
 \label{sec:foraging}
@@ -374,8 +379,26 @@ normal has eastward, northward, and upward components
 At $\theta = 0$ this reduces to $(0,0,1)$, pointing straight up, and at
 $\theta = \pi/2$ it lies in the horizontal plane pointing along $\phi$. A signal
 is an angle measured within the comb's surface, and the two codes differ in the
-reference direction, lying in that surface, against which the angle is read.
-\todo{GC: We should have figure illustrating the representation of the comb tilt in this paragraph.}
+reference direction, lying in that surface, against which the angle is read
+(\Cref{fig:comb-tilt}).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/comb_tilt_geometry.png}
+  \caption{Comb geometry at three tilts: horizontal ($\theta = 0$), half-tilted
+    ($\theta = \pi/4$), and vertical ($\theta = \pi/2$). The grey square is the
+    comb surface, $\mathbf{n}$ its unit normal, and $\mathbf{g}$ the vertical
+    (gravity) direction. The two in-plane reference directions are obtained by
+    projecting onto the surface: $s_{\mathrm{dir}}$ projects the world food
+    direction $\mathbf{f}_d$ (direct code) and $s_{\mathrm{grav}}$ projects
+    gravity (gravity code); each arrow's length equals the corresponding
+    geometric strength. On a horizontal comb $\mathbf{n}$ coincides with
+    $\mathbf{g}$, so $s_{\mathrm{grav}} = 0$ and only direct pointing is
+    available; on a vertical comb the food direction nearly leaves the surface
+    while gravity lies fully within it, so the two codes' strengths are
+    complementary.}
+  \label{fig:comb-tilt}
+\end{figure}
 
 
 \paragraph{The two codes.}
@@ -418,7 +441,8 @@ the \emph{sender transposition} $t_s$ and \emph{receiver transposition} $t_r$
 gravity-referenced code rather than the direct code when, respectively, producing
 and interpreting a dance. Let $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$
 be the in-plane angles the two codes assign to the food just visited. The
-intended dance direction $\delta$ is a weighted circular mean of the two:
+intended dance direction $\delta$ is a weighted circular mean of the two
+(\Cref{fig:comb-blend}):
 each angle is turned into a unit vector, scaled by its weight, the two vectors
 are summed, and $\delta$ is the heading of the resultant,
 \begin{equation}
@@ -443,7 +467,20 @@ $t_{r,i}\,s_{\mathrm{grav}}$. Successful communication therefore requires sender
 and receivers to use compatible codes: a dance produced under the gravity
 reference is understood correctly only by a receiver who also decodes it that
 way.
-\todo{GC: We should have a figure illustrating the blending of the codes in this paraphraph}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/comb_blend}
+  \caption{Blending the two codes by weighted circular mean, for a sender at
+    three transposition values $t_s$ (with $s_{\mathrm{dir}} = s_{\mathrm{grav}}
+    = 1$ for illustration). The direct and gravity codes assign in-plane angles
+    $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$ (grey rays). Each is
+    scaled by its weight, $w_{\mathrm{dir}} = (1 - t_s)\,s_{\mathrm{dir}}$ (blue)
+    and $w_{\mathrm{grav}} = t_s\,s_{\mathrm{grav}}$ (red); their vector sum gives
+    the intended dance direction $\delta$ (black). As $t_s$ increases the
+    resultant swings from the direct angle toward the gravity angle.}
+  \label{fig:comb-blend}
+\end{figure}
 
 \paragraph{Coupling of sender and receiver.}
 Because a working code must change on both sides at once, we allow the mutations

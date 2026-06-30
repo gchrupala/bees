@@ -1,0 +1,49 @@
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{calc,arrows.meta}
+\begin{document}
+\begin{tikzpicture}[
+    >=Latex,
+    dir/.style={blue!70!black},
+    grav/.style={red!70!black},
+    ref/.style={gray!55, thin},
+    result/.style={black, very thick},
+    font=\small,
+  ]
+  \def\ddir{12}      % in-plane angle assigned by the direct code
+  \def\dgrav{102}    % in-plane angle assigned by the gravity code
+  \def\R{3.2}        % drawing length of a unit (weight = 1) vector, in cm
+
+  \foreach \ts/\x/\lab in {%
+      0.2/0/{$t_s = 0.2$}, 0.5/6.4/{$t_s = 0.5$}, 0.8/12.8/{$t_s = 0.8$}} {
+    \begin{scope}[xshift=\x cm]
+      \pgfmathsetmacro\wdir{1-\ts}
+      \pgfmathsetmacro\wgrav{\ts}
+      \coordinate (O) at (0,0);
+
+      % Unit reference rays for the two codes.
+      \draw[ref,->] (O) -- (\ddir:\R);
+      \draw[ref,->] (O) -- (\dgrav:\R);
+      \node[ref,right]  at (\ddir:\R)  {$\delta_{\mathrm{dir}}$};
+      \node[ref,above]  at (\dgrav:\R) {$\delta_{\mathrm{grav}}$};
+
+      % Weighted component vectors.
+      \coordinate (A) at (\ddir:{\wdir*\R});
+      \coordinate (B) at (\dgrav:{\wgrav*\R});
+      \draw[dir,->,thick]  (O) -- (A) node[midway,below right=-2pt]{$w_{\mathrm{dir}}$};
+      \draw[grav,->,thick] (O) -- (B) node[midway,above left=-2pt]{$w_{\mathrm{grav}}$};
+
+      % Vector sum (parallelogram) and resultant heading delta.
+      \coordinate (Res) at ($(A)+(B)$);
+      \draw[dir,dashed,thin]  (B) -- (Res);
+      \draw[grav,dashed,thin] (A) -- (Res);
+      \draw[result,->] (O) -- (Res);
+      \node[result,above right=-1pt] at (Res) {$\delta$};
+
+      \fill (O) circle (1.2pt);
+      \node[below] at (1.2,-1.35) {\lab};
+    \end{scope}
+  }
+\end{tikzpicture}
+\end{document}
