@@ -150,24 +150,17 @@ def add_image_marker(ax, theta: float, radius: float, text: str, size: int, zord
     ax.add_artist(annotation)
 
 
-def draw_sample(ax, sites, settings, sample_index: int, sun_azimuth: float) -> None:
+def draw_sample(ax, sites, settings, sun_azimuth: float) -> None:
     ax.set_theta_zero_location("E")
     ax.set_theta_direction(-1)
 
     max_radius = settings.food_site_max_distance
     ax.set_ylim(0, max_radius)
     ax.set_yticks(np.linspace(0, max_radius, 5))
-    ax.set_yticklabels(
-        [f"{value:.0f}" for value in np.linspace(0, max_radius, 5)],
-        fontsize=18,
-    )
-    # Drop the angular (degree) tick labels; they add clutter without aiding
-    # readability of the food-site layout.
+    # Drop both the radial distance labels and the angular (degree) tick labels;
+    # the rings still convey relative distance without numeric clutter.
+    ax.set_yticklabels([])
     ax.set_xticklabels([])
-    ax.set_title(
-        f"Sample {sample_index} ({settings.food_site_count} sites)",
-        fontsize=22,
-    )
 
     # Put the bee at the center to represent the observer.
     add_image_marker(ax, 0, 0, "🐝", 40, zorder=5)
@@ -222,17 +215,13 @@ def main() -> None:
         rng = __import__("random").Random(args.seed + sample_index)
         drawn = generate_food_sites(settings, rng)
         sun_azimuth = sample_sun_azimuth(settings, rng)
-        draw_sample(axes[sample_index], drawn, settings, sample_index + 1, sun_azimuth)
+        draw_sample(axes[sample_index], drawn, settings, sun_azimuth)
 
     for ax in axes[args.samples:]:
         ax.axis("off")
 
-    fig.suptitle(
-        f"Food-site samples for {args.candidate} "
-        f"(n={settings.food_site_count}, width={settings.food_site_width:.3f}, "
-        f"max distance={settings.food_site_max_distance:.1f}, capacity={settings.food_site_capacity})",
-        fontsize=23,
-    )
+    # Parameter values (site count, width, max distance, capacity) are reported
+    # in the figure caption rather than overlaid on the image, to reduce clutter.
     plt.tight_layout()
     fig.savefig(args.output, dpi=180)
     print(f"saved {args.output}")
