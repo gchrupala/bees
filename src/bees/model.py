@@ -85,7 +85,7 @@ class DirectionSettings:
     attention_cost: float
     comb_orientation_axial: bool = False
     vertical_comb_modifier: str = "linear"
-    direct_decode: str = "unproject"
+    direct_decode: str = "flatten"
     evolve_comb_tilt: bool = True
 
 
