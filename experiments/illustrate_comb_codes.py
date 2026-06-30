@@ -188,7 +188,8 @@ def draw_3d_panel(ax, basis) -> None:
 # ---------------------------------------------------------------------------
 # Panels (b, c): the same comb face-on, blending the two codes.
 # ---------------------------------------------------------------------------
-def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, *, scale) -> None:
+def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
+                    scale) -> None:
     # Honeycomb disc seen face-on (the comb's own 2D frame). Reuse the exact
     # pointy-top vertices from the 3D panel so the tiling matches and tessellates.
     for cx, cy in hex_centers(COMB_RADIUS, HEX_RADIUS):
@@ -201,27 +202,42 @@ def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, *, scale) -> 
     ax.add_patch(Circle((0, 0), COMB_RADIUS, fill=False, edgecolor="#bbbbbb",
                          linewidth=0.8, zorder=1))
 
+    # East and north marked on the ring at their in-plane bearings, matching the
+    # 3D panel's compass.
+    for bearing, name in compass:
+        dx, dy = COMB_RADIUS * cos(bearing), COMB_RADIUS * sin(bearing)
+        ax.scatter([dx], [dy], color="#888888", s=18, zorder=5)
+        ax.text(dx * 1.12, dy * 1.12, name, color="#888888", fontsize=9,
+                ha="center", va="center")
+
     w_dir = (1.0 - t_s) * s_dir
     w_grav = t_s * s_grav
 
-    def ray(angle, length, color, label, *, dashed=False, width=2.6, zorder=4,
-            lab_r=1.12):
+    def ray(angle, length, color, *, dashed=False, width=2.6, zorder=4):
         x, y = length * scale * cos(angle), length * scale * sin(angle)
         ax.annotate(
             "", xy=(x, y), xytext=(0, 0), zorder=zorder,
             arrowprops=dict(arrowstyle="-|>", color=color, lw=width,
                             linestyle="--" if dashed else "-", shrinkA=0, shrinkB=0),
         )
-        if label:
-            lx, ly = lab_r * x, lab_r * y
-            ax.text(lx, ly, label, color=color, fontsize=12, ha="center", va="center")
+
+    def weight_label(angle, weight, color, label, perp_sign):
+        # Place beside the bold arrow, offset perpendicular to it so the text
+        # never lands on the (collinear) dashed ray or the arrow shaft.
+        bx = 0.6 * weight * scale * cos(angle)
+        by = 0.6 * weight * scale * sin(angle)
+        px, py = -sin(angle), cos(angle)
+        ax.text(bx + perp_sign * 0.18 * px, by + perp_sign * 0.18 * py, label,
+                color=color, fontsize=12, ha="center", va="center", zorder=6)
 
     # Full-strength reference directions (faint), then the weighted contributions
     # (bold) along the same directions: bold length is a fraction of the faint ray.
-    ray(delta_dir, s_dir, DIRECT_COLOR, None, dashed=True, width=1.3, zorder=3)
-    ray(delta_grav, s_grav, GRAVITY_COLOR, None, dashed=True, width=1.3, zorder=3)
-    ray(delta_dir, w_dir, DIRECT_COLOR, r"$w_{\mathrm{dir}}$", width=3.0, zorder=4)
-    ray(delta_grav, w_grav, GRAVITY_COLOR, r"$w_{\mathrm{grav}}$", width=3.0, zorder=4)
+    ray(delta_dir, s_dir, DIRECT_COLOR, dashed=True, width=1.3, zorder=3)
+    ray(delta_grav, s_grav, GRAVITY_COLOR, dashed=True, width=1.3, zorder=3)
+    ray(delta_dir, w_dir, DIRECT_COLOR, width=3.0, zorder=4)
+    ray(delta_grav, w_grav, GRAVITY_COLOR, width=3.0, zorder=4)
+    weight_label(delta_dir, w_dir, DIRECT_COLOR, r"$w_{\mathrm{dir}}$", -1)
+    weight_label(delta_grav, w_grav, GRAVITY_COLOR, r"$w_{\mathrm{grav}}$", +1)
 
     # Parallelogram closing the two weighted contributions onto the resultant.
     dx, dy = w_dir * scale * cos(delta_dir), w_dir * scale * sin(delta_dir)
@@ -257,6 +273,12 @@ def main() -> None:
     ref_angle, s_grav = projected_angle_and_strength((0.0, 0.0, 1.0), basis)
     delta_grav = (ref_angle + FOOD_AZIMUTH - SUN_AZIMUTH) % (2 * pi)
 
+    # In-plane bearings of world east and north, to mark the ring face-on.
+    compass = [
+        (projected_angle_and_strength((1.0, 0.0, 0.0), basis)[0], "east"),
+        (projected_angle_and_strength((0.0, 1.0, 0.0), basis)[0], "north"),
+    ]
+
     # Scale so the stronger reference reaches near the comb edge.
     scale = (COMB_RADIUS * 0.95) / max(s_dir, s_grav)
 
@@ -266,7 +288,8 @@ def main() -> None:
     draw_3d_panel(ax3d, basis)
     for col, t_s in enumerate(T_S_VALUES, start=1):
         ax = fig.add_subplot(gs[0, col])
-        draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, scale=scale)
+        draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass,
+                        scale=scale)
 
     fig.tight_layout()
     fig.savefig(args.output, dpi=190)
