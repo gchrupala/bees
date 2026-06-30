@@ -30,9 +30,10 @@ PYTHON_BIN="${BEES_PYTHON:-python}"
 
 "${PYTHON_BIN}" -u experiments/run_food_transition_v2_candidate_panel.py \
     --source panel \
-    --points results/food_transition_v2_confirmation_points.csv \
-    --group-summary results/food_transition_v2_confirmation_group_summary.csv \
+    --config "${BEES_CONFIG:-configs/long_vertical_transition.json}" \
+    --points "${BEES_CONFIRMATION_POINTS:-results/food_transition_v2_confirmation_points.csv}" \
+    --group-summary "${BEES_CONFIRMATION_GROUP_SUMMARY:-results/food_transition_v2_confirmation_group_summary.csv}" \
     --max-candidates "${BEES_V2_VALIDATION_CANDIDATES:-5}" \
     --seeds "${BEES_V2_VALIDATION_SEEDS:-200-299}" \
-    --output-prefix results/food_transition_v2_validation \
+    --output-prefix "${BEES_VALIDATION_PREFIX:-results/food_transition_v2_validation}" \
     --max-workers "${SLURM_CPUS_PER_TASK}"

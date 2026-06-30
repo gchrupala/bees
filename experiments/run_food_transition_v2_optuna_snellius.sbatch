@@ -31,4 +31,8 @@ PYTHON_BIN="${BEES_PYTHON:-python}"
 "${PYTHON_BIN}" -u experiments/optimize_food_transition.py \
     --workers "${SLURM_CPUS_PER_TASK}" \
     --n-trials "${BEES_V2_OPTUNA_TRIALS:-512}" \
-    --seeds "${BEES_V2_OPTUNA_SEEDS:-100-109}"
+    --seeds "${BEES_V2_OPTUNA_SEEDS:-100-109}" \
+    --config "${BEES_CONFIG:-configs/long_vertical_transition.json}" \
+    --journal-output "${BEES_OPTUNA_JOURNAL:-results/food_transition_v2_optuna.journal}" \
+    --trials-output "${BEES_OPTUNA_TRIALS_CSV:-results/food_transition_v2_optuna_trials.csv}" \
+    --seed-output "${BEES_OPTUNA_SEED_METRICS:-results/food_transition_v2_optuna_seed_metrics.csv}"

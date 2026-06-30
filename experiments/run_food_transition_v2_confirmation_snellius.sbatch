@@ -30,7 +30,9 @@ PYTHON_BIN="${BEES_PYTHON:-python}"
 
 "${PYTHON_BIN}" -u experiments/run_food_transition_v2_candidate_panel.py \
     --source trials \
+    --trials "${BEES_OPTUNA_TRIALS_CSV:-results/food_transition_v2_optuna_trials.csv}" \
+    --config "${BEES_CONFIG:-configs/long_vertical_transition.json}" \
     --max-candidates "${BEES_V2_CONFIRMATION_CANDIDATES:-20}" \
     --seeds "${BEES_V2_CONFIRMATION_SEEDS:-110-149}" \
-    --output-prefix results/food_transition_v2_confirmation \
+    --output-prefix "${BEES_CONFIRMATION_PREFIX:-results/food_transition_v2_confirmation}" \
     --max-workers "${SLURM_CPUS_PER_TASK}"

@@ -33,7 +33,7 @@ fi
 
 "${PYTHON_BIN}" -u experiments/finalize_evolutionary_interaction.py \
     --task-count "${TASK_COUNT}" \
-    --baseline-points results/food_transition_v2_validation_points.csv \
-    --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
+    --baseline-points "${BEES_VALIDATION_POINTS:-results/food_transition_v2_validation_points.csv}" \
+    --baseline-group-summary "${BEES_VALIDATION_GROUP_SUMMARY:-results/food_transition_v2_validation_group_summary.csv}" \
     --wait-for-shards \
     "${push_arg[@]}"

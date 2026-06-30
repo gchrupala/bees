@@ -31,6 +31,7 @@ PANEL="${BEES_V2_SENSITIVITY_PANEL:-coarse}"
 
 "${PYTHON_BIN}" -u experiments/run_food_transition_oat_sensitivity.py \
     --panel "${PANEL}" \
-    --baseline-points results/food_transition_v2_validation_points.csv \
-    --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
+    --config "${BEES_CONFIG:-configs/long_vertical_transition.json}" \
+    --baseline-points "${BEES_VALIDATION_POINTS:-results/food_transition_v2_validation_points.csv}" \
+    --baseline-group-summary "${BEES_VALIDATION_GROUP_SUMMARY:-results/food_transition_v2_validation_group_summary.csv}" \
     --max-workers "${SLURM_CPUS_PER_TASK}"

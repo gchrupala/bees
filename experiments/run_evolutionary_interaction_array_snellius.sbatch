@@ -29,6 +29,7 @@ export OPENBLAS_NUM_THREADS=1
 PYTHON_BIN="${BEES_PYTHON:-python}"
 
 "${PYTHON_BIN}" -u experiments/run_evolutionary_interaction_array.py \
-    --baseline-points results/food_transition_v2_validation_points.csv \
-    --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
+    --config "${BEES_CONFIG:-configs/long_vertical_transition.json}" \
+    --baseline-points "${BEES_VALIDATION_POINTS:-results/food_transition_v2_validation_points.csv}" \
+    --baseline-group-summary "${BEES_VALIDATION_GROUP_SUMMARY:-results/food_transition_v2_validation_group_summary.csv}" \
     --max-workers "${SLURM_CPUS_PER_TASK}"
