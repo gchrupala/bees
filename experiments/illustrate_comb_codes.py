@@ -72,6 +72,8 @@ RESULT_COLOR = "#2c2c2c"
 GRAVITY_REF_COLOR = "#7f7f7f"
 COMB_FACE = (0.953, 0.851, 0.627, 1.0)  # opaque wax
 COMB_EDGE = "#c79a3f"
+FOOD_MARKER = "❀"  # floret glyph marking the food-site direction
+FOOD_COLOR = "#8e44ad"
 
 
 def parse_args() -> argparse.Namespace:
@@ -177,6 +179,12 @@ def draw_3d_panel(ax, basis) -> None:
     arrow(gravity_ref, GRAVITY_COLOR, r"$s_{\mathrm{grav}}$", base=lift,
           label_offset=(-0.08, 0.0, 0.08))
 
+    # Flower marking the food-site direction, on the ring at the food bearing.
+    food_dir = np.asarray(_world_direction_vector(FOOD_AZIMUTH))
+    fpos = 1.04 * food_dir
+    ax.text(fpos[0], fpos[1], 0.0, FOOD_MARKER, color=FOOD_COLOR, fontsize=19,
+            ha="center", va="center", zorder=6)
+
     ax.set_xlim(-0.95, 0.95)
     ax.set_ylim(-0.95, 0.95)
     ax.set_zlim(-0.45, 1.15)
@@ -240,6 +248,12 @@ def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
     ray(delta_grav, w_grav, GRAVITY_COLOR, width=3.0, zorder=4)
     weight_label(delta_dir, w_dir, DIRECT_COLOR, r"$w_{\mathrm{dir}}$", -1)
     weight_label(delta_grav, w_grav, GRAVITY_COLOR, r"$w_{\mathrm{grav}}$", +1)
+
+    # Flower marking the food-site direction (its in-plane projection delta_dir),
+    # in the padding between the comb and the ring.
+    fr = FACE_COMB_RADIUS + 0.11
+    ax.text(fr * cos(delta_dir), fr * sin(delta_dir), FOOD_MARKER, color=FOOD_COLOR,
+            fontsize=18, ha="center", va="center", zorder=6)
 
     # Parallelogram closing the two weighted contributions onto the resultant.
     dx, dy = w_dir * scale * cos(delta_dir), w_dir * scale * sin(delta_dir)
