@@ -136,13 +136,20 @@ def main() -> None:
 
     draw_comb(ax, basis)
 
-    # Horizontal reference ring drawn above the comb, with dots (not radial
-    # lines) marking east and north, to anchor the horizontal plane cleanly.
-    ring_angle = np.linspace(0.0, 2 * pi, 200)
-    ax.plot(
-        0.95 * np.cos(ring_angle), 0.95 * np.sin(ring_angle), 0.0,
-        color="#aaaaaa", linewidth=0.9, zorder=4,
-    )
+    # Horizontal reference ring drawn so the comb sits inside it: the near arc
+    # (on the camera side of the comb plane) masks the comb, while the far arc
+    # passes behind it. A ring point p (at z = 0) is on the camera side when
+    # p . n > 0, i.e. cos(angle - phi) > 0, since the camera looks from the +n
+    # side. Dots (not radial lines) mark east and north.
+    ring_angle = np.linspace(0.0, 2 * pi, 400)
+    ring_x = 0.95 * np.cos(ring_angle)
+    ring_y = 0.95 * np.sin(ring_angle)
+    ring_z = np.zeros_like(ring_angle)
+    near_side = np.cos(ring_angle - COMB_ORIENTATION) >= 0.0
+    near = np.where(near_side, 1.0, np.nan)
+    far = np.where(near_side, np.nan, 1.0)
+    ax.plot(ring_x * far, ring_y * far, ring_z, color="#bbbbbb", linewidth=0.9, zorder=-1)
+    ax.plot(ring_x * near, ring_y * near, ring_z, color="#aaaaaa", linewidth=0.9, zorder=3)
     for axis_dir, name in (((1.0, 0.0, 0.0), "east"), ((0.0, 1.0, 0.0), "north")):
         end = 0.95 * np.asarray(axis_dir)
         ax.scatter([end[0]], [end[1]], [0.0], color="#888888", s=20, zorder=5)
