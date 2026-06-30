@@ -13,61 +13,76 @@ On a tilted comb that surface is a sloped plane, so an arrow drawn in it is a 3-
 arrow that rises up out of horizontal.
 
 **Encoding (what the dancer does; both decodes assume this same step).** The food
-is at a horizontal compass bearing d. The dancer takes the horizontal "to the
-food" arrow and presses it flat onto the sloped comb — an orthogonal projection
-straight onto the plane. This foreshortens the arrow along the steepest-slope
-(downhill) direction, so the angle of the arrow *as it lies in the surface* is
-NOT equal to d. That in-surface angle is the dance signal.
+is at a horizontal compass bearing d. The horizontal "to the food" arrow is
+projected orthogonally onto the sloped comb plane — along the comb's own normal,
+not vertically. This foreshortens the arrow's component along the steepest-slope
+(downhill/uphill) direction; the component along the contour (level) direction is
+unchanged. So the angle of the arrow *as it lies in the surface* is NOT equal to
+d. That in-surface angle is the dance signal.
 
 Given the dance arrow in the surface, there are two different ways to turn it back
 into a compass bearing:
 
-**Decode A — "flatten the gesture" (the OLD, biased decode).** The dance arrow
-lies in the sloped surface, so it tilts up out of horizontal. Take its
-straight-down shadow on the ground (project the in-surface arrow vertically down
-onto the horizontal plane) and fly that way. Cheap and reference-free: the
-follower just goes where the gesture points and lets gravity flatten it; it needs
-to know nothing about how the comb is tilted or oriented. BUT it is biased:
-encoding pressed a horizontal arrow UP onto the slope, and this decode presses the
-result back DOWN to horizontal. Up-then-down is not a round trip — each pressing
-shortens the across-slope component, so doing both shortens it twice, rotating the
-recovered bearing toward the slope's tilt axis. At a 45° tilt: up to ~18° off.
+**Decode A — "flatten the gesture" (the OLD, biased decode).** Take the
+in-surface gesture vector and read off its horizontal projection (drop the
+vertical component) as the compass bearing. This names a naive, uncorrected
+readout of the gesture's apparent direction — a property of the operation, not a
+claim about how a bee senses the dance (tactile, vibrational, and gravity-related
+cues are all plausible inputs to performing it). It is biased: encoding already
+shortened the slope-axis (downhill/uphill) component once; this decode shortens
+it again instead of restoring it. Two shortenings is not a round trip — the
+contour component is untouched both times, but the slope-axis component is hit
+twice — and the result is a rotation of the recovered bearing toward the comb's
+tilt axis. At 45° tilt the bias is zero for directions exactly along the slope
+axis or the contour, and reaches up to ~19.5° in between (verified by direct
+computation).
 
-**Decode B — "un-project" (the NEW, exact decode).** Instead of flattening, the
-follower reasons: "Which horizontal bearing, if pressed flat onto THIS particular
-sloped comb, would produce exactly the arrow I see?" and solves for it. That
-exactly inverts the encode and recovers d with no bias. BUT it is not
-reference-free: the inversion needs the comb's full geometry — its tilt steepness
-(a bee can feel this from gravity) AND which compass direction the slope faces
-(needs an external compass, i.e. the sun) — plus the inversion trig.
+**Decode B — "un-project" (the NEW, exact decode).** The follower asks: "which
+horizontal bearing, projected the same way, would produce exactly the arrow I
+see?" and solves for it. That exactly inverts the encode and recovers d with no
+bias. Decode A and decode B are defined over the same two geometric variables —
+comb tilt and orientation (see the math below) — but they use tilt differently:
+decode B requires the receiver to use tilt *quantitatively*, computing a
+1/cos(tilt) correction; decode A's tilt-dependence falls out of the projection
+itself and needs no such computation.
 
 **One-line math.** As 2-D vectors in the horizontal plane: encoding multiplies the
 unit heading by a 2x2 matrix M (rows = horizontal parts of the two in-comb axes),
 so dance ∝ M·heading. Decode A computes M^T·(dance); decode B computes
-M^-1·(dance). M^T = M^-1 only when M is a pure rotation, i.e. only on a flat comb.
-On a tilt M stretches, so M^T M ≠ identity — that leftover M^T M *is* decode A's
-bias, and decode B's M^-1 cancels the encode's M outright. det M = cos(tilt
-angle), so B is solvable for any non-vertical comb and breaks down (no unique
-heading) exactly at vertical.
+M^-1·(dance). M^T = M^-1 only when M is orthogonal (M^T M = I); here det M =
+cos(tilt) > 0 away from vertical, so orthogonality is reached only at zero tilt,
+where M is a pure rotation.
 
-**Biological reading.** Decode A is a simple, sun-free "point and follow" rule that
-genuinely misdirects on a slope — a plausible failure mode of naive iconic
-pointing. Decode B is geometrically perfect but secretly needs the sun (for comb
-orientation) and trig, so on a tilt the "direct" code is no cheaper or more
-reference-free than the gravity code it was meant to undercut. Real bees sidestep
-the problem by switching to the gravity code on tilted/vertical combs, where the
-reference (downhill) is read straight from gravity with no trig. The model still
-down-weights direct as the comb tilts via s_dir (highest near horizontal, where
-the decode is trivial; ~0 near vertical), so the reliability penalty survives even
-with the unbiased decode.
+M factors as M = U Σ Vᵀ, with Σ = diag(1, cos(tilt)) and U, V rotations fixed by
+tilt and orientation. Then M^T = V Σ Uᵀ and M^-1 = V Σ⁻¹ Uᵀ — **the same U and V
+for both decodes**; they differ only in Σ vs Σ⁻¹. So decode A and decode B make
+identical use of comb orientation; the entire difference is shrinking the
+foreshortened component by cos(tilt) (A) versus stretching it by 1/cos(tilt) (B).
+det M = cos(tilt angle), so B is solvable for any non-vertical comb and breaks
+down (no unique heading) exactly at vertical.
 
-**Open question.** What should the "direct" code represent — a naive reference-free
-pointer (cheap, accurate only near horizontal: decode A's spirit) or an idealized
-geometric channel (exact everywhere, but implicitly sun+trig dependent: decode B /
-the fix)? v3 adopts B because it matches the documented intent (tilt = reliability
-loss, not bias) and avoids an undocumented ~18° handicap, but this is a
-modeling-interpretation choice to revisit. The paper should not silently imply
-bees perform exact inverse projection on tilted combs.
+**Biological reading.** Decode A and decode B are defined over the same
+geometric variables (per the math above), but decode B requires the receiver to
+use tilt quantitatively — recovering a foreshortened length needs holding tilt as
+a value and computing the correction. Decode A's tilt-dependence requires no such
+computation; it is whatever a naive, uncorrected readout of the gesture already
+produces. This describes the two operations, not an assumed sensory mechanism —
+the note takes no position on whether a bee performing decode A relies on
+tactile, vibrational, or gravity-related cues. Real bees sidestep the problem by
+switching to the gravity code on
+tilted/vertical combs, where the reference (downhill) is read straight from
+gravity with no trig. The model still down-weights direct as the comb tilts via
+s_dir (highest near horizontal, where the decode is trivial; ~0 near vertical),
+so the reliability penalty survives even with the unbiased decode.
+
+**Open question.** What should the "direct" code represent — a naive pointer
+(cheap, passive, accurate only near horizontal: decode A's spirit) or an
+idealized geometric channel (exact everywhere, but requiring active trigonometric
+computation rather than passive projection: decode B / the fix)? v3 adopts B
+because it matches the documented intent (tilt = reliability loss, not bias) and
+avoids an undocumented ~19.5° handicap, but this is a modeling-interpretation
+choice to revisit. The paper should not silently imply bees perform exact inverse
+projection on tilted combs.
 
 **Decision.**
 
