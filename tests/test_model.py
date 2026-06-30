@@ -14,6 +14,7 @@ from bees.model import (
     create_colony,
     direct_projection_strength,
     direct_signal_to_world,
+    direct_signal_to_world_flatten,
     direct_world_to_signal,
     encode_dance_direction,
     evaluate_colony,
@@ -347,6 +348,62 @@ class DirectionModelTests(unittest.TestCase):
         # 0), so the heading is unrecoverable and strength collapses to zero.
         _, strength = direct_signal_to_world(0.7, 1.0, 0.0)
         self.assertEqual(strength, 0.0)
+
+    def test_flatten_and_unproject_agree_on_flat_comb(self) -> None:
+        # On a flat comb M is a pure rotation so M^T = M^-1; both decodes
+        # must return the same heading and strength.
+        for direction in (0.3, 1.2, 2.5, 4.0):
+            signal, _ = direct_world_to_signal(direction, 0.0, 0.0)
+            angle_b, strength_b = direct_signal_to_world(signal, 0.0, 0.0)
+            angle_a, strength_a = direct_signal_to_world_flatten(signal, 0.0, 0.0)
+            with self.subTest(direction=direction):
+                self.assertAlmostEqual(angular_distance(angle_a, angle_b), 0.0)
+                self.assertAlmostEqual(strength_a, strength_b)
+
+    def test_flatten_and_unproject_differ_on_tilted_comb(self) -> None:
+        # On a tilted comb M^T != M^-1, so the two decodes must diverge.
+        signal, _ = direct_world_to_signal(1.0, 0.5, pi / 6)
+        angle_b, _ = direct_signal_to_world(signal, 0.5, pi / 6)
+        angle_a, _ = direct_signal_to_world_flatten(signal, 0.5, pi / 6)
+        self.assertGreater(angular_distance(angle_a, angle_b), 0.1)
+
+    def test_direct_decode_setting_routes_to_flatten(self) -> None:
+        # With direct_decode="flatten" interpret_signal must produce a different
+        # result from direct_decode="unproject" on a tilted comb.
+        rng = Random(0)
+        tilt, orientation, direction = 0.5, pi / 6, 1.0
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=10.0,
+            comb_tilt=tilt,
+            comb_orientation=orientation,
+        )
+        worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=10.0,
+        )
+        signal, _ = direct_world_to_signal(direction, tilt, orientation)
+        settings_b = _settings(direct_decode="unproject")
+        settings_a = _settings(direct_decode="flatten")
+        sun = 0.0
+        results_b = [
+            interpret_signal(signal, worker, traits, settings_b, sun, Random(s))
+            for s in range(200)
+        ]
+        results_a = [
+            interpret_signal(signal, worker, traits, settings_a, sun, Random(s))
+            for s in range(200)
+        ]
+        import statistics
+        mean_b = statistics.mean(results_b)
+        mean_a = statistics.mean(results_a)
+        self.assertGreater(angular_distance(mean_b, mean_a), 0.1)
 
     def test_daytime_sun_sampling_stays_within_configured_arc(self) -> None:
         settings = _settings(

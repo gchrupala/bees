@@ -85,6 +85,7 @@ class DirectionSettings:
     attention_cost: float
     comb_orientation_axial: bool = False
     vertical_comb_modifier: str = "linear"
+    direct_decode: str = "unproject"
     evolve_comb_tilt: bool = True
 
 
@@ -198,6 +199,35 @@ def direct_signal_to_world(
     return atan2(world_y, world_x) % tau, 1.0 / length
 
 
+def direct_signal_to_world_flatten(
+    signal: float,
+    comb_tilt: float,
+    comb_orientation: float,
+) -> tuple[float, float]:
+    """Recover a world heading from a direct-code signal by the naive flatten
+    (Decode A) rule: drop the vertical component of the in-surface gesture vector
+    and read off the resulting horizontal angle.
+
+    This is an uncorrected readout — it does not invert the encoding projection,
+    so it produces a systematic angular bias on any tilted comb (zero only along
+    the slope and contour axes). See :func:`direct_signal_to_world` for the
+    unbiased inverse. The returned strength is the horizontal length of the
+    in-surface gesture, lying in [cos(tilt), 1].
+    """
+    basis = _comb_basis(comb_tilt, comb_orientation)
+    first = basis.first_axis
+    second = basis.second_axis
+
+    world_x = cos(signal) * first[0] + sin(signal) * second[0]
+    world_y = cos(signal) * first[1] + sin(signal) * second[1]
+
+    length = hypot(world_x, world_y)
+    if length <= EPSILON:
+        return 0.0, 0.0
+
+    return atan2(world_y, world_x) % tau, length
+
+
 def create_colony(
     traits: ColonyTraits,
     settings: DirectionSettings,
@@ -306,6 +336,7 @@ def interpret_signal(
     direct_direction, direct_strength = _direct_world_direction_from_signal(
         signal,
         colony_traits,
+        settings,
         rng,
     )
     gravity_direction, gravity_strength = _gravity_world_direction_from_signal(
@@ -711,13 +742,23 @@ def _gravity_signal_angle(
 def _direct_world_direction_from_signal(
     signal: float,
     colony_traits: ColonyTraits,
+    settings: DirectionSettings,
     rng: Random,
 ) -> tuple[float, float]:
-    angle, strength = direct_signal_to_world(
-        signal,
-        colony_traits.comb_tilt,
-        colony_traits.comb_orientation,
-    )
+    if settings.direct_decode == "unproject":
+        angle, strength = direct_signal_to_world(
+            signal,
+            colony_traits.comb_tilt,
+            colony_traits.comb_orientation,
+        )
+    elif settings.direct_decode == "flatten":
+        angle, strength = direct_signal_to_world_flatten(
+            signal,
+            colony_traits.comb_tilt,
+            colony_traits.comb_orientation,
+        )
+    else:
+        raise ValueError(f"unknown direct_decode: {settings.direct_decode!r}")
     if strength <= EPSILON:
         return rng.random() * tau, 0.0
     return _degrade_angle_by_strength(angle, strength, rng), strength
