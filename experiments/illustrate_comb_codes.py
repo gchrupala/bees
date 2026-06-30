@@ -28,8 +28,11 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import Circle, Polygon
+from mpl_toolkits.mplot3d import proj3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from PIL import Image, ImageDraw, ImageFont
 
 plt.rcParams.update(
     {
@@ -72,8 +75,14 @@ RESULT_COLOR = "#2c2c2c"
 GRAVITY_REF_COLOR = "#7f7f7f"
 COMB_FACE = (0.953, 0.851, 0.627, 1.0)  # opaque wax
 COMB_EDGE = "#c79a3f"
-FOOD_MARKER = "❀"  # floret glyph marking the food-site direction
-FOOD_COLOR = "#8e44ad"
+
+# Food-site marker: the same pink blossom emoji used in the environment figure
+# (Fig 3), rendered as a NotoColorEmoji bitmap since matplotlib text cannot draw
+# colour emoji.
+FOOD_MARKER = "🌸"
+FOOD_MARKER_SIZE = 30
+FONT_PATH = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
+EMOJI_STRIKE_SIZE = 109  # NotoColorEmoji ships a single bitmap strike at this size
 
 
 def parse_args() -> argparse.Namespace:
@@ -102,6 +111,35 @@ def hex_centers(radius: float, hex_radius: float) -> list[tuple[float, float]]:
 def hex_vertices(cx: float, cy: float, hex_radius: float) -> list[tuple[float, float]]:
     angles = np.deg2rad([30, 90, 150, 210, 270, 330])
     return [(cx + hex_radius * cos(a), cy + hex_radius * sin(a)) for a in angles]
+
+
+def render_symbol_image(text: str, size: int) -> np.ndarray:
+    """Rasterise a colour-emoji glyph to an RGBA array of the requested size."""
+    font = ImageFont.truetype(FONT_PATH, EMOJI_STRIKE_SIZE)
+    canvas = EMOJI_STRIKE_SIZE * 2
+    image = Image.new("RGBA", (canvas, canvas), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(image)
+
+    bbox = draw.textbbox((0, 0), text, font=font, embedded_color=True)
+    width = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1]
+    x = (canvas - width) / 2 - bbox[0]
+    y = (canvas - height) / 2 - bbox[1]
+    draw.text((x, y), text, font=font, fill=(0, 0, 0, 255), embedded_color=True)
+
+    image = image.crop(image.getbbox())
+    image = image.resize((size, size), Image.LANCZOS)
+    return np.asarray(image)
+
+
+def place_flower(ax, xy, *, xycoords="data") -> None:
+    image = render_symbol_image(FOOD_MARKER, FOOD_MARKER_SIZE)
+    annotation = AnnotationBbox(
+        OffsetImage(image, zoom=1.0, interpolation="nearest"),
+        xy, xycoords=xycoords, frameon=False, pad=0,
+        annotation_clip=False, zorder=6,
+    )
+    ax.add_artist(annotation)
 
 
 def projected_angle_and_strength(vector, basis) -> tuple[float, float]:
@@ -179,12 +217,6 @@ def draw_3d_panel(ax, basis) -> None:
     arrow(gravity_ref, GRAVITY_COLOR, r"$s_{\mathrm{grav}}$", base=lift,
           label_offset=(-0.08, 0.0, 0.08))
 
-    # Flower marking the food-site direction, on the ring at the food bearing.
-    food_dir = np.asarray(_world_direction_vector(FOOD_AZIMUTH))
-    fpos = 1.04 * food_dir
-    ax.text(fpos[0], fpos[1], 0.0, FOOD_MARKER, color=FOOD_COLOR, fontsize=19,
-            ha="center", va="center", zorder=6)
-
     ax.set_xlim(-0.95, 0.95)
     ax.set_ylim(-0.95, 0.95)
     ax.set_zlim(-0.45, 1.15)
@@ -192,6 +224,14 @@ def draw_3d_panel(ax, basis) -> None:
     ax.view_init(elev=20, azim=-55)
     ax.set_axis_off()
     ax.set_title("(a) comb geometry", fontsize=13, y=0.97)
+
+    # Flower marking the food-site direction, on the ring at the food bearing.
+    # Projected to the axes' 2D frame (after the view is fixed) so the bitmap
+    # sits at the right bearing; ax.transData keeps it placed if the layout moves.
+    food_dir = np.asarray(_world_direction_vector(FOOD_AZIMUTH))
+    fpos = 1.04 * food_dir
+    x2, y2, _ = proj3d.proj_transform(fpos[0], fpos[1], 0.0, ax.get_proj())
+    place_flower(ax, (x2, y2), xycoords=ax.transData)
 
 
 # ---------------------------------------------------------------------------
@@ -252,8 +292,7 @@ def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
     # Flower marking the food-site direction (its in-plane projection delta_dir),
     # in the padding between the comb and the ring.
     fr = FACE_COMB_RADIUS + 0.11
-    ax.text(fr * cos(delta_dir), fr * sin(delta_dir), FOOD_MARKER, color=FOOD_COLOR,
-            fontsize=18, ha="center", va="center", zorder=6)
+    place_flower(ax, (fr * cos(delta_dir), fr * sin(delta_dir)))
 
     # Parallelogram closing the two weighted contributions onto the resultant.
     dx, dy = w_dir * scale * cos(delta_dir), w_dir * scale * sin(delta_dir)
