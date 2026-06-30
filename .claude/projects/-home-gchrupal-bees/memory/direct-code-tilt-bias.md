@@ -1,6 +1,6 @@
 ---
 name: direct-code-tilt-bias
-description: Model's direct-code decode is biased on a tilt (uses M^T not M^-1); a proper inverse would be unbiased. Open A/B decision.
+description: Model's direct-code decode was biased on a tilt (used M^T not M^-1); fixed to the proper inverse (commit 79fb4cb). See [[direct-decode-two-ways]].
 metadata:
   type: project
 ---
@@ -30,11 +30,11 @@ sun it decodes back to d exactly at any tilt. Round-trip probe (matched t_s=t_r;
 theta=pi/4, phi=pi/6, food d=57.3deg) recovered world dir: pure direct 75.9
 (18.6deg err), t=0.5 64.8 (7.5), pure gravity 57.3 (0.0 exact).
 
-**Open decision (A/B):** (A) keep the current decode and treat the bias as a real
-model property (figure shows it honestly); (B) fix the decode to M^-1 in
-`model.py` — a substantive change that shifts communication dynamics and any
-results/paper claims resting on direct being unreliable on a tilt. Do NOT change
-model code without explicit go-ahead.
+**Resolved:** chose (B) — fixed the decode to M^-1 in `model.py` (commit 79fb4cb),
+adding noise-free `direct_world_to_signal` / `direct_signal_to_world` helpers and
+intermediate-tilt round-trip tests. Pre-fix state tagged `v2`; the fixed model is
+"v3" but **v3 is not tagged yet** (user asked to hold). The naive-vs-idealized
+decode choice and its biological reading are detailed in [[direct-decode-two-ways]].
 
 **Why:** Determines whether "direct is unreliable on a tilt" is a modeling
 artifact or a defended property; affects model.py, results, and paper text.
