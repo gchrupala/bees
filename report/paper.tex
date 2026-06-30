@@ -412,9 +412,16 @@ reference direction, lying in that surface, against which the angle is read
     $\mathbf{f}_d$ in (a), along its in-plane projection $\delta_{\mathrm{dir}}$
     in (b, c)), so the dance angle $\delta$ can be read against the true food
     bearing. Projecting world directions onto a tilted comb does not preserve
-    angles, so the cardinal marks (N, E, S, W)---perpendicular on the horizontal
-    ring in (a)---appear skewed in the face-on views, the same foreshortening
-    that makes $s_{\mathrm{dir}} < 1$ on a tilt.}
+    angles or lengths, so the cardinal marks (N, E, S, W)---evenly spaced on
+    the horizontal ring in (a)---sit at skewed angles and unequal radii in the
+    face-on views (b, c): the ring itself traces the image of the world unit
+    circle under this projection, an ellipse rather than a circle, the same
+    distortion that makes $s_{\mathrm{dir}} < 1$ on a tilt. (d) The two
+    direct-code decode variants compared in an undistorted top-down view of the
+    world horizontal plane: the same signal $\delta_{\mathrm{dir}}$ encoded in
+    (a) is decoded under both, with \emph{unproject} (blue) recovering the true
+    food bearing (flower) exactly and \emph{flatten} (orange) swinging off by
+    the marked angular bias.}
   \label{fig:comb-codes}
 \end{figure}
 
@@ -461,7 +468,8 @@ one, with weight equal to the strength.
 \paragraph{Decoding the direct code.}
 Recovering a world heading from an observed direct-code signal means inverting
 the projection used to encode it, and two variants are modelled, bracketing
-uncertainty over whether a receiver performs this geometric correction in full.
+uncertainty over whether a receiver performs this geometric correction in full
+(\Cref{fig:comb-codes}d).
 \begin{description}
   \item[Flatten] The receiver lifts the signal $\delta$ back to an in-surface
     vector $\mathbf{v} = \cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$

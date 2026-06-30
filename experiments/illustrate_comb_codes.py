@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from math import atan2, cos, hypot, pi, sin, sqrt
+from math import atan2, cos, degrees, hypot, pi, sin, sqrt
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -52,6 +52,9 @@ from bees.model import (  # noqa: E402
     _length,
     _project_onto_plane,
     _world_direction_vector,
+    angular_distance,
+    direct_signal_to_world,
+    direct_signal_to_world_flatten,
 )
 
 DEFAULT_OUTPUT = ROOT / "report" / "figures" / "comb_codes.png"
@@ -70,6 +73,7 @@ SURFACE_LIFT = 0.04  # lift 3D in-plane arrows just off the comb so they stay vi
 
 DIRECT_COLOR = "#1f77b4"
 GRAVITY_COLOR = "#d62728"
+FLATTEN_COLOR = "#e07b00"  # amber: distinct from direct (blue) and gravity (red)
 NORMAL_COLOR = "#2c2c2c"
 RESULT_COLOR = "#2c2c2c"
 GRAVITY_REF_COLOR = "#7f7f7f"
@@ -152,6 +156,22 @@ def projected_angle_and_strength(vector, basis) -> tuple[float, float]:
     return angle % (2 * pi), strength
 
 
+def world_circle_ellipse(basis, radius, n=200):
+    """In-plane (x, y) trace of the projected world unit circle.
+
+    Projecting world bearings onto a tilted comb is a linear but non-rigid
+    map, so the image of the world unit circle is an ellipse rather than a
+    circle; this samples it densely for plotting as the face-on panels' ring.
+    """
+    points = []
+    for d in np.linspace(0.0, 2 * pi, n, endpoint=True):
+        projected = _project_onto_plane(_world_direction_vector(d), basis.normal)
+        a = _dot(projected, basis.first_axis)
+        b = _dot(projected, basis.second_axis)
+        points.append((radius * a, radius * b))
+    return np.array(points)
+
+
 # ---------------------------------------------------------------------------
 # Panel (a): the comb in 3D.
 # ---------------------------------------------------------------------------
@@ -224,9 +244,14 @@ def draw_3d_panel(ax, basis) -> None:
     arrow(gravity_ref, GRAVITY_COLOR, r"$s_{\mathrm{grav}}$", base=lift,
           label_offset=(-0.08, 0.0, 0.08))
 
+    # The comb disc's z-extent depends on the tilt (it reaches roughly
+    # +-radius * sin(theta) plus the hex-tile padding); -0.45 clipped the
+    # comb's lower edge at theta = pi/4, so size the bottom of the box to the
+    # actual extent instead of a value tuned for a different tilt.
+    comb_z_min = min(v[2] for polygon in polygons for v in polygon)
     ax.set_xlim(-0.95, 0.95)
     ax.set_ylim(-0.95, 0.95)
-    ax.set_zlim(-0.45, 1.15)
+    ax.set_zlim(comb_z_min - 0.1, 1.2)
     ax.set_box_aspect((1, 1, 0.85), zoom=1.35)
     ax.view_init(elev=20, azim=-55)
     ax.set_axis_off()
@@ -244,8 +269,8 @@ def draw_3d_panel(ax, basis) -> None:
 # ---------------------------------------------------------------------------
 # Panels (b, c): the same comb face-on, blending the two codes.
 # ---------------------------------------------------------------------------
-def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
-                    scale) -> None:
+def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass,
+                    ellipse, ring_scale, *, scale) -> None:
     # Honeycomb disc seen face-on (the comb's own 2D frame), drawn inside the ring
     # with padding. Reuse the exact pointy-top vertices from the 3D panel so the
     # tiling matches and tessellates.
@@ -256,13 +281,13 @@ def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
                 facecolor=COMB_FACE, edgecolor=COMB_EDGE, linewidth=0.7, zorder=0,
             )
         )
-    ax.add_patch(Circle((0, 0), COMB_RADIUS, fill=False, edgecolor="#bbbbbb",
-                         linewidth=0.8, zorder=1))
+    # The ring traces the projected world unit circle, not a true circle: an
+    # oblique (non-rigid) projection maps it to an ellipse.
+    ax.plot(ellipse[:, 0], ellipse[:, 1], color="#bbbbbb", linewidth=0.8, zorder=1)
 
-    # East and north marked on the ring at their in-plane bearings, matching the
-    # 3D panel's compass.
-    for bearing, name in compass:
-        dx, dy = COMB_RADIUS * cos(bearing), COMB_RADIUS * sin(bearing)
+    # East and north marked on the ring at their true projected position
+    # (angle *and* foreshortened length), matching the 3D panel's compass.
+    for dx, dy, name in compass:
         ax.scatter([dx], [dy], color="#888888", s=16, zorder=5)
         ax.text(dx * 1.14, dy * 1.14, name, color="#888888", fontsize=10,
                 ha="center", va="center")
@@ -316,12 +341,83 @@ def draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass, *,
     ax.text(rx * 1.14, ry * 1.14, r"$\delta$", color=RESULT_COLOR, fontsize=13,
             ha="center", va="center", zorder=6)
 
-    ax.set_xlim(-COMB_RADIUS * 1.35, COMB_RADIUS * 1.35)
-    ax.set_ylim(-COMB_RADIUS * 1.35, COMB_RADIUS * 1.35)
+    ax.set_xlim(-ring_scale * 1.35, ring_scale * 1.35)
+    ax.set_ylim(-ring_scale * 1.35, ring_scale * 1.35)
     ax.set_aspect("equal")
     ax.axis("off")
     panel = "(b)" if t_s == T_S_VALUES[0] else "(c)"
     ax.set_title(rf"{panel} $t_s = {t_s:g}$", fontsize=13)
+
+
+# ---------------------------------------------------------------------------
+# Panel (d): the two direct-code decode variants, compared in world space.
+# ---------------------------------------------------------------------------
+def draw_decode_panel(ax, food_azimuth, unproject_angle, flatten_angle) -> None:
+    """Unlike (b, c), which read angles in the comb's own foreshortened frame,
+    this panel is an undistorted top-down view of the world horizontal plane, so
+    the flatten decode's bias from the true food bearing is directly visible as
+    an angular gap -- the unproject decode coincides with the true bearing
+    exactly, by construction.
+    """
+    radius = FACE_COMB_RADIUS + 0.18
+
+    ax.add_patch(Circle((0, 0), radius, fill=False, edgecolor="#bbbbbb",
+                         linewidth=0.8, zorder=1))
+    world_compass = ((0.0, "E"), (pi / 2, "N"), (pi, "W"), (-pi / 2, "S"))
+    for bearing, name in world_compass:
+        dx, dy = radius * cos(bearing), radius * sin(bearing)
+        ax.scatter([dx], [dy], color="#888888", s=16, zorder=5)
+        ax.text(dx * 1.14, dy * 1.14, name, color="#888888", fontsize=10,
+                ha="center", va="center")
+
+    def ray(angle, color, label, *, dashed=False, width=2.6, label_radius=None):
+        x, y = radius * 0.92 * cos(angle), radius * 0.92 * sin(angle)
+        ax.annotate(
+            "", xy=(x, y), xytext=(0, 0), zorder=4,
+            arrowprops=dict(arrowstyle="-|>", color=color, lw=width,
+                            linestyle="--" if dashed else "-", shrinkA=0, shrinkB=0),
+        )
+        if label:
+            lr = radius * 1.05 if label_radius is None else label_radius
+            ax.text(lr * cos(angle), lr * sin(angle), label, color=color,
+                    fontsize=12, ha="center", va="center", zorder=6)
+
+    # True food bearing: thin dashed reference, with the flower marking the site.
+    ray(food_azimuth, DIRECT_COLOR, None, dashed=True, width=1.4)
+    fr = radius * 0.92 + 0.1
+    place_flower(ax, (fr * cos(food_azimuth), fr * sin(food_azimuth)))
+
+    # Unproject coincides with the true bearing (bias = 0): drawn solid on top
+    # of the dashed reference, with its label placed near the arrow tip so it
+    # doesn't collide with the bias arc closer to the origin.
+    ray(unproject_angle, DIRECT_COLOR, "unproject", width=3.0,
+        label_radius=radius * 0.78)
+
+    # Flatten swings off to a visibly different heading.
+    ray(flatten_angle, FLATTEN_COLOR, "flatten", width=3.0)
+
+    # Arc marking the angular bias between the two decodes, kept tight around
+    # the origin so it stays clear of both arrow-tip labels.
+    bias = degrees(angular_distance(flatten_angle, unproject_angle))
+    sweep = (flatten_angle - unproject_angle + pi) % (2 * pi) - pi
+    arc_r = radius * 0.16
+    arc_angles = np.linspace(unproject_angle, unproject_angle + sweep, 30)
+    ax.plot(arc_r * np.cos(arc_angles), arc_r * np.sin(arc_angles),
+            color="#555555", linewidth=1.0, zorder=3)
+    # The wedge is narrow, so the label sits over one of the rays regardless of
+    # angle; a white backing box keeps it legible without redesigning the
+    # geometry.
+    mid = unproject_angle + sweep / 2.0
+    ax.text((arc_r + 0.1) * cos(mid), (arc_r + 0.1) * sin(mid),
+            rf"${bias:.0f}^\circ$", color="#555555", fontsize=10,
+            ha="center", va="center", zorder=6,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
+
+    ax.set_xlim(-radius * 1.35, radius * 1.35)
+    ax.set_ylim(-radius * 1.35, radius * 1.35)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_title("(d) decoding the direct code", fontsize=13)
 
 
 def main() -> None:
@@ -335,29 +431,54 @@ def main() -> None:
     ref_angle, s_grav = projected_angle_and_strength((0.0, 0.0, 1.0), basis)
     delta_grav = (ref_angle + FOOD_AZIMUTH - SUN_AZIMUTH) % (2 * pi)
 
-    # In-plane bearings of world east and north, to mark the ring face-on.
+    # The projected world unit circle is an ellipse whose minor radius (at the
+    # tilt direction) shrinks to cos(theta); scale it so even that narrowest
+    # point clears the wax comb, rather than fixing the ring at COMB_RADIUS.
+    theta = COMB_TILT * pi / 2.0
+    ring_scale = (FACE_COMB_RADIUS + 0.08) / cos(theta)
+
+    # True projected in-plane position (angle and foreshortened length) of world
+    # east/north/west/south, to mark the elliptical ring face-on.
     compass = [
-        (projected_angle_and_strength(world_dir, basis)[0], name)
-        for world_dir, name in (
-            ((1.0, 0.0, 0.0), "E"),
-            ((0.0, 1.0, 0.0), "N"),
-            ((-1.0, 0.0, 0.0), "W"),
-            ((0.0, -1.0, 0.0), "S"),
+        (ring_scale * strength * cos(angle), ring_scale * strength * sin(angle), name)
+        for (angle, strength), name in (
+            (projected_angle_and_strength(world_dir, basis), name)
+            for world_dir, name in (
+                ((1.0, 0.0, 0.0), "E"),
+                ((0.0, 1.0, 0.0), "N"),
+                ((-1.0, 0.0, 0.0), "W"),
+                ((0.0, -1.0, 0.0), "S"),
+            )
         )
     ]
+    ellipse = world_circle_ellipse(basis, ring_scale)
+
+    # Decode comparison (panel d): the in-plane direct-code signal delta_dir,
+    # already encoded above, decoded back to a world heading under each variant.
+    decode_unproject, _ = direct_signal_to_world(
+        delta_dir, COMB_TILT, COMB_ORIENTATION
+    )
+    decode_flatten, _ = direct_signal_to_world_flatten(
+        delta_dir, COMB_TILT, COMB_ORIENTATION
+    )
 
     # Scale so the stronger reference reaches near the face-on comb's edge,
     # keeping the arrows on the wax and inside the ring.
     scale = (FACE_COMB_RADIUS * 0.95) / max(s_dir, s_grav)
 
-    fig = plt.figure(figsize=(14.0, 4.8))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.25, 1.0, 1.0])
+    fig = plt.figure(figsize=(11.0, 9.6))
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.25, 1.0], height_ratios=[1.0, 1.0])
+
     ax3d = fig.add_subplot(gs[0, 0], projection="3d", computed_zorder=False)
     draw_3d_panel(ax3d, basis)
-    for col, t_s in enumerate(T_S_VALUES, start=1):
-        ax = fig.add_subplot(gs[0, col])
+
+    axd = fig.add_subplot(gs[0, 1])
+    draw_decode_panel(axd, FOOD_AZIMUTH, decode_unproject, decode_flatten)
+
+    for col, t_s in enumerate(T_S_VALUES):
+        ax = fig.add_subplot(gs[1, col])
         draw_face_panel(ax, t_s, delta_dir, s_dir, delta_grav, s_grav, compass,
-                        scale=scale)
+                        ellipse, ring_scale, scale=scale)
 
     fig.tight_layout()
     fig.savefig(args.output, dpi=190)
