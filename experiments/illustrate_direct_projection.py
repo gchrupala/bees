@@ -22,7 +22,10 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from mpl_toolkits.mplot3d import proj3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from PIL import Image, ImageDraw, ImageFont
 
 plt.rcParams.update(
     {
@@ -43,7 +46,7 @@ TILT = 0.3  # gamma: theta = 27 degrees -- shallow, so the tilt reads clearly
 ORIENTATION = 0.0  # phi: comb tilts due east
 FOOD_AZIMUTH = 0.7  # d: an arbitrary food direction, in radians
 FOOD_LENGTH = 0.9  # long, but its projection (u~1.2, v~0.6) still clears SQUARE_SIZE
-SQUARE_SIZE = 1.5
+SQUARE_SIZE = 1.275  # ~15% smaller than the original 1.5
 
 GROUND_OFFSET = np.array([0.0, 0.0, 0.0])
 COMB_OFFSET = np.array([0.0, 0.0, 1.3])
@@ -56,6 +59,14 @@ HEX_RADIUS = 0.16
 # that same true extent, or points just past SQUARE_SIZE get judged
 # "unoccluded" and drawn solid on top of comb tiles that are actually there.
 COMB_OCCLUSION_HALF_SIZE = SQUARE_SIZE + 2 * HEX_RADIUS
+
+# Food-site marker: a purple flower, rendered as a NotoColorEmoji bitmap since
+# matplotlib text cannot draw colour emoji.
+FLOWER_MARKER = "\U0001FABB"  # hyacinth
+FLOWER_MARKER_SIZE = 30
+FLOWER_EDGE_MARGIN = 0.92  # how close to the ground square's edge to place it
+FONT_PATH = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
+EMOJI_STRIKE_SIZE = 109  # NotoColorEmoji ships a single bitmap strike at this size
 
 GROUND_COLOR = "#dce6f0"
 GROUND_EDGE = "#8fa3b8"
@@ -106,6 +117,56 @@ def hex_centers_square(half_size, hex_radius):
 def hex_vertices(cx, cy, hex_radius):
     angles = np.deg2rad([30, 90, 150, 210, 270, 330])
     return [(cx + hex_radius * np.cos(a), cy + hex_radius * np.sin(a)) for a in angles]
+
+
+def edge_point(base, unit_dir, half_size, margin):
+    """The point base + s * unit_dir, with s the largest value that keeps the
+    point within [-half_size, half_size] in x and y, scaled by `margin` (< 1)
+    so it lands just inside the boundary rather than exactly on it.
+    """
+    bounds = []
+    for axis in (0, 1):
+        d = unit_dir[axis]
+        if abs(d) < 1e-9:
+            continue
+        for bound in (half_size, -half_size):
+            s = (bound - base[axis]) / d
+            if s > 0:
+                bounds.append(s)
+    return base + margin * min(bounds) * unit_dir
+
+
+def render_symbol_image(text, size):
+    """Rasterise a colour-emoji glyph to an RGBA array of the requested size."""
+    font = ImageFont.truetype(FONT_PATH, EMOJI_STRIKE_SIZE)
+    canvas = EMOJI_STRIKE_SIZE * 2
+    image = Image.new("RGBA", (canvas, canvas), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(image)
+
+    bbox = draw.textbbox((0, 0), text, font=font, embedded_color=True)
+    width = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1]
+    x = (canvas - width) / 2 - bbox[0]
+    y = (canvas - height) / 2 - bbox[1]
+    draw.text((x, y), text, font=font, fill=(0, 0, 0, 255), embedded_color=True)
+
+    image = image.crop(image.getbbox())
+    image = image.resize((size, size), Image.LANCZOS)
+    return np.asarray(image)
+
+
+def place_flower(ax, point3d):
+    """Place the flower marker at a 3D point, projected to the current 2D
+    view (matplotlib text can't draw colour emoji directly in 3D).
+    """
+    x2, y2, _ = proj3d.proj_transform(*point3d, ax.get_proj())
+    image = render_symbol_image(FLOWER_MARKER, FLOWER_MARKER_SIZE)
+    annotation = AnnotationBbox(
+        OffsetImage(image, zoom=1.0, interpolation="nearest"),
+        (x2, y2), xycoords=ax.transData, frameon=False, pad=0,
+        annotation_clip=False, zorder=6,
+    )
+    ax.add_artist(annotation)
 
 
 def camera_direction(elev_deg, azim_deg):
@@ -280,6 +341,12 @@ def main() -> None:
     ax.set_xlabel("x (east)")
     ax.set_ylabel("y (north)")
     ax.set_zlabel("z (up)")
+
+    # Food-site marker, along the food vector's direction, near the edge of
+    # the ground square.
+    unit_dir = food_vec / np.linalg.norm(food_vec)
+    flower_point = edge_point(food_base, unit_dir, SQUARE_SIZE, FLOWER_EDGE_MARGIN)
+    place_flower(ax, flower_point)
 
     fig.tight_layout()
     fig.savefig(args.output, dpi=190)
