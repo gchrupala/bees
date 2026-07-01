@@ -436,8 +436,8 @@ Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
 surface and $M$ the $2\times 2$ matrix whose rows are their horizontal
 (east--north) parts, the encoded signal is $\delta_{\mathrm{dir}} =
 \operatorname{atan2}(b,a)$ where $(a,b)^\top = M(\cos d,\sin d)^\top$; the
-determinant $\det M = \cos\theta$ collapses to zero at vertical, consistent with
-the strength vanishing there.
+determinant $\det M = \cos\theta$ vanishes only at full vertical tilt, where $M$
+becomes singular along the direction the comb faces.
 How well this
 works depends on how much of the food direction survives the projection, which we
 measure by the length of the projected vector,
@@ -446,8 +446,10 @@ measure by the length of the projected vector,
 \end{equation}
 On a horizontal comb $s_{\mathrm{dir}} = 1$: the food direction lies entirely
 within the surface and is represented faithfully. On a tilted comb it shrinks,
-and vanishes for food lying in the direction the comb faces, whose horizontal
-heading is then lost in the projection. In the \emph{gravity-referenced} code the
+reaching a minimum of $\cos\theta$ for food lying in the direction the comb
+faces ($d = \phi$); only on a fully vertical comb does this minimum reach zero,
+so the horizontal heading is lost only for that one food direction, and only at
+full vertical tilt. In the \emph{gravity-referenced} code the
 worker instead projects the vertical (gravity) direction
 $\mathbf{g} = (0,0,1)$, likewise a world-space vector,
 onto the comb surface to obtain a reference direction, and encodes the food's
@@ -456,11 +458,14 @@ The analogous reliability is
 \begin{equation}
   s_{\mathrm{grav}} = \sin\theta = \sin(\gamma\,\pi/2),
 \end{equation}
-exactly complementary to the direct code's: it is zero on a horizontal comb,
-where gravity is perpendicular to the surface and provides no in-plane reference,
-and grows to $1$ as the comb becomes vertical. A horizontal comb thus supports
-only direct pointing, whereas a vertical comb makes the gravity reference fully
-available. When a channel's
+unlike $s_{\mathrm{dir}}$, this depends only on the comb's tilt and not on the
+food's bearing: it is zero on a horizontal comb, where gravity is perpendicular
+to the surface and provides no in-plane reference, and grows to $1$ as the comb
+becomes vertical, trading off against the direct code's decline as the comb
+tilts. A horizontal comb thus supports only direct pointing, whereas a vertical
+comb makes the gravity reference fully available for every food direction, even
+though direct pointing itself remains informative, away from the comb's facing
+direction, up to full vertical tilt. When a channel's
 strength falls below $1$, the direction it recovers is correspondingly degraded,
 modeled as a circular interpolation between the true angle and a uniformly random
 one, with weight equal to the strength.
