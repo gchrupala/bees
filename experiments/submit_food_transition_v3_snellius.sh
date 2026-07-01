@@ -23,48 +23,55 @@ if [[ -n "${concurrency}" ]]; then
 fi
 
 # ── v3 paths ──────────────────────────────────────────────────────────────────
-export BEES_CONFIG="configs/long_vertical_transition_unproject.json"
-export BEES_OPTUNA_JOURNAL="results/food_transition_v3_optuna.journal"
-export BEES_OPTUNA_TRIALS_CSV="results/food_transition_v3_optuna_trials.csv"
-export BEES_OPTUNA_SEED_METRICS="results/food_transition_v3_optuna_seed_metrics.csv"
-export BEES_CONFIRMATION_PREFIX="results/food_transition_v3_confirmation"
-export BEES_CONFIRMATION_POINTS="results/food_transition_v3_confirmation_points.csv"
-export BEES_CONFIRMATION_GROUP_SUMMARY="results/food_transition_v3_confirmation_group_summary.csv"
-export BEES_VALIDATION_PREFIX="results/food_transition_v3_validation"
-export BEES_VALIDATION_POINTS="results/food_transition_v3_validation_points.csv"
-export BEES_VALIDATION_GROUP_SUMMARY="results/food_transition_v3_validation_group_summary.csv"
+# Pass every BEES_ var explicitly via --export so Snellius jobs pick them up
+# regardless of whether the cluster inherits the calling shell's environment.
+V3_EXPORT="ALL"
+V3_EXPORT+=",BEES_CONFIG=configs/long_vertical_transition_unproject.json"
+V3_EXPORT+=",BEES_OPTUNA_JOURNAL=results/food_transition_v3_optuna.journal"
+V3_EXPORT+=",BEES_OPTUNA_TRIALS_CSV=results/food_transition_v3_optuna_trials.csv"
+V3_EXPORT+=",BEES_OPTUNA_SEED_METRICS=results/food_transition_v3_optuna_seed_metrics.csv"
+V3_EXPORT+=",BEES_CONFIRMATION_PREFIX=results/food_transition_v3_confirmation"
+V3_EXPORT+=",BEES_CONFIRMATION_POINTS=results/food_transition_v3_confirmation_points.csv"
+V3_EXPORT+=",BEES_CONFIRMATION_GROUP_SUMMARY=results/food_transition_v3_confirmation_group_summary.csv"
+V3_EXPORT+=",BEES_VALIDATION_PREFIX=results/food_transition_v3_validation"
+V3_EXPORT+=",BEES_VALIDATION_POINTS=results/food_transition_v3_validation_points.csv"
+V3_EXPORT+=",BEES_VALIDATION_GROUP_SUMMARY=results/food_transition_v3_validation_group_summary.csv"
 
 # ── chain ─────────────────────────────────────────────────────────────────────
 optuna_job="$(
     sbatch --parsable \
+        --export="${V3_EXPORT}" \
         experiments/run_food_transition_v2_optuna_snellius.sbatch
 )"
 confirmation_job="$(
     sbatch --parsable \
         --dependency=afterok:"${optuna_job}" \
+        --export="${V3_EXPORT}" \
         experiments/run_food_transition_v2_confirmation_snellius.sbatch
 )"
 validation_job="$(
     sbatch --parsable \
         --dependency=afterok:"${confirmation_job}" \
+        --export="${V3_EXPORT}" \
         experiments/run_food_transition_v2_validation_snellius.sbatch
 )"
 sensitivity_job="$(
     sbatch --parsable \
         --dependency=afterok:"${validation_job}" \
-        --export=ALL,BEES_V2_SENSITIVITY_PANEL=coarse \
+        --export="${V3_EXPORT},BEES_V2_SENSITIVITY_PANEL=coarse" \
         experiments/run_food_transition_v2_sensitivity_snellius.sbatch
 )"
 interaction_job="$(
     sbatch --parsable \
         --dependency=afterok:"${validation_job}" \
         --array="${array_spec}" \
+        --export="${V3_EXPORT}" \
         experiments/run_evolutionary_interaction_array_snellius.sbatch
 )"
 interaction_finalize_job="$(
     sbatch --parsable \
         --dependency=afterok:"${interaction_job}" \
-        --export=ALL,BEES_ARRAY_TASKS="${array_tasks}" \
+        --export="${V3_EXPORT},BEES_ARRAY_TASKS=${array_tasks}" \
         experiments/finalize_evolutionary_interaction_snellius.sbatch
 )"
 
