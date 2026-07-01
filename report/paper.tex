@@ -379,52 +379,7 @@ normal has eastward, northward, and upward components
 At $\theta = 0$ this reduces to $(0,0,1)$, pointing straight up, and at
 $\theta = \pi/2$ it lies in the horizontal plane pointing along $\phi$. A signal
 is an angle measured within the comb's surface, and the two codes differ in the
-reference direction, lying in that surface, against which the angle is read
-(\Cref{fig:comb-codes}).
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{figures/comb_codes.png}
-  \caption{Geometry of the two dance codes and how they blend, on one
-    half-tilted comb ($\theta = \pi/4$). (a) The comb in 3D as a honeycomb tile
-    lying within the horizontal plane (grey ring, with east and north marked),
-    with unit normal $\mathbf{n}$ and the vertical (gravity) direction
-    $\mathbf{g}$. Each code reads a dance angle against an in-plane reference
-    obtained by projecting a world direction onto the comb: the direct code
-    projects the food direction $\mathbf{f}_d$ (length $s_{\mathrm{dir}}$), the
-    gravity code projects $\mathbf{g}$ (length $s_{\mathrm{grav}}$); each
-    projected arrow's length equals its geometric strength, and the two are
-    complementary. (b, c) The \emph{same} comb seen face-on (looking along
-    $\mathbf{n}$, so angles are undistorted), showing the weighted circular mean
-    that blends the codes at two sender transposition values $t_s$. The two codes
-    assign in-plane angles $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$
-    (faint dashed rays, drawn at full strength $s_{\mathrm{dir}}$,
-    $s_{\mathrm{grav}}$); each is scaled by its weight
-    $w_{\mathrm{dir}} = (1 - t_s)\,s_{\mathrm{dir}}$ (blue) and
-    $w_{\mathrm{grav}} = t_s\,s_{\mathrm{grav}}$ (red), and their vector sum gives
-    the intended dance direction $\delta$ (black). Because the strengths are
-    fixed by the tilt, only the weights change between (b) and (c), so the
-    resultant swings from the direct angle toward the gravity angle as $t_s$
-    rises. The direct arrow points along $\delta_{\mathrm{dir}}$ itself, whereas
-    the gravity arrow in (a) is only the reference axis from which
-    $\delta_{\mathrm{grav}}$ is measured, by the food's azimuth relative to the
-    sun. In every panel a flower marks the food-site direction (along
-    $\mathbf{f}_d$ in (a), along its in-plane projection $\delta_{\mathrm{dir}}$
-    in (b, c)), so the dance angle $\delta$ can be read against the true food
-    bearing. Projecting world directions onto a tilted comb does not preserve
-    angles or lengths, so the cardinal marks (N, E, S, W)---evenly spaced on
-    the horizontal ring in (a)---sit at skewed angles and unequal radii in the
-    face-on views (b, c): the ring itself traces the image of the world unit
-    circle under this projection, an ellipse rather than a circle, the same
-    distortion that makes $s_{\mathrm{dir}} < 1$ on a tilt. (d) The two
-    direct-code decode variants compared in an undistorted top-down view of the
-    world horizontal plane: the same signal $\delta_{\mathrm{dir}}$ encoded in
-    (a) is decoded under both, with \emph{unproject} (blue) recovering the true
-    food bearing (flower) exactly and \emph{flatten} (orange) swinging off by
-    the marked angular bias.}
-  \label{fig:comb-codes}
-\end{figure}
-
+reference direction, lying in that surface, against which the angle is read.
 
 \paragraph{The two codes.}
 In the \emph{direct} (iconic) code the worker takes the world-space direction of
@@ -473,8 +428,7 @@ one, with weight equal to the strength.
 \paragraph{Decoding the direct code.}
 Recovering a world heading from an observed direct-code signal means inverting
 the projection used to encode it, and two variants are modelled, bracketing
-uncertainty over whether a receiver performs this geometric correction in full
-(\Cref{fig:comb-codes}d).
+uncertainty over whether a receiver performs this geometric correction in full.
 \begin{description}
   \item[Flatten] The receiver lifts the signal $\delta$ back to an in-surface
     vector $\mathbf{v} = \cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$
@@ -499,8 +453,7 @@ the \emph{sender transposition} $t_s$ and \emph{receiver transposition} $t_r$
 gravity-referenced code rather than the direct code when, respectively, producing
 and interpreting a dance. Let $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$
 be the in-plane angles the two codes assign to the food just visited. The
-intended dance direction $\delta$ is a weighted circular mean of the two
-(\Cref{fig:comb-codes}):
+intended dance direction $\delta$ is a weighted circular mean of the two:
 each angle is turned into a unit vector, scaled by its weight, the two vectors
 are summed, and $\delta$ is the heading of the resultant,
 \begin{equation}
