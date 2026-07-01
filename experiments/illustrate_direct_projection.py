@@ -143,6 +143,15 @@ def shadow_on_plane(point, plane_point, plane_normal):
     return point + t * plane_normal
 
 
+def ground_point_shadowing_to(target, plane_normal):
+    """The point on the ground (z = 0) whose shadow along `plane_normal`
+    lands exactly on `target` -- i.e. target, the point, and plane_normal
+    are colinear.
+    """
+    k = target[2] / plane_normal[2]
+    return target - k * plane_normal
+
+
 def draw_food_vector(ax, food_base, food_vec, normal, first, second):
     """Draw the food vector split at the comb's occlusion boundary: the
     hidden run underneath the comb (so it shows through pale), the visible
@@ -222,15 +231,16 @@ def main() -> None:
     ax.add_collection3d(comb_poly)
 
     food_vec = FOOD_LENGTH * np.asarray(_world_direction_vector(FOOD_AZIMUTH))
-    food_base = GROUND_OFFSET
+    # Start the food vector at the ground point that projects to the comb's
+    # own center, rather than at the origin.
+    food_base = ground_point_shadowing_to(COMB_OFFSET, normal)
     draw_food_vector(ax, food_base, food_vec, normal, first, second)
 
     # Both the vector's tail and tip are carried onto the comb plane by the
     # same light direction (the comb's own normal) -- not the arbitrary
     # vertical shift used to place the comb square for a clear picture. This
-    # keeps both rays exactly parallel to the normal, and reproduces the
-    # plain orthogonal projection at the tail (which starts on the plane
-    # through the origin).
+    # keeps both rays exactly parallel to the normal; the tail was chosen
+    # (via ground_point_shadowing_to) to land exactly on the comb's center.
     comb_base = shadow_on_plane(food_base, COMB_OFFSET, normal)
     comb_tip = shadow_on_plane(food_base + food_vec, COMB_OFFSET, normal)
     projected_vec = comb_tip - comb_base
