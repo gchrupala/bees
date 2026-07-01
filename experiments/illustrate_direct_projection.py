@@ -42,12 +42,20 @@ DEFAULT_OUTPUT = ROOT / "report" / "figures" / "direct_projection_sketch.png"
 TILT = 0.3  # gamma: theta = 27 degrees -- shallow, so the tilt reads clearly
 ORIENTATION = 0.0  # phi: comb tilts due east
 FOOD_AZIMUTH = 0.7  # d: an arbitrary food direction, in radians
-FOOD_LENGTH = 0.6  # shorter than SQUARE_SIZE so its projection stays in-bounds
+FOOD_LENGTH = 0.9  # long, but its projection (u~1.2, v~0.6) still clears SQUARE_SIZE
 SQUARE_SIZE = 1.5
 
 GROUND_OFFSET = np.array([0.0, 0.0, 0.0])
 COMB_OFFSET = np.array([0.0, 0.0, 1.3])
 ELEV, AZIM = 22.0, -60.0
+HEX_RADIUS = 0.16
+# hex_centers_square keeps any hex whose *center* is within half_size +
+# hex_radius, and each hex's own vertices then extend up to hex_radius
+# beyond its center -- so the tiling's true visual edge reaches roughly
+# SQUARE_SIZE + 2 * HEX_RADIUS, not SQUARE_SIZE. The occlusion test must use
+# that same true extent, or points just past SQUARE_SIZE get judged
+# "unoccluded" and drawn solid on top of comb tiles that are actually there.
+COMB_OCCLUSION_HALF_SIZE = SQUARE_SIZE + 2 * HEX_RADIUS
 
 GROUND_COLOR = "#dce6f0"
 GROUND_EDGE = "#8fa3b8"
@@ -74,6 +82,30 @@ def square_corners(u_axis, v_axis, size):
             u_axis * size - v_axis * size,
         ]
     )
+
+
+def hex_centers_square(half_size, hex_radius):
+    """Pointy-top hex centres tiling the square [-half_size, half_size]^2."""
+    dx = np.sqrt(3.0) * hex_radius
+    dy = 1.5 * hex_radius
+    rows = int(np.ceil(half_size / dy)) + 1
+    cols = int(np.ceil(half_size / dx)) + 1
+    centers = []
+    for j in range(-rows, rows + 1):
+        y = j * dy
+        if y < -half_size - hex_radius or y > half_size + hex_radius:
+            continue
+        x_offset = dx / 2.0 if j % 2 else 0.0
+        for i in range(-cols, cols + 1):
+            x = i * dx + x_offset
+            if -half_size - hex_radius <= x <= half_size + hex_radius:
+                centers.append((x, y))
+    return centers
+
+
+def hex_vertices(cx, cy, hex_radius):
+    angles = np.deg2rad([30, 90, 150, 210, 270, 330])
+    return [(cx + hex_radius * np.cos(a), cy + hex_radius * np.sin(a)) for a in angles]
 
 
 def camera_direction(elev_deg, azim_deg):
@@ -122,7 +154,7 @@ def draw_food_vector(ax, food_base, food_vec, normal, first, second):
     sample_t = np.linspace(0.0, 1.0, n_samples)
     sample_points = food_base + np.outer(sample_t, food_vec)
     occluded = np.array([
-        occluded_by_comb(p, cam_dir, COMB_OFFSET, normal, first, second, SQUARE_SIZE)
+        occluded_by_comb(p, cam_dir, COMB_OFFSET, normal, first, second, COMB_OCCLUSION_HALF_SIZE)
         for p in sample_points
     ])
 
@@ -134,20 +166,21 @@ def draw_food_vector(ax, food_base, food_vec, normal, first, second):
             p_start = food_base + t_start * food_vec
             p_end = food_base + t_end * food_vec
             is_last_run = i == n_samples
-            if occluded[run_start]:
-                ax.plot(*zip(p_start, p_end), color=FOOD_COLOR, linewidth=2.5, zorder=0.5)
-            elif is_last_run:
-                # This run reaches the tip, so it gets the arrowhead; keep the
-                # head size fixed regardless of how long this visible run is.
+            zorder = 0.5 if occluded[run_start] else 3
+            if is_last_run:
+                # This run reaches the tip, so it gets the arrowhead -- even
+                # if it's the occluded run, so the arrow always has one, just
+                # pale when hidden under the comb. Keep the head size fixed
+                # regardless of how long this run is.
                 seg_vec = p_end - p_start
                 seg_len = np.linalg.norm(seg_vec)
                 ratio = min(1.0, arrowhead_length / seg_len) if seg_len > 0 else 1.0
                 ax.quiver(
                     *p_start, *seg_vec, color=FOOD_COLOR, linewidth=2.5,
-                    arrow_length_ratio=ratio, zorder=3,
+                    arrow_length_ratio=ratio, zorder=zorder,
                 )
             else:
-                ax.plot(*zip(p_start, p_end), color=FOOD_COLOR, linewidth=2.5, zorder=3)
+                ax.plot(*zip(p_start, p_end), color=FOOD_COLOR, linewidth=2.5, zorder=zorder)
             run_start = i
 
 
@@ -163,8 +196,6 @@ def main() -> None:
     ground_corners = square_corners(
         np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]), SQUARE_SIZE
     ) + GROUND_OFFSET
-    # Plain symmetric square, centered on its own offset -- no hinging.
-    comb_corners = square_corners(first, second, SQUARE_SIZE) + COMB_OFFSET
 
     fig = plt.figure(figsize=(6.5, 6.5))
     ax = fig.add_subplot(1, 1, 1, projection="3d", computed_zorder=False)
@@ -176,9 +207,16 @@ def main() -> None:
     ground_poly.set_zorder(0)
     ax.add_collection3d(ground_poly)
 
+    # Comb: a hexagonal-cell tile, filling the same square footprint (still
+    # centered on its own offset, no hinging) that the occlusion test below
+    # uses as its boundary.
+    comb_hexes = [
+        [u * first + v * second + COMB_OFFSET for u, v in hex_vertices(cx, cy, HEX_RADIUS)]
+        for cx, cy in hex_centers_square(SQUARE_SIZE, HEX_RADIUS)
+    ]
     comb_poly = Poly3DCollection(
-        [comb_corners], facecolor=COMB_COLOR, edgecolor=COMB_EDGE,
-        linewidth=1.0, alpha=0.8,
+        comb_hexes, facecolor=COMB_COLOR, edgecolor=COMB_EDGE,
+        linewidth=0.7, alpha=0.8,
     )
     comb_poly.set_zorder(1)
     ax.add_collection3d(comb_poly)
@@ -217,9 +255,9 @@ def main() -> None:
         arrow_length_ratio=0.15, zorder=5,
     )
 
-    xlim = (-2.0, 2.0)
-    ylim = (-2.0, 2.0)
-    zlim = (0.0, 2.2)
+    xlim = (-1.6, 1.6)
+    ylim = (-1.6, 1.6)
+    zlim = (-0.05, 2.05)
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
     ax.set_zlim(*zlim)
