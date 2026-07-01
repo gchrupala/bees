@@ -338,9 +338,16 @@ def main() -> None:
     ax.set_box_aspect((xlim[1] - xlim[0], ylim[1] - ylim[0], zlim[1] - zlim[0]))
     ax.set_proj_type("ortho")  # perspective projection doesn't preserve parallel lines
     ax.view_init(elev=ELEV, azim=AZIM)
-    ax.set_xlabel("x (east)")
-    ax.set_ylabel("y (north)")
-    ax.set_zlabel("z (up)")
+
+    # Declutter: no axis lines, ticks, or labels, but keep the pane grid for
+    # spatial reference.
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis.set_ticklabels([])
+        axis.set_label_text("")
+        axis.line.set_visible(False)
+        axis._axinfo["tick"]["inward_factor"] = 0.0
+        axis._axinfo["tick"]["outward_factor"] = 0.0
+    ax.tick_params(axis="both", which="both", length=0)
 
     # Food-site marker, along the food vector's direction, near the edge of
     # the ground square.
@@ -348,8 +355,7 @@ def main() -> None:
     flower_point = edge_point(food_base, unit_dir, SQUARE_SIZE, FLOWER_EDGE_MARGIN)
     place_flower(ax, flower_point)
 
-    fig.tight_layout()
-    fig.savefig(args.output, dpi=190)
+    fig.savefig(args.output, dpi=190, bbox_inches="tight", pad_inches=0.05)
     print(f"saved {args.output}")
 
 
