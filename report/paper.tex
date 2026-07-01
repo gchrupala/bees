@@ -386,7 +386,24 @@ In the \emph{direct} (iconic) code the worker takes the world-space direction of
 the food as a three-dimensional unit vector,
 $\mathbf{f}_d = (\cos d, \sin d, 0)$ for food azimuth $d$ (the vertical component
 is zero because food lies in the horizontal plane), and projects
-it onto the comb surface, reading off the resulting in-plane angle.
+it onto the comb surface, reading off the resulting in-plane angle
+(\Cref{fig:direct-projection}).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.6\textwidth]{figures/direct_projection_sketch.png}
+  \caption{The direct code's projection step. A flat ground square (the
+    world-horizontal plane) and the tilted comb square share the hive's
+    east--north position. The food direction $\mathbf{f}_d$ (blue) lies in
+    the ground plane; its orthogonal projection onto the comb (red) is found
+    by carrying both its start and end points along the comb's normal
+    $\mathbf{n}$ (black) until they land on the comb's surface, shown by the
+    dashed rays. The part of $\mathbf{f}_d$ that the comb occludes from this
+    viewpoint is rendered pale, showing through the semi-transparent comb.
+    The flower marks the food site.}
+  \label{fig:direct-projection}
+\end{figure}
+
 Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
 surface and $M$ the $2\times 2$ matrix whose rows are their horizontal
 (east--north) parts, the encoded signal is $\delta_{\mathrm{dir}} =
