@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
@@ -7,9 +7,6 @@
   <meta name="author" content="Grzegorz Chrupala" />
   <title>Evolution of vertical-comb communication in a minimal bee model</title>
   <style>
-    /* Default styles provided by pandoc.
-    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-    */
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -25,9 +22,8 @@
       vertical-align: middle;
     }
     /* CSS for syntax highlighting */
-    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -196,7 +192,7 @@ represent the same comb plane.</p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>,
 the encoded dance angle is a weighted circular mean of direct and
 gravity-referenced angles:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mrow><mi mathvariant="normal">cmean</mi><mo>&#8289;</mo></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mo stretchy="false" form="prefix">(</mo><mi>D</mi><mo>,</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><msub><mi>q</mi><mi>D</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="0.167em"></mspace><mo stretchy="false" form="prefix">(</mo><mi>G</mi><mo>,</mo><mi>s</mi><msub><mi>q</mi><mi>G</mi></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mo>cmean</mo><mrow><mo stretchy="true" form="prefix">(</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>D</mi><mo>,</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>q</mi><mi>D</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mi>G</mi><mo>,</mo><mi>s</mi><msub><mi>q</mi><mi>G</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
 \mu =
 \operatorname{cmean}\left(
   (D, (1-s)q_D),\,
@@ -213,7 +209,7 @@ applies the analogous weighted decoding rule and interpretation
 noise.</p>
 <p>Episode payoff is food value minus search/travel cost, dance cost,
 and attention cost. A vertical comb can multiply net episode payoff:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mi>e</mi></msub><mo>=</mo><msub><mi>F</mi><mi>e</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>α</mi><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mi>e</mi></msub><mo>=</mo><msub><mi>F</mi><mi>e</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>α</mi><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
 P_e = F_e (1 + \alpha t),
 </annotation></semantics></math></p>
 <p>where
@@ -248,53 +244,53 @@ as collapsed if mean success falls to 0.02 or below.</p>
 <col style="width: 36%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: left;">Stage</th>
 <th style="text-align: left;">Source files</th>
 <th style="text-align: left;">Seed panel</th>
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Optuna search</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_optuna_trials.csv</code>,
 <code>results/food_transition_v2_optuna_seed_metrics.csv</code></td>
 <td style="text-align: left;">seeds 100-109</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Candidate confirmation</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_confirmation_*</code></td>
 <td style="text-align: left;">seeds 110-149</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Held-out validation</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_validation_*</code></td>
 <td style="text-align: left;">seeds 200-299</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">One-parameter sensitivity</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_oat_sensitivity_*</code>,
 <code>results/food_transition_v2_sensitivity_refinement_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Evolutionary interaction grid</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_evolutionary_interaction_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Low-benefit generation budget</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_low_regime_generation_sensitivity_*</code>,
 <code>..._mut_0p075_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Food-distribution communication</td>
 <td
 style="text-align: left;"><code>results/food_distribution_v2_*</code></td>
@@ -302,13 +298,13 @@ style="text-align: left;"><code>results/food_distribution_v2_*</code></td>
 </tr>
 </tbody>
 </table>
-<p>The Optuna search evaluated 1024 trials over food-site count, angular
+<p>The Optuna search evaluated 512 trials over food-site count, angular
 width, capacity, vertical-comb benefit, maximum food distance, travel
 cost, mutation scale, and sender-receiver mutation correlation. Food
 value was fixed at 1.0. The objective prioritized stable seed count,
 then a bounded near-miss progress score, and penalized collapse. Of the
-1024 completed trials, 117 were stable in all ten optimization seeds and
-another 214 were stable in nine of ten seeds.</p>
+512 completed trials, 61 were stable in all ten optimization seeds and
+another 109 were stable in nine of ten seeds.</p>
 <h1 id="results">Results</h1>
 <h2
 id="direct-pointing-communication-and-food-distribution">Direct-Pointing
@@ -355,7 +351,7 @@ site count.
 <col style="width: 11%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: left;">Condition</th>
 <th style="text-align: right;">Sites</th>
 <th style="text-align: right;">Width</th>
@@ -367,7 +363,7 @@ site count.
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Hard (anchor)</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">0.08</td>
@@ -377,7 +373,7 @@ site count.
 <td style="text-align: right;">0.010</td>
 <td style="text-align: right;">0.001</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Baseline (anchor)</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0.20</td>
@@ -387,7 +383,7 @@ site count.
 <td style="text-align: right;">0.191</td>
 <td style="text-align: right;">0.638</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Easy (anchor)</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.50</td>
@@ -397,7 +393,7 @@ site count.
 <td style="text-align: right;">0.724</td>
 <td style="text-align: right;">7.505</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Sites sweep</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">0.20</td>
@@ -407,7 +403,7 @@ site count.
 <td style="text-align: right;">0.064</td>
 <td style="text-align: right;">0.010</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Sites sweep</td>
 <td style="text-align: right;">3</td>
 <td style="text-align: right;">0.20</td>
@@ -417,7 +413,7 @@ site count.
 <td style="text-align: right;">0.247</td>
 <td style="text-align: right;">1.347</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Sites sweep</td>
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">0.20</td>
@@ -427,7 +423,7 @@ site count.
 <td style="text-align: right;">0.368</td>
 <td style="text-align: right;">2.889</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Sites sweep</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.20</td>
@@ -437,7 +433,7 @@ site count.
 <td style="text-align: right;">0.425</td>
 <td style="text-align: right;">3.620</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Width sweep</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0.08</td>
@@ -447,7 +443,7 @@ site count.
 <td style="text-align: right;">0.024</td>
 <td style="text-align: right;">0.001</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Width sweep</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0.15</td>
@@ -457,7 +453,7 @@ site count.
 <td style="text-align: right;">0.133</td>
 <td style="text-align: right;">0.099</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Width sweep</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0.30</td>
@@ -467,7 +463,7 @@ site count.
 <td style="text-align: right;">0.287</td>
 <td style="text-align: right;">1.850</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Width sweep</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0.50</td>
@@ -502,122 +498,8 @@ directional-bias threshold, the recruitment-advantage measure reports
 this directly and does not mistake neutral drift for evolved
 communication.</p>
 <h2 id="held-out-validation">Held-Out Validation</h2>
-<p>The top Optuna candidates were first confirmed on 40 seeds (110–149),
-keeping the 20 that had the highest stable fraction. The five best
-confirmation results were then rerun on 100 held-out seeds
-(200–299).</p>
-<p><strong>Confirmation (40 seeds each, top 5 of 20 carried
-forward)</strong></p>
-<table>
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 6%" />
-<col style="width: 6%" />
-<col style="width: 5%" />
-<col style="width: 10%" />
-<col style="width: 9%" />
-<col style="width: 11%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 7%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-</colgroup>
-<thead>
-<tr>
-<th style="text-align: left;">Candidate</th>
-<th style="text-align: right;">Sites</th>
-<th style="text-align: right;">Width</th>
-<th style="text-align: right;">Cap.</th>
-<th
-style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></th>
-<th style="text-align: right;">Max dist.</th>
-<th style="text-align: right;">Travel cost</th>
-<th style="text-align: right;">Mut. sd</th>
-<th
-style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math></th>
-<th style="text-align: right;">Stable</th>
-<th
-style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>f</mi></msub><annotation encoding="application/x-tex">t_f</annotation></semantics></math></th>
-<th
-style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>f</mi></msub><annotation encoding="application/x-tex">m_f</annotation></semantics></math></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">trial_546</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.330</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">0.540</td>
-<td style="text-align: right;">8.5</td>
-<td style="text-align: right;">0.060</td>
-<td style="text-align: right;">0.100</td>
-<td style="text-align: right;">1.0</td>
-<td style="text-align: right;">39/40</td>
-<td style="text-align: right;">0.852</td>
-<td style="text-align: right;">0.824</td>
-</tr>
-<tr>
-<td style="text-align: left;">trial_425</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.340</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">0.600</td>
-<td style="text-align: right;">8.0</td>
-<td style="text-align: right;">0.055</td>
-<td style="text-align: right;">0.090</td>
-<td style="text-align: right;">0.8</td>
-<td style="text-align: right;">38/40</td>
-<td style="text-align: right;">0.858</td>
-<td style="text-align: right;">0.800</td>
-</tr>
-<tr>
-<td style="text-align: left;">trial_243</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.280</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">0.540</td>
-<td style="text-align: right;">7.0</td>
-<td style="text-align: right;">0.055</td>
-<td style="text-align: right;">0.090</td>
-<td style="text-align: right;">1.0</td>
-<td style="text-align: right;">36/40</td>
-<td style="text-align: right;">0.843</td>
-<td style="text-align: right;">0.824</td>
-</tr>
-<tr>
-<td style="text-align: left;">trial_464</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.290</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.540</td>
-<td style="text-align: right;">7.0</td>
-<td style="text-align: right;">0.055</td>
-<td style="text-align: right;">0.090</td>
-<td style="text-align: right;">1.0</td>
-<td style="text-align: right;">36/40</td>
-<td style="text-align: right;">0.844</td>
-<td style="text-align: right;">0.821</td>
-</tr>
-<tr>
-<td style="text-align: left;">trial_760</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.310</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">0.580</td>
-<td style="text-align: right;">8.0</td>
-<td style="text-align: right;">0.055</td>
-<td style="text-align: right;">0.110</td>
-<td style="text-align: right;">1.0</td>
-<td style="text-align: right;">36/40</td>
-<td style="text-align: right;">0.834</td>
-<td style="text-align: right;">0.804</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Held-out validation (100 seeds each)</strong></p>
-<p>All five validation candidates produced frequent stable vertical
+<p>The top confirmation candidates were rerun on 100 held-out seeds. All
+five validation candidates produced frequent stable vertical
 gravity-code transitions and no collapse events.</p>
 <table>
 <colgroup>
@@ -636,7 +518,7 @@ gravity-code transitions and no collapse events.</p>
 <col style="width: 7%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: left;">Candidate</th>
 <th style="text-align: right;">Sites</th>
 <th style="text-align: right;">Width</th>
@@ -657,7 +539,37 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
+<td style="text-align: left;">trial_257</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.270</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">0.600</td>
+<td style="text-align: right;">6.5</td>
+<td style="text-align: right;">0.055</td>
+<td style="text-align: right;">0.090</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">99/100</td>
+<td style="text-align: right;">0.563</td>
+<td style="text-align: right;">0.856</td>
+<td style="text-align: right;">0.832</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trial_471</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.240</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.580</td>
+<td style="text-align: right;">6.5</td>
+<td style="text-align: right;">0.055</td>
+<td style="text-align: right;">0.090</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">95/100</td>
+<td style="text-align: right;">0.516</td>
+<td style="text-align: right;">0.848</td>
+<td style="text-align: right;">0.822</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">trial_425</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.340</td>
@@ -672,37 +584,7 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 <td style="text-align: right;">0.852</td>
 <td style="text-align: right;">0.805</td>
 </tr>
-<tr>
-<td style="text-align: left;">trial_546</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.330</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">0.540</td>
-<td style="text-align: right;">8.5</td>
-<td style="text-align: right;">0.060</td>
-<td style="text-align: right;">0.100</td>
-<td style="text-align: right;">1.0</td>
-<td style="text-align: right;">89/100</td>
-<td style="text-align: right;">0.571</td>
-<td style="text-align: right;">0.837</td>
-<td style="text-align: right;">0.819</td>
-</tr>
-<tr>
-<td style="text-align: left;">trial_464</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.290</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0.540</td>
-<td style="text-align: right;">7.0</td>
-<td style="text-align: right;">0.055</td>
-<td style="text-align: right;">0.090</td>
-<td style="text-align: right;">1.0</td>
-<td style="text-align: right;">88/100</td>
-<td style="text-align: right;">0.585</td>
-<td style="text-align: right;">0.843</td>
-<td style="text-align: right;">0.825</td>
-</tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">trial_243</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">0.280</td>
@@ -717,42 +599,35 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 <td style="text-align: right;">0.841</td>
 <td style="text-align: right;">0.823</td>
 </tr>
-<tr>
-<td style="text-align: left;">trial_760</td>
+<tr class="odd">
+<td style="text-align: left;">trial_139</td>
 <td style="text-align: right;">8</td>
-<td style="text-align: right;">0.310</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">0.580</td>
+<td style="text-align: right;">0.290</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">0.540</td>
 <td style="text-align: right;">8.0</td>
 <td style="text-align: right;">0.055</td>
 <td style="text-align: right;">0.110</td>
 <td style="text-align: right;">1.0</td>
-<td style="text-align: right;">85/97†</td>
-<td style="text-align: right;">0.575</td>
-<td style="text-align: right;">0.833</td>
-<td style="text-align: right;">0.801</td>
+<td style="text-align: right;">86/100</td>
+<td style="text-align: right;">0.547</td>
+<td style="text-align: right;">0.834</td>
+<td style="text-align: right;">0.805</td>
 </tr>
 </tbody>
 </table>
-<p>† Validation for trial_760 still in progress at time of writing (97
-of 100 seeds completed); numbers will be updated when the run
-finishes.</p>
 <p>Here
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>f</mi></msub><annotation encoding="application/x-tex">t_f</annotation></semantics></math>
 is final mean comb tilt and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>f</mi></msub><annotation encoding="application/x-tex">m_f</annotation></semantics></math>
 is final mean of the lower sender or receiver transposition value. The
-strongest held-out candidate, <code>trial_425</code>, reached stable
-vertical gravity-code outcomes in 93 of 100 seeds. The candidates share
+strongest held-out candidate, <code>trial_257</code>, reached stable
+vertical gravity-code outcomes in 99 of 100 seeds. The candidates share
 a narrow region of parameter space: eight food sites, moderate angular
-widths, vertical-comb benefit 0.54–0.60, non-negligible travel cost,
-moderate mutation scale, and strong sender-receiver mutation
+widths, high vertical-comb benefit, non-negligible travel cost,
+moderate-to-high mutation scale, and strong sender-receiver mutation
 coupling.</p>
 <h2 id="sensitivity">Sensitivity</h2>
-<p><em>These results are from the previous pipeline run (June 2026) and
-use <code>trial_257</code> as the baseline. A sensitivity rerun anchored
-on the new validation candidates is pending (bees-v2-sens, Snellius job
-24326198).</em></p>
 <p>The sensitivity panels use <code>trial_257</code> as the baseline. On
 the later 100-seed sensitivity panel, the baseline produced 91 stable
 transitions, 98 gravity-reached seeds, 92 vertically retained seeds, and
@@ -779,7 +654,7 @@ perturbations are less damaging within the tested ranges.</p>
 <col style="width: 9%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: left;">Parameter</th>
 <th style="text-align: left;">Baseline</th>
 <th style="text-align: left;">Weakest tested value</th>
@@ -789,7 +664,7 @@ perturbations are less damaging within the tested ranges.</p>
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Food-site count</td>
 <td style="text-align: left;">8</td>
 <td style="text-align: left;">5</td>
@@ -797,7 +672,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">9</td>
 <td style="text-align: right;">93/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Food-site width</td>
 <td style="text-align: left;">0.270</td>
 <td style="text-align: left;">0.200</td>
@@ -805,7 +680,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.300</td>
 <td style="text-align: right;">96/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Food-site capacity</td>
 <td style="text-align: left;">9</td>
 <td style="text-align: left;">5</td>
@@ -813,7 +688,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">11</td>
 <td style="text-align: right;">94/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Max food distance</td>
 <td style="text-align: left;">6.5</td>
 <td style="text-align: left;">5.5 or 7.5</td>
@@ -821,7 +696,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">7.0</td>
 <td style="text-align: right;">96/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Travel cost</td>
 <td style="text-align: left;">0.055</td>
 <td style="text-align: left;">0.040</td>
@@ -829,7 +704,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.050, 0.055, or 0.060</td>
 <td style="text-align: right;">91/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Vertical-comb benefit</td>
 <td style="text-align: left;">0.600</td>
 <td style="text-align: left;">0.480</td>
@@ -837,7 +712,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.560</td>
 <td style="text-align: right;">94/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: left;">Mutation scale</td>
 <td style="text-align: left;">0.090</td>
 <td style="text-align: left;">0.050</td>
@@ -845,7 +720,7 @@ perturbations are less damaging within the tested ranges.</p>
 <td style="text-align: left;">0.080</td>
 <td style="text-align: right;">94/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: left;">Sender-receiver correlation</td>
 <td style="text-align: left;">1.0</td>
 <td style="text-align: left;">0.600</td>
@@ -885,7 +760,7 @@ summarizes 100 held-out seeds.
 <col style="width: 26%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th
 style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></th>
 <th style="text-align: right;">Mean stable rate across cells</th>
@@ -894,21 +769,21 @@ style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.10</td>
 <td style="text-align: right;">1.3%</td>
 <td style="text-align: left;">mutation 0.090,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">\rho=0.9</annotation></semantics></math></td>
 <td style="text-align: right;">7/100</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.25</td>
 <td style="text-align: right;">13.6%</td>
 <td style="text-align: left;">mutation 0.135,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">\rho=0.9</annotation></semantics></math></td>
 <td style="text-align: right;">37/100</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.44</td>
 <td style="text-align: right;">39.6%</td>
 <td style="text-align: left;">mutation 0.090,
@@ -959,7 +834,7 @@ and a low mutation scale, then runs 240, 480, and 960 generations over
 <col style="width: 20%" />
 </colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th style="text-align: right;">Mutation scale</th>
 <th style="text-align: right;">Generations</th>
 <th style="text-align: right;">Gravity reached</th>
@@ -968,42 +843,42 @@ and a low mutation scale, then runs 240, 480, and 960 generations over
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.045</td>
 <td style="text-align: right;">240</td>
 <td style="text-align: right;">0.04</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.045</td>
 <td style="text-align: right;">480</td>
 <td style="text-align: right;">0.08</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.045</td>
 <td style="text-align: right;">960</td>
 <td style="text-align: right;">0.10</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.075</td>
 <td style="text-align: right;">240</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="odd">
 <td style="text-align: right;">0.075</td>
 <td style="text-align: right;">480</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 </tr>
-<tr>
+<tr class="even">
 <td style="text-align: right;">0.075</td>
 <td style="text-align: right;">960</td>
 <td style="text-align: right;">0.06</td>

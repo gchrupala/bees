@@ -97,12 +97,12 @@ The v2 Snellius pipeline ran the following sequence:
 | Low-benefit generation budget | `results/food_transition_v2_low_regime_generation_sensitivity_*`, `..._mut_0p075_*` | seeds 300-399 |
 | Food-distribution communication | `results/food_distribution_v2_*` | seeds 400-449 |
 
-The Optuna search evaluated 1024 trials over food-site count, angular width, capacity,
+The Optuna search evaluated 512 trials over food-site count, angular width, capacity,
 vertical-comb benefit, maximum food distance, travel cost, mutation scale, and
 sender-receiver mutation correlation. Food value was fixed at 1.0. The objective
 prioritized stable seed count, then a bounded near-miss progress score, and penalized
-collapse. Of the 1024 completed trials, 117 were stable in all ten optimization seeds and
-another 214 were stable in nine of ten seeds.
+collapse. Of the 512 completed trials, 61 were stable in all ten optimization seeds and
+another 109 were stable in nine of ten seeds.
 
 # Results
 
@@ -175,48 +175,26 @@ neutral drift for evolved communication.
 
 ## Held-Out Validation
 
-The top Optuna candidates were first confirmed on 40 seeds (110–149), keeping the
-20 that had the highest stable fraction.  The five best confirmation results were
-then rerun on 100 held-out seeds (200–299).
-
-**Confirmation (40 seeds each, top 5 of 20 carried forward)**
-
-| Candidate | Sites | Width | Cap. | $\alpha$ | Max dist. | Travel cost | Mut. sd | $\rho$ | Stable | $t_f$ | $m_f$ |
-|:----------|------:|------:|-----:|-----------:|----------:|------------:|--------:|---------:|-------:|--------:|--------:|
-| trial_546 | 8 | 0.330 | 7 | 0.540 | 8.5 | 0.060 | 0.100 | 1.0 | 39/40 | 0.852 | 0.824 |
-| trial_425 | 8 | 0.340 | 9 | 0.600 | 8.0 | 0.055 | 0.090 | 0.8 | 38/40 | 0.858 | 0.800 |
-| trial_243 | 8 | 0.280 | 9 | 0.540 | 7.0 | 0.055 | 0.090 | 1.0 | 36/40 | 0.843 | 0.824 |
-| trial_464 | 8 | 0.290 | 8 | 0.540 | 7.0 | 0.055 | 0.090 | 1.0 | 36/40 | 0.844 | 0.821 |
-| trial_760 | 8 | 0.310 | 15 | 0.580 | 8.0 | 0.055 | 0.110 | 1.0 | 36/40 | 0.834 | 0.804 |
-
-**Held-out validation (100 seeds each)**
-
-All five validation candidates produced frequent stable vertical gravity-code
-transitions and no collapse events.
+The top confirmation candidates were rerun on 100 held-out seeds. All five validation
+candidates produced frequent stable vertical gravity-code transitions and no collapse
+events.
 
 | Candidate | Sites | Width | Cap. | $\alpha$ | Max dist. | Travel cost | Mut. sd | $\rho$ | Stable | Success | $t_f$ | $m_f$ |
 |:----------|------:|------:|-----:|-----------:|----------:|------------:|--------:|---------:|-------:|--------:|--------:|--------:|
+| trial_257 | 8 | 0.270 | 9 | 0.600 | 6.5 | 0.055 | 0.090 | 1.0 | 99/100 | 0.563 | 0.856 | 0.832 |
+| trial_471 | 8 | 0.240 | 8 | 0.580 | 6.5 | 0.055 | 0.090 | 1.0 | 95/100 | 0.516 | 0.848 | 0.822 |
 | trial_425 | 8 | 0.340 | 9 | 0.600 | 8.0 | 0.055 | 0.090 | 0.8 | 93/100 | 0.618 | 0.852 | 0.805 |
-| trial_546 | 8 | 0.330 | 7 | 0.540 | 8.5 | 0.060 | 0.100 | 1.0 | 89/100 | 0.571 | 0.837 | 0.819 |
-| trial_464 | 8 | 0.290 | 8 | 0.540 | 7.0 | 0.055 | 0.090 | 1.0 | 88/100 | 0.585 | 0.843 | 0.825 |
 | trial_243 | 8 | 0.280 | 9 | 0.540 | 7.0 | 0.055 | 0.090 | 1.0 | 88/100 | 0.572 | 0.841 | 0.823 |
-| trial_760 | 8 | 0.310 | 15 | 0.580 | 8.0 | 0.055 | 0.110 | 1.0 | 85/97† | 0.575 | 0.833 | 0.801 |
-
-† Validation for trial_760 still in progress at time of writing (97 of 100 seeds
-completed); numbers will be updated when the run finishes.
+| trial_139 | 8 | 0.290 | 9 | 0.540 | 8.0 | 0.055 | 0.110 | 1.0 | 86/100 | 0.547 | 0.834 | 0.805 |
 
 Here $t_f$ is final mean comb tilt and $m_f$ is final mean of the lower sender or
-receiver transposition value. The strongest held-out candidate, `trial_425`, reached
-stable vertical gravity-code outcomes in 93 of 100 seeds. The candidates share a
-narrow region of parameter space: eight food sites, moderate angular widths,
-vertical-comb benefit 0.54–0.60, non-negligible travel cost, moderate mutation
-scale, and strong sender-receiver mutation coupling.
+receiver transposition value. The strongest held-out candidate, `trial_257`, reached
+stable vertical gravity-code outcomes in 99 of 100 seeds. The candidates share a narrow
+region of parameter space: eight food sites, moderate angular widths, high
+vertical-comb benefit, non-negligible travel cost, moderate-to-high mutation scale, and
+strong sender-receiver mutation coupling.
 
 ## Sensitivity
-
-*These results are from the previous pipeline run (June 2026) and use `trial_257`
-as the baseline.  A sensitivity rerun anchored on the new validation candidates
-is pending (bees-v2-sens, Snellius job 24326198).*
 
 The sensitivity panels use `trial_257` as the baseline. On the later 100-seed
 sensitivity panel, the baseline produced 91 stable transitions, 98 gravity-reached
