@@ -345,9 +345,9 @@ space. Relative to the v2 (flatten) validated region, the v3 candidates share a
 consistently lower travel cost (0.020–0.030 vs 0.055) and higher food-site capacity
 (11–14 vs 9), while food-site count (7–8 vs 8), vertical-comb benefit (0.54–0.58 vs
 0.60), and mutation parameters (sd 0.08 vs 0.09, $\rho$ 0.9 vs 1.0) are broadly
-similar. Final foraging success is lower under unproject (0.41–0.45 vs 0.52–0.62),
-consistent with the inverted projection placing higher geometric demands on dance decoding
-at low travel cost. Both decode variants show no collapse events across all validated
+similar. Final foraging success is lower under the v3 candidates (0.41–0.45 vs 0.52–0.62),
+but because the two searches converged to different parameter regions this difference
+cannot be attributed to the decode method alone. Both decode variants show no collapse events across all validated
 seeds.
 
 The key result is qualitative robustness: the vertical gravity-code transition is not an
