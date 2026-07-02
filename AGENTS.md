@@ -20,6 +20,23 @@ We are modeling the evolution of bee communication.
   numeric constants and large monolithic code.
 - Add focused tests for model rules, evolutionary updates, and edge cases.
 
+## Environment & Dependencies
+
+- Dependencies are declared in `pyproject.toml` (there is no `requirements.txt`).
+  Add or change dependencies there, not with ad-hoc `pip install` of extra
+  packages.
+- Always work inside a virtual environment; the repo convention is a
+  project-local `.venv`. Requires Python >=3.11.
+- The code uses a `src/bees` layout, so an **editable install is required** for
+  `import bees` and the console scripts to resolve. From the repo root:
+  `python -m pip install -e .`. Re-run it after changing dependencies. A missing
+  editable install is the usual cause of `ModuleNotFoundError: bees`.
+- On Snellius, do not install into the system Python: `module load` a Python
+  toolchain, then create/activate a venv and `pip install -e .` in it. The
+  `.sbatch` scripts activate `.venv` by default; override with `BEES_VENV` (venv
+  path), `BEES_PYTHON` (interpreter), and `BEES_MODULE_LOAD` (module(s) to load)
+  when the setup differs.
+
 ## Workflow
 
 - Wait for an explicit request before generating code; do not implement based
