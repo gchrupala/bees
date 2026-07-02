@@ -133,6 +133,8 @@ Interaction</a></li>
 <li><a href="#generation-budget-in-the-low-benefit-regime"
 id="toc-generation-budget-in-the-low-benefit-regime">Generation Budget
 in the Low-Benefit Regime</a></li>
+<li><a href="#unproject-decode-v3"
+id="toc-unproject-decode-v3">Unproject Decode (v3)</a></li>
 </ul></li>
 <li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
 <li><a href="#reproducibility"
@@ -159,11 +161,14 @@ role="doc-biblioref">Donaldson-Matasci and Dornhaus 2012</a>; <a
 href="#ref-schurch_gruter_2014" role="doc-biblioref">Schürch and Grüter
 2014</a>; <a href="#ref-price_gruter_2015" role="doc-biblioref">I’Anson
 Price and Grüter 2015</a>)</span>.</p>
-<p>This report covers only the current v2 model and the tracked v2
-result files. The model is intentionally small: it asks whether
-horizontal-start populations can evolve both a vertical comb and a
-sender-receiver gravity code under simple foraging, inheritance, and
-mutation rules.</p>
+<p>This report covers the current v2 model run under two direct-decode
+variants and their tracked result files. The model is intentionally
+small: it asks whether horizontal-start populations can evolve both a
+vertical comb and a sender-receiver gravity code under simple foraging,
+inheritance, and mutation rules. The v2 pipeline (flatten decode) and v3
+pipeline (unproject decode) differ only in how direct-pointing projects
+the food direction onto the comb plane; all other model parameters and
+the evolutionary pipeline structure are identical.</p>
 <h1 id="current-model">Current Model</h1>
 <p>Colonies are the reproducing entities. Workers are behavioral samples
 from heritable colony means. A colony has seven mean traits:
@@ -236,15 +241,19 @@ receiver transposition are at least 0.50. Gravity reached means both
 transposition traits crossed 0.50 at any generation. A seed is counted
 as collapsed if mean success falls to 0.02 or below.</p>
 <h1 id="experiments">Experiments</h1>
-<p>The v2 Snellius pipeline ran the following sequence:</p>
+<p>Both pipelines share the same stage structure and seed panels. The v3
+pipeline omits the sensitivity and interaction stages; those remain
+v2-only for now.</p>
 <table>
 <colgroup>
-<col style="width: 21%" />
-<col style="width: 42%" />
-<col style="width: 36%" />
+<col style="width: 23%" />
+<col style="width: 16%" />
+<col style="width: 32%" />
+<col style="width: 27%" />
 </colgroup>
 <thead>
 <tr class="header">
+<th style="text-align: left;">Pipeline</th>
 <th style="text-align: left;">Stage</th>
 <th style="text-align: left;">Source files</th>
 <th style="text-align: left;">Seed panel</th>
@@ -252,6 +261,7 @@ as collapsed if mean success falls to 0.02 or below.</p>
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;">v2 (flatten)</td>
 <td style="text-align: left;">Optuna search</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_optuna_trials.csv</code>,
@@ -259,18 +269,21 @@ style="text-align: left;"><code>results/food_transition_v2_optuna_trials.csv</co
 <td style="text-align: left;">seeds 100-109</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">v2 (flatten)</td>
 <td style="text-align: left;">Candidate confirmation</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_confirmation_*</code></td>
 <td style="text-align: left;">seeds 110-149</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">v2 (flatten)</td>
 <td style="text-align: left;">Held-out validation</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_validation_*</code></td>
 <td style="text-align: left;">seeds 200-299</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">v2 (flatten)</td>
 <td style="text-align: left;">One-parameter sensitivity</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_oat_sensitivity_*</code>,
@@ -278,12 +291,14 @@ style="text-align: left;"><code>results/food_transition_v2_oat_sensitivity_*</co
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">v2 (flatten)</td>
 <td style="text-align: left;">Evolutionary interaction grid</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_evolutionary_interaction_*</code></td>
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">v2 (flatten)</td>
 <td style="text-align: left;">Low-benefit generation budget</td>
 <td
 style="text-align: left;"><code>results/food_transition_v2_low_regime_generation_sensitivity_*</code>,
@@ -291,10 +306,33 @@ style="text-align: left;"><code>results/food_transition_v2_low_regime_generation
 <td style="text-align: left;">seeds 300-399</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">v2 (flatten)</td>
 <td style="text-align: left;">Food-distribution communication</td>
 <td
 style="text-align: left;"><code>results/food_distribution_v2_*</code></td>
 <td style="text-align: left;">seeds 400-449</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">v3 (unproject)</td>
+<td style="text-align: left;">Optuna search</td>
+<td
+style="text-align: left;"><code>results/food_transition_v3_optuna_trials.csv</code>,
+<code>results/food_transition_v3_optuna_seed_metrics.csv</code></td>
+<td style="text-align: left;">seeds 100-109</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">v3 (unproject)</td>
+<td style="text-align: left;">Candidate confirmation</td>
+<td
+style="text-align: left;"><code>results/food_transition_v3_confirmation_*</code></td>
+<td style="text-align: left;">seeds 110-149</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">v3 (unproject)</td>
+<td style="text-align: left;">Held-out validation</td>
+<td
+style="text-align: left;"><code>results/food_transition_v3_validation_*</code></td>
+<td style="text-align: left;">seeds 200-299</td>
 </tr>
 </tbody>
 </table>
@@ -898,12 +936,200 @@ all 600 runs only a single seed (mutation 0.075, 960 generations)
 reached a stable vertical gravity-code outcome. The low-benefit regime
 is therefore a genuine barrier rather than a slow approach: it is not
 overcome by time or by a modestly higher mutation scale.</p>
+<h2 id="unproject-decode-v3">Unproject Decode (v3)</h2>
+<p>The v2 pipeline used the <em>flatten</em> direct-decode: the food
+direction is projected onto the comb plane by dropping the component
+perpendicular to the plane. The v3 pipeline replaces this with the
+<em>unproject</em> decode: the comb-plane projection matrix is inverted
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>M</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">M^{-1}</annotation></semantics></math>)
+so that the decoded direction correctly reverses the tilt-induced
+distortion. All other model parameters and the pipeline structure are
+identical.</p>
+<h3 id="optuna-search">Optuna Search</h3>
+<p>Running the same 512-trial Optuna search under the unproject decode
+found a somewhat broader stable region than flatten:</p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 20%" />
+<col style="width: 34%" />
+<col style="width: 29%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Pipeline</th>
+<th style="text-align: right;">Total trials</th>
+<th style="text-align: right;">Stable in all 10 seeds</th>
+<th style="text-align: right;">Stable in 9+ seeds</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">v2 (flatten)</td>
+<td style="text-align: right;">512</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">170</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">v3 (unproject)</td>
+<td style="text-align: right;">512</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">177</td>
+</tr>
+</tbody>
+</table>
+<h3 id="validation">Validation</h3>
+<p>The top confirmation candidates were rerun on 100 held-out seeds. All
+five v3 candidates produced frequent stable transitions and no collapse
+events.</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 11%" />
+<col style="width: 7%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 7%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Candidate</th>
+<th style="text-align: right;">Sites</th>
+<th style="text-align: right;">Width</th>
+<th style="text-align: right;">Cap.</th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></th>
+<th style="text-align: right;">Max dist.</th>
+<th style="text-align: right;">Travel cost</th>
+<th style="text-align: right;">Mut. sd</th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math></th>
+<th style="text-align: right;">Stable</th>
+<th style="text-align: right;">Success</th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>f</mi></msub><annotation encoding="application/x-tex">t_f</annotation></semantics></math></th>
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>f</mi></msub><annotation encoding="application/x-tex">m_f</annotation></semantics></math></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">trial_318</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">0.220</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">0.580</td>
+<td style="text-align: right;">7.5</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.080</td>
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">96/100</td>
+<td style="text-align: right;">0.436</td>
+<td style="text-align: right;">0.857</td>
+<td style="text-align: right;">0.800</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trial_173</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">0.560</td>
+<td style="text-align: right;">8.0</td>
+<td style="text-align: right;">0.025</td>
+<td style="text-align: right;">0.080</td>
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">89/100</td>
+<td style="text-align: right;">0.425</td>
+<td style="text-align: right;">0.841</td>
+<td style="text-align: right;">0.780</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">trial_239</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.190</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">0.560</td>
+<td style="text-align: right;">7.5</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.080</td>
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">88/100</td>
+<td style="text-align: right;">0.419</td>
+<td style="text-align: right;">0.840</td>
+<td style="text-align: right;">0.793</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trial_432</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.220</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">0.540</td>
+<td style="text-align: right;">8.0</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.080</td>
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">87/100</td>
+<td style="text-align: right;">0.453</td>
+<td style="text-align: right;">0.836</td>
+<td style="text-align: right;">0.771</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">trial_196</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.180</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0.540</td>
+<td style="text-align: right;">7.5</td>
+<td style="text-align: right;">0.030</td>
+<td style="text-align: right;">0.080</td>
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">87/100</td>
+<td style="text-align: right;">0.406</td>
+<td style="text-align: right;">0.822</td>
+<td style="text-align: right;">0.773</td>
+</tr>
+</tbody>
+</table>
+<p>Here
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>f</mi></msub><annotation encoding="application/x-tex">t_f</annotation></semantics></math>
+is final mean comb tilt and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>m</mi><mi>f</mi></msub><annotation encoding="application/x-tex">m_f</annotation></semantics></math>
+is final mean of the lower sender or receiver transposition value. The
+strongest v3 candidate, <code>trial_318</code>, reached stable outcomes
+in 96 of 100 seeds.</p>
+<h3 id="comparison-with-flatten-decode">Comparison with Flatten
+Decode</h3>
+<p>The unproject decode supports a reliable transition in a shifted
+region of parameter space. Relative to the v2 (flatten) validated
+region, the v3 candidates share a consistently lower travel cost
+(0.020–0.030 vs 0.055) and higher food-site capacity (11–14 vs 9), while
+food-site count (7–8 vs 8), vertical-comb benefit (0.54–0.58 vs 0.60),
+and mutation parameters (sd 0.08 vs 0.09,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+0.9 vs 1.0) are broadly similar. Final foraging success is lower under
+unproject (0.41–0.45 vs 0.52–0.62), consistent with the inverted
+projection placing higher geometric demands on dance decoding at low
+travel cost. Both decode variants show no collapse events across all
+validated seeds.</p>
+<p>The key result is qualitative robustness: the vertical gravity-code
+transition is not an artifact of the flatten projection choice. It
+arises under both geometric decode methods, with the unproject variant
+finding its corridor at lower travel cost and higher food capacity.</p>
 <h1 id="conclusion">Conclusion</h1>
-<p>In the current v2 model, horizontal-start colonies can reliably
-evolve a vertical comb and a gravity-referenced sender-receiver code.
-The strongest validated candidate is stable in 99 of 100 held-out seeds,
-and the same parameter region remains stable in 91 of 100 later
-sensitivity seeds.</p>
+<p>In the current model, horizontal-start colonies can reliably evolve a
+vertical comb and a gravity-referenced sender-receiver code under both
+direct-decode variants tested. The strongest flatten-decode candidate
+(v2 <code>trial_257</code>) is stable in 99 of 100 held-out seeds, and
+the same parameter region remains stable in 91 of 100 later sensitivity
+seeds. The strongest unproject-decode candidate (v3
+<code>trial_318</code>) is stable in 96 of 100 held-out seeds.</p>
 <p>The result is conditional, not universal. The transition depends on
 an ecology with enough recruitable food sites, a substantial
 vertical-comb benefit, and mutation parameters that let comb tilt and
@@ -911,9 +1137,15 @@ sender-receiver transposition move together. Too few food sites or too
 small a mutation scale returns the population to productive but flat
 direct pointing. Weak vertical-comb benefit is not compensated for by
 mutation coupling.</p>
-<p>The main conclusion is therefore modest: the v2 model contains a
-reproducible transition corridor, but that corridor is
-parameter-dependent. The next scientific step is to make the
+<p>The decode-method comparison adds a robustness check: the transition
+is not an artifact of the flatten projection. Under the geometrically
+more correct unproject decode, a comparable transition corridor exists
+at lower travel cost and higher food capacity, indicating that the
+qualitative result is stable across reasonable geometric interpretations
+of the direct-pointing dance.</p>
+<p>The main conclusion is therefore modest: the model contains a
+reproducible transition corridor under both decode methods, but that
+corridor is parameter-dependent. The next scientific step is to make the
 vertical-comb benefit and food ecology less abstract, then test whether
 the same transition remains under more explicit biological
 constraints.</p>
@@ -942,6 +1174,10 @@ with:</p>
 <p>The food-distribution communication experiment is produced on
 Snellius with:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> experiments/run_food_distribution_v2_snellius.sbatch</span></code></pre></div>
+<p>The v3 (unproject) pipeline was run on Snellius with:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> experiments/submit_food_transition_v3_snellius.sh</span></code></pre></div>
+<p>Results are synced locally with:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rsync</span> <span class="at">-av</span> gchrupala1@snellius.surf.nl:/gpfs/home2/gchrupala1/bees/results/food_transition_v3_<span class="pp">*</span>.csv results/</span></code></pre></div>
 <h1 class="unnumbered" id="references">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent"
 role="list">

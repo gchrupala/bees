@@ -15,10 +15,13 @@ resource density, patch size, reward, distance, and habitat [@sherman_visscher_2
 @dornhaus_chittka_2004; @dornhaus_etal_2006; @beekman_lew_2008;
 @donaldson_matasci_dornhaus_2012; @schurch_gruter_2014; @price_gruter_2015].
 
-This report covers only the current v2 model and the tracked v2 result files. The model
-is intentionally small: it asks whether horizontal-start populations can evolve both a
-vertical comb and a sender-receiver gravity code under simple foraging, inheritance, and
-mutation rules.
+This report covers the current v2 model run under two direct-decode variants and their
+tracked result files. The model is intentionally small: it asks whether horizontal-start
+populations can evolve both a vertical comb and a sender-receiver gravity code under
+simple foraging, inheritance, and mutation rules. The v2 pipeline (flatten decode) and v3
+pipeline (unproject decode) differ only in how direct-pointing projects the food direction
+onto the comb plane; all other model parameters and the evolutionary pipeline structure
+are identical.
 
 # Current Model
 
@@ -85,17 +88,21 @@ is counted as collapsed if mean success falls to 0.02 or below.
 
 # Experiments
 
-The v2 Snellius pipeline ran the following sequence:
+Both pipelines share the same stage structure and seed panels. The v3 pipeline omits
+the sensitivity and interaction stages; those remain v2-only for now.
 
-| Stage | Source files | Seed panel |
-|:------|:-------------|:-----------|
-| Optuna search | `results/food_transition_v2_optuna_trials.csv`, `results/food_transition_v2_optuna_seed_metrics.csv` | seeds 100-109 |
-| Candidate confirmation | `results/food_transition_v2_confirmation_*` | seeds 110-149 |
-| Held-out validation | `results/food_transition_v2_validation_*` | seeds 200-299 |
-| One-parameter sensitivity | `results/food_transition_v2_oat_sensitivity_*`, `results/food_transition_v2_sensitivity_refinement_*` | seeds 300-399 |
-| Evolutionary interaction grid | `results/food_transition_v2_evolutionary_interaction_*` | seeds 300-399 |
-| Low-benefit generation budget | `results/food_transition_v2_low_regime_generation_sensitivity_*`, `..._mut_0p075_*` | seeds 300-399 |
-| Food-distribution communication | `results/food_distribution_v2_*` | seeds 400-449 |
+| Pipeline | Stage | Source files | Seed panel |
+|:---------|:------|:-------------|:-----------|
+| v2 (flatten) | Optuna search | `results/food_transition_v2_optuna_trials.csv`, `results/food_transition_v2_optuna_seed_metrics.csv` | seeds 100-109 |
+| v2 (flatten) | Candidate confirmation | `results/food_transition_v2_confirmation_*` | seeds 110-149 |
+| v2 (flatten) | Held-out validation | `results/food_transition_v2_validation_*` | seeds 200-299 |
+| v2 (flatten) | One-parameter sensitivity | `results/food_transition_v2_oat_sensitivity_*`, `results/food_transition_v2_sensitivity_refinement_*` | seeds 300-399 |
+| v2 (flatten) | Evolutionary interaction grid | `results/food_transition_v2_evolutionary_interaction_*` | seeds 300-399 |
+| v2 (flatten) | Low-benefit generation budget | `results/food_transition_v2_low_regime_generation_sensitivity_*`, `..._mut_0p075_*` | seeds 300-399 |
+| v2 (flatten) | Food-distribution communication | `results/food_distribution_v2_*` | seeds 400-449 |
+| v3 (unproject) | Optuna search | `results/food_transition_v3_optuna_trials.csv`, `results/food_transition_v3_optuna_seed_metrics.csv` | seeds 100-109 |
+| v3 (unproject) | Candidate confirmation | `results/food_transition_v3_confirmation_*` | seeds 110-149 |
+| v3 (unproject) | Held-out validation | `results/food_transition_v3_validation_*` | seeds 200-299 |
 
 The Optuna search evaluated 512 trials over food-site count, angular width, capacity,
 vertical-comb benefit, maximum food distance, travel cost, mutation scale, and
@@ -296,12 +303,66 @@ scale but never coordinates both traits. Across all 600 runs only a single seed 
 regime is therefore a genuine barrier rather than a slow approach: it is not overcome by
 time or by a modestly higher mutation scale.
 
+## Unproject Decode (v3)
+
+The v2 pipeline used the *flatten* direct-decode: the food direction is projected onto
+the comb plane by dropping the component perpendicular to the plane. The v3 pipeline
+replaces this with the *unproject* decode: the comb-plane projection matrix is inverted
+($M^{-1}$) so that the decoded direction correctly reverses the tilt-induced distortion.
+All other model parameters and the pipeline structure are identical.
+
+### Optuna Search
+
+Running the same 512-trial Optuna search under the unproject decode found a somewhat
+broader stable region than flatten:
+
+| Pipeline | Total trials | Stable in all 10 seeds | Stable in 9+ seeds |
+|:---------|-------------:|----------------------:|-------------------:|
+| v2 (flatten) | 512 | 61 | 170 |
+| v3 (unproject) | 512 | 82 | 177 |
+
+### Validation
+
+The top confirmation candidates were rerun on 100 held-out seeds. All five v3 candidates
+produced frequent stable transitions and no collapse events.
+
+| Candidate | Sites | Width | Cap. | $\alpha$ | Max dist. | Travel cost | Mut. sd | $\rho$ | Stable | Success | $t_f$ | $m_f$ |
+|:----------|------:|------:|-----:|-----------:|----------:|------------:|--------:|-------:|-------:|--------:|-------:|-------:|
+| trial_318 | 7 | 0.220 | 14 | 0.580 | 7.5 | 0.020 | 0.080 | 0.9 | 96/100 | 0.436 | 0.857 | 0.800 |
+| trial_173 | 8 | 0.200 | 13 | 0.560 | 8.0 | 0.025 | 0.080 | 0.9 | 89/100 | 0.425 | 0.841 | 0.780 |
+| trial_239 | 8 | 0.190 | 11 | 0.560 | 7.5 | 0.020 | 0.080 | 0.9 | 88/100 | 0.419 | 0.840 | 0.793 |
+| trial_432 | 8 | 0.220 | 14 | 0.540 | 8.0 | 0.020 | 0.080 | 0.9 | 87/100 | 0.453 | 0.836 | 0.771 |
+| trial_196 | 8 | 0.180 | 12 | 0.540 | 7.5 | 0.030 | 0.080 | 0.9 | 87/100 | 0.406 | 0.822 | 0.773 |
+
+Here $t_f$ is final mean comb tilt and $m_f$ is final mean of the lower sender or
+receiver transposition value. The strongest v3 candidate, `trial_318`, reached stable
+outcomes in 96 of 100 seeds.
+
+### Comparison with Flatten Decode
+
+The unproject decode supports a reliable transition in a shifted region of parameter
+space. Relative to the v2 (flatten) validated region, the v3 candidates share a
+consistently lower travel cost (0.020–0.030 vs 0.055) and higher food-site capacity
+(11–14 vs 9), while food-site count (7–8 vs 8), vertical-comb benefit (0.54–0.58 vs
+0.60), and mutation parameters (sd 0.08 vs 0.09, $\rho$ 0.9 vs 1.0) are broadly
+similar. Final foraging success is lower under unproject (0.41–0.45 vs 0.52–0.62),
+consistent with the inverted projection placing higher geometric demands on dance decoding
+at low travel cost. Both decode variants show no collapse events across all validated
+seeds.
+
+The key result is qualitative robustness: the vertical gravity-code transition is not an
+artifact of the flatten projection choice. It arises under both geometric decode methods,
+with the unproject variant finding its corridor at lower travel cost and higher food
+capacity.
+
 # Conclusion
 
-In the current v2 model, horizontal-start colonies can reliably evolve a vertical comb
-and a gravity-referenced sender-receiver code. The strongest validated candidate is
-stable in 99 of 100 held-out seeds, and the same parameter region remains stable in 91
-of 100 later sensitivity seeds.
+In the current model, horizontal-start colonies can reliably evolve a vertical comb and
+a gravity-referenced sender-receiver code under both direct-decode variants tested. The
+strongest flatten-decode candidate (v2 `trial_257`) is stable in 99 of 100 held-out
+seeds, and the same parameter region remains stable in 91 of 100 later sensitivity
+seeds. The strongest unproject-decode candidate (v3 `trial_318`) is stable in 96 of 100
+held-out seeds.
 
 The result is conditional, not universal. The transition depends on an ecology with
 enough recruitable food sites, a substantial vertical-comb benefit, and mutation
@@ -309,10 +370,16 @@ parameters that let comb tilt and sender-receiver transposition move together. T
 food sites or too small a mutation scale returns the population to productive but flat
 direct pointing. Weak vertical-comb benefit is not compensated for by mutation coupling.
 
-The main conclusion is therefore modest: the v2 model contains a reproducible transition
-corridor, but that corridor is parameter-dependent. The next scientific step is to make
-the vertical-comb benefit and food ecology less abstract, then test whether the same
-transition remains under more explicit biological constraints.
+The decode-method comparison adds a robustness check: the transition is not an artifact
+of the flatten projection. Under the geometrically more correct unproject decode, a
+comparable transition corridor exists at lower travel cost and higher food capacity,
+indicating that the qualitative result is stable across reasonable geometric
+interpretations of the direct-pointing dance.
+
+The main conclusion is therefore modest: the model contains a reproducible transition
+corridor under both decode methods, but that corridor is parameter-dependent. The next
+scientific step is to make the vertical-comb benefit and food ecology less abstract,
+then test whether the same transition remains under more explicit biological constraints.
 
 # Reproducibility
 
@@ -347,6 +414,18 @@ The food-distribution communication experiment is produced on Snellius with:
 
 ```sh
 sbatch experiments/run_food_distribution_v2_snellius.sbatch
+```
+
+The v3 (unproject) pipeline was run on Snellius with:
+
+```sh
+bash experiments/submit_food_transition_v3_snellius.sh
+```
+
+Results are synced locally with:
+
+```sh
+rsync -av gchrupala1@snellius.surf.nl:/gpfs/home2/gchrupala1/bees/results/food_transition_v3_*.csv results/
 ```
 
 # References
