@@ -13,6 +13,11 @@ results/*
 !results/.gitkeep
 !results/*.csv
 results/*.tmp
+# Slurm job logs (jobs write into logs/; ignore stray root-level logs too)
+logs/*
+!logs/.gitkeep
+slurm-*.out
+slurm-*.err
 report/*.aux
 report/*.bbl
 report/*.blg

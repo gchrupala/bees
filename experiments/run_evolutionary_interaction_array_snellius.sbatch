@@ -3,8 +3,8 @@
 #SBATCH --time=36:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=8G
-#SBATCH --output=slurm-%x-%A_%a.out
-#SBATCH --error=slurm-%x-%A_%a.err
+#SBATCH --output=logs/slurm-%x-%A_%a.out
+#SBATCH --error=logs/slurm-%x-%A_%a.err
 
 set -euo pipefail
 
