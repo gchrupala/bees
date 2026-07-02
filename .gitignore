@@ -26,3 +26,7 @@ report/*.log
 report/*.out
 report/*.pdf
 !report/report.pdf
+report/*.fdb_latexmk
+report/*.fls
+report/*.synctex.gz
+q.log
