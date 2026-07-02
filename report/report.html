@@ -937,14 +937,20 @@ reached a stable vertical gravity-code outcome. The low-benefit regime
 is therefore a genuine barrier rather than a slow approach: it is not
 overcome by time or by a modestly higher mutation scale.</p>
 <h2 id="unproject-decode-v3">Unproject Decode (v3)</h2>
-<p>The v2 pipeline used the <em>flatten</em> direct-decode: the food
-direction is projected onto the comb plane by dropping the component
-perpendicular to the plane. The v3 pipeline replaces this with the
-<em>unproject</em> decode: the comb-plane projection matrix is inverted
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>M</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">M^{-1}</annotation></semantics></math>)
-so that the decoded direction correctly reverses the tilt-induced
-distortion. All other model parameters and the pipeline structure are
-identical.</p>
+<p>The two pipelines differ only in how the direct-pointing dance is
+decoded when the comb is tilted. The <em>flatten</em> decode drops the
+component of the food direction perpendicular to the comb plane; this
+attenuates the signal and introduces a directional bias whose magnitude
+grows with tilt. The <em>unproject</em> decode inverts the projection
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>M</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">M^{-1}</annotation></semantics></math>),
+which removes the directional bias so that only the attenuation remains.
+The gravity-referenced code does not suffer this bias under either
+method, so the relative advantage of switching to gravity coding on a
+tilted comb is different: under flatten the gravity code removes both
+bias and attenuation, whereas under unproject it removes only the
+attenuation, making the selective pressure for the gravity code cleaner
+and more directly tied to the vertical-comb benefit parameter. All other
+model parameters and the pipeline structure are identical.</p>
 <h3 id="optuna-search">Optuna Search</h3>
 <p>Running the same 512-trial Optuna search under the unproject decode
 found a somewhat broader stable region than flatten:</p>
@@ -1118,10 +1124,21 @@ the v3 candidates (0.41–0.45 vs 0.52–0.62), but because the two searches
 converged to different parameter regions this difference cannot be
 attributed to the decode method alone. Both decode variants show no
 collapse events across all validated seeds.</p>
+<p>The broader stable region found by Optuna under unproject (82 vs 61
+fully-stable trials) is consistent with the stronger selective pressure
+for the gravity code that unproject provides. Under flatten, the
+directional bias of the direct-pointing code on a tilted comb creates
+competing pressures: colonies can reduce the cost of the bias by
+lowering dance investment rather than by adopting gravity coding. Under
+unproject, direct-pointing remains directionally correct regardless of
+tilt, so the only advantage of switching to the gravity code is the
+vertical-comb signal-strength gain. This makes the selection gradient
+toward gravity coding cleaner and more directly proportional to the
+vertical-comb benefit parameter, which may widen the parameter range
+over which the transition occurs.</p>
 <p>The key result is qualitative robustness: the vertical gravity-code
 transition is not an artifact of the flatten projection choice. It
-arises under both geometric decode methods, with the unproject variant
-finding its corridor at lower travel cost and higher food capacity.</p>
+arises under both geometric decode methods.</p>
 <h1 id="conclusion">Conclusion</h1>
 <p>In the current model, horizontal-start colonies can reliably evolve a
 vertical comb and a gravity-referenced sender-receiver code under both
