@@ -356,15 +356,21 @@ but because the two searches converged to different parameter regions this diffe
 cannot be attributed to the decode method alone. Both decode variants show no collapse events across all validated
 seeds.
 
+The two decode methods create different selective landscapes for the joint evolution of
+comb tilt and transposition. Under flatten, switching to the gravity code on a tilted comb
+removes both the directional bias and the attenuation, so the raw fitness gain is larger.
+But flatten also creates a conflict: the directional bias makes direct-pointing costly on
+a tilted comb, which generates selection pressure to revert tilt and stay flat, working
+against the vertical-comb benefit. Under unproject, the fitness gain from adopting the
+gravity code is smaller (only the attenuation is removed), but there is no tilt-reversion
+conflict — direct-pointing remains accurate regardless of tilt, so the vertical-comb
+benefit drives tilt upward without counterpressure from dance quality. These two effects
+push in opposite directions and it is not yet clear which dominates or how they interact
+across parameter space.
+
 The broader stable region found by Optuna under unproject (82 vs 61 fully-stable trials)
-is consistent with the stronger selective pressure for the gravity code that unproject
-provides. Under flatten, the directional bias of the direct-pointing code on a tilted comb
-creates competing pressures: colonies can reduce the cost of the bias by lowering dance
-investment rather than by adopting gravity coding. Under unproject, direct-pointing remains
-directionally correct regardless of tilt, so the only advantage of switching to the
-gravity code is the vertical-comb signal-strength gain. This makes the selection gradient
-toward gravity coding cleaner and more directly proportional to the vertical-comb benefit
-parameter, which may widen the parameter range over which the transition occurs.
+suggests the selective landscape is more permissive under unproject, but the mechanism
+behind this difference requires further investigation.
 
 The key result is qualitative robustness: the vertical gravity-code transition is not an
 artifact of the flatten projection choice. It arises under both geometric decode methods.
