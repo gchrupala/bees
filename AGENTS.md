@@ -56,11 +56,32 @@ We are modeling the evolution of bee communication.
   `cd /gpfs/home2/gchrupala1/bees && git pull --rebase`.
 - Snellius uses Slurm. Submit the evolutionary interaction array from the
   remote checkout with `./experiments/submit_evolutionary_interaction_snellius.sh`;
-  monitor with `squeue`, and inspect `slurm-*.out` / `slurm-*.err` logs in the
-  checkout.
+  monitor with `squeue`, and inspect the Slurm `logs/slurm-*.out` /
+  `logs/slurm-*.err` logs (the `.sbatch` files write there; `logs/` is gitignored
+  except for `.gitkeep`).
 - The submit helper accepts `BEES_ARRAY_TASKS`, `BEES_ARRAY_CONCURRENCY`,
   `BEES_VENV`, `BEES_PYTHON`, and `BEES_PUSH`. Set `BEES_PUSH=1` when the
   finalizer should commit and push merged result CSVs after the array succeeds.
+
+### Keep data in sync via git (avoid divergent checkouts)
+
+The Snellius and local checkouts have drifted before, leaving result CSVs that
+existed on only one side. Treat git as the single source of truth for results,
+not manual copies:
+
+- After any Snellius run, commit and push its result outputs from the remote
+  checkout (or use `BEES_PUSH=1` so the finalizer does it). Do not leave
+  regenerated results uncommitted on the cluster.
+- Before starting new work on either side, `git pull --rebase` first so both
+  checkouts share the same base; never `scp`/`rsync` result files between
+  machines as a substitute for committing them.
+- Result CSVs are tracked, but GitHub rejects blobs >100MB. Store oversized
+  trajectory outputs gzipped (`results/*.csv.gz`, whitelisted in `.gitignore`)
+  rather than working around it with out-of-band copies. See the gzipped
+  trajectory files for the pattern.
+- If a `git pull --rebase` is blocked by uncommitted or untracked result files,
+  reconcile via git (commit, or confirm the files are byte-identical to what is
+  already tracked before removing) rather than deleting data blindly.
 
 ## Reports
 
