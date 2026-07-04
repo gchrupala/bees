@@ -36,16 +36,29 @@ from bees.model import DirectionSettings, generate_food_sites, sample_sun_azimut
 DEFAULT_CONFIG = ROOT / "configs" / "food_distribution_disk.json"
 DEFAULT_OUTPUT = ROOT / "report" / "figures" / "disk_food_samples.png"
 
-DISK_FACE = "#4C72B0"
-DISK_EDGE = "#2F4A75"
+# Flower marker size (pixels) as a function of patch radius. The radius is
+# expressed as a fraction of the plot's outer distance so the mapping is
+# independent of the config's distance units; the pixel size scales linearly
+# with that fraction, clamped to stay legible for tiny patches and bounded for
+# the rare very large ones.
+FLOWER_PX_PER_FRACTION = 1000.0
+FLOWER_MIN_PX = 13
+FLOWER_MAX_PX = 90
+
+
+def flower_size(radius: float, max_distance: float) -> int:
+    fraction = radius / max_distance if max_distance > 0 else 0.0
+    return int(
+        min(FLOWER_MAX_PX, max(FLOWER_MIN_PX, fraction * FLOWER_PX_PER_FRACTION))
+    )
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Sample and visualize several food-site distributions under the "
-            "ecological disk geometry, drawing each patch as a spatially "
-            "to-scale disk so the marker size shows the sampled patch radius."
+            "ecological disk geometry, scaling each flower marker by the "
+            "sampled patch radius."
         )
     )
     parser.add_argument(
@@ -66,7 +79,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--samples",
         type=int,
-        default=5,
+        default=6,
         help="Number of sampled food distributions to visualize.",
     )
     parser.add_argument(
@@ -133,31 +146,6 @@ def add_image_marker(ax, theta: float, radius: float, text: str, size: int, zord
     ax.add_artist(annotation)
 
 
-def draw_disk(ax, center_distance: float, center_bearing: float, radius: float) -> None:
-    """Draw a patch as a spatially to-scale filled disk on the polar axis.
-
-    The disk boundary is a true circle in Cartesian space centered at the polar
-    point ``(center_distance, center_bearing)``; we sample it and convert back
-    to polar coordinates so the drawn extent equals the sampled patch radius.
-    """
-    x0 = center_distance * math.cos(center_bearing)
-    y0 = center_distance * math.sin(center_bearing)
-    t = np.linspace(0.0, 2 * math.pi, 120)
-    xs = x0 + radius * np.cos(t)
-    ys = y0 + radius * np.sin(t)
-    thetas = np.arctan2(ys, xs)
-    radii = np.hypot(xs, ys)
-    ax.fill(
-        thetas,
-        radii,
-        facecolor=DISK_FACE,
-        edgecolor=DISK_EDGE,
-        linewidth=1.0,
-        alpha=0.6,
-        zorder=3,
-    )
-
-
 def style_polar_axis(ax, max_radius: float) -> None:
     ax.set_theta_zero_location("E")
     ax.set_theta_direction(-1)
@@ -182,13 +170,18 @@ def draw_sample(ax, sites, settings, sun_azimuth: float) -> None:
     # reference for the gravity-based code and is drawn fresh each episode.
     add_image_marker(ax, sun_azimuth, max_radius * 1.12, "☀️", 46, zorder=6)
 
-    # Each patch is drawn as a to-scale disk (size == sampled radius); a small
-    # fixed flower marks the center so the site reads as food. Unlike the legacy
-    # angular model, the patch radius here is a physical spatial extent, so the
-    # disk -- not the flower -- carries the radius information.
+    # Each patch is a flower whose size scales with the sampled radius. Unlike
+    # the legacy angular model, the patch radius here is a physical spatial
+    # extent, so a bigger flower marks a physically larger patch.
     for site in sites:
-        draw_disk(ax, site.distance, site.direction, site.radius)
-        add_image_marker(ax, site.direction, site.distance, "🌸", 11, zorder=4)
+        add_image_marker(
+            ax,
+            site.direction,
+            site.distance,
+            "🌸",
+            flower_size(site.radius, settings.food_site_max_distance),
+            zorder=4,
+        )
 
     # faint dashed ring marking the maximum food distance (outer boundary)
     ax.plot(
@@ -202,57 +195,12 @@ def draw_sample(ax, sites, settings, sun_azimuth: float) -> None:
     )
 
 
-def draw_size_key(ax, settings: DirectionSettings) -> None:
-    """A plain-axis legend translating disk size into patch radius, drawn to the
-    same data scale as the sample panels so the disks are directly comparable."""
-    max_radius = settings.food_site_max_distance
-    ax.set_aspect("equal")
-    ax.set_xlim(-0.05 * max_radius, max_radius)
-    ax.set_ylim(0, max_radius)
-    ax.axis("off")
-    ax.set_title("Patch radius key", fontsize=11)
-
-    key_radii = [0.05, 0.20, 0.40, 0.80]
-    x_center = max_radius * 0.42
-    spacing = max_radius / (len(key_radii) + 1)
-    for index, radius in enumerate(key_radii):
-        y = max_radius - (index + 1) * spacing
-        circle = plt.Circle(
-            (x_center, y),
-            radius,
-            facecolor=DISK_FACE,
-            edgecolor=DISK_EDGE,
-            linewidth=0.8,
-            alpha=0.55,
-        )
-        ax.add_patch(circle)
-        ax.text(
-            x_center + max_radius * 0.16,
-            y,
-            f"r = {radius:.2f}",
-            va="center",
-            ha="left",
-            fontsize=10,
-        )
-
-    ax.text(
-        x_center,
-        max_radius * 0.06,
-        f"median r = {settings.food_site_radius:.2f}\n"
-        f"log-sd = {settings.food_site_radius_log_sd:.2f}",
-        va="bottom",
-        ha="center",
-        fontsize=9,
-        color="#444444",
-    )
-
-
 def main() -> None:
     args = parse_args()
     settings = load_settings(args.config, args.food_site_count)
     args.output.parent.mkdir(parents=True, exist_ok=True)
 
-    columns = math.ceil((args.samples + 1) / 2)
+    columns = math.ceil(args.samples / 2)
     fig = plt.figure(figsize=(16, 9))
 
     for sample_index in range(args.samples):
@@ -263,19 +211,17 @@ def main() -> None:
         draw_sample(ax, sites, settings, sun_azimuth)
         ax.set_title(f"Sample {sample_index + 1} ({len(sites)} sites)")
 
-    key_ax = fig.add_subplot(2, columns, args.samples + 1)
-    draw_size_key(key_ax, settings)
-
-    for cell in range(args.samples + 2, 2 * columns + 1):
+    for cell in range(args.samples + 1, 2 * columns + 1):
         blank = fig.add_subplot(2, columns, cell)
         blank.axis("off")
 
     fig.suptitle(
         "Disk-geometry food-site samples "
         f"(n={settings.food_site_count}, median radius="
-        f"{settings.food_site_radius:.2f}, max distance="
+        f"{settings.food_site_radius:.2f}, log-sd="
+        f"{settings.food_site_radius_log_sd:.2f}, max distance="
         f"{settings.food_site_max_distance:.1f}, capacity="
-        f"{settings.food_site_capacity}); disk size is the to-scale patch radius"
+        f"{settings.food_site_capacity}); flower size scales with patch radius"
     )
     plt.tight_layout(rect=(0, 0, 1, 0.96))
     fig.savefig(args.output, dpi=180)
