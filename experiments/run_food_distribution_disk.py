@@ -15,10 +15,15 @@ replaces the legacy angular-width patch model with physical geometry:
   from a Gamma with the colony's evolved mean (``search_limit``) and a fixed
   shape (``foray_distribution="gamma"``).
 
-The two swept axes are therefore food-site count and (median) patch *radius*,
-replacing the count/angular-width axes of the v2 experiment. The headline
+The experiment sweeps the full factorial grid of mean food-site count against
+(median) patch *radius* -- every (count, radius) cell rather than a single row
+and column -- so the recruitment landscape can be read as a matrix. The headline
 outcome is unchanged: the in-run recruitment advantage (dance-follower minus
 matched non-follower success), a contemporaneous, near-randomized contrast.
+
+Per-seed final metrics are streamed to the events CSV as each run completes, so
+the full grid is recoverable even if the job is interrupted; the per-cell
+group-summary matrix is written once all runs finish.
 
 All lengths in this experiment (distances, foray range, patch radii) are in
 meters, unlike the abstract length units of the legacy angular pipelines.
@@ -45,13 +50,9 @@ RESULTS = ROOT / "results"
 DEFAULT_PREFIX = RESULTS / "food_distribution_disk"
 DEFAULT_CONFIG = ROOT / "configs" / "food_distribution_disk.json"
 
-# All lengths are in meters (distances, foray range, and patch radii). The
-# site-count sweep is held at BASELINE_RADIUS; the radius sweep is held at
-# BASELINE_COUNT. The shared (count, radius) point is the baseline anchor. The
-# radius ladder spans a flowering clump (~15 m) to a large mass-flowering crop
+# Grid axes; all lengths in meters. Mean site count crossed with median patch
+# radius, which spans a flowering clump (~15 m) to a large mass-flowering crop
 # (~600 m); food sites sit 750-6000 m from the nest.
-BASELINE_COUNT = 2
-BASELINE_RADIUS = 150.0
 SITE_COUNTS = (1, 2, 3, 4, 6, 8)
 PATCH_RADII = (15.0, 37.5, 75.0, 150.0, 300.0, 600.0)
 
@@ -155,22 +156,11 @@ class SeedResult:
 
 
 def build_conditions() -> list[Condition]:
-    conditions: list[Condition] = [
-        Condition("hard", "anchor", 1, 37.5, 6, 1.0),
-        Condition("baseline", "anchor", BASELINE_COUNT, BASELINE_RADIUS, 6, 1.0),
-        Condition("easy", "anchor", 8, 300.0, 6, 1.0),
+    return [
+        Condition(f"c{count}_r{radius:g}m", "grid", count, radius, 6, 1.0)
+        for count in SITE_COUNTS
+        for radius in PATCH_RADII
     ]
-    for count in SITE_COUNTS:
-        conditions.append(
-            Condition(f"sites_{count}", "site_count", count, BASELINE_RADIUS, 6, 1.0)
-        )
-    for radius in PATCH_RADII:
-        conditions.append(
-            Condition(
-                f"radius_{radius:g}m", "patch_radius", BASELINE_COUNT, radius, 6, 1.0
-            )
-        )
-    return conditions
 
 
 def condition_settings(

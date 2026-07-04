@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=bees-food-dist-disk
-#SBATCH --time=06:00:00
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=8G
+#SBATCH --time=02:00:00
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=16G
 #SBATCH --output=logs/slurm-%x-%j.out
 #SBATCH --error=logs/slurm-%x-%j.err
 
