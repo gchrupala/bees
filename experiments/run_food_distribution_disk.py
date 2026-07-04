@@ -69,6 +69,7 @@ EVENT_FIELDNAMES = [
     "final_directional_bias",
     "final_receiver_attention",
     "final_search_limit",
+    "final_dance_propensity",
     "final_comb_tilt",
     "final_success",
     "final_payoff",
@@ -88,6 +89,7 @@ TRAJECTORY_FIELDNAMES = [
     "directional_bias",
     "receiver_attention",
     "search_limit",
+    "dance_propensity",
     "comb_tilt",
     "success_rate",
     "payoff",
@@ -106,6 +108,7 @@ GROUP_FIELDNAMES = [
     "useful_fraction",
     "mean_final_directional_bias",
     "mean_final_receiver_attention",
+    "mean_final_dance_propensity",
     "mean_final_success",
     "mean_final_payoff",
     "mean_tail_follower_success_rate",
@@ -143,6 +146,7 @@ class SeedResult:
     final_recruitment_advantage: float
     final_directional_bias: float
     final_receiver_attention: float
+    final_dance_propensity: float
     final_success: float
     final_payoff: float
     tail_follower_success_rate: float
@@ -210,6 +214,7 @@ def run_condition_seed(
         "final_directional_bias": _fmt(final.average_directional_bias),
         "final_receiver_attention": _fmt(final.average_receiver_attention),
         "final_search_limit": _fmt(final.average_search_limit),
+        "final_dance_propensity": _fmt(final.average_dance_propensity),
         "final_comb_tilt": _fmt(final.average_comb_tilt),
         "final_success": _fmt(final.average_success_rate),
         "final_payoff": _fmt(final.average_payoff),
@@ -232,6 +237,7 @@ def run_condition_seed(
             "directional_bias": _fmt(state.average_directional_bias),
             "receiver_attention": _fmt(state.average_receiver_attention),
             "search_limit": _fmt(state.average_search_limit),
+            "dance_propensity": _fmt(state.average_dance_propensity),
             "comb_tilt": _fmt(state.average_comb_tilt),
             "success_rate": _fmt(state.average_success_rate),
             "payoff": _fmt(state.average_payoff),
@@ -255,6 +261,7 @@ def run_condition_seed(
         final_recruitment_advantage=final.recruitment_advantage,
         final_directional_bias=final.average_directional_bias,
         final_receiver_attention=final.average_receiver_attention,
+        final_dance_propensity=final.average_dance_propensity,
         final_success=final.average_success_rate,
         final_payoff=final.average_payoff,
         tail_follower_success_rate=tail_follower,
@@ -290,6 +297,9 @@ def group_summary_row(
         ),
         "mean_final_receiver_attention": _fmt(
             mean(result.final_receiver_attention for result in results)
+        ),
+        "mean_final_dance_propensity": _fmt(
+            mean(result.final_dance_propensity for result in results)
         ),
         "mean_final_success": _fmt(
             mean(result.final_success for result in results)

@@ -17,6 +17,7 @@ class ColonyTraits:
     search_limit: float
     comb_tilt: float = 0.0
     comb_orientation: float = 0.0
+    dance_propensity: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,7 @@ class Worker:
     sender_transposition: float
     receiver_transposition: float
     search_limit: float
+    dance_propensity: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -112,6 +114,12 @@ class DirectionSettings:
     # depletion while per-visit value stays fixed. Requires disk geometry.
     food_capacity_scaling: str = "fixed"
     food_capacity_reference_radius: float = 0.0
+    # Capacity-conditional recruitment. When True, a successful scout dances with
+    # probability 1 - (1 - dance_propensity) ** remaining_capacity, so a patch
+    # with nothing left never seeds a dance and richer patches recruit more; the
+    # dance_propensity trait then evolves. When False, every successful scout
+    # dances unconditionally (legacy behavior) and the trait draws no randomness.
+    evolve_dance_propensity: bool = False
 
 
 @dataclass(frozen=True)
@@ -135,6 +143,7 @@ class GenerationSummary:
     average_comb_orientation: float
     comb_orientation_alignment: float
     average_search_limit: float
+    average_dance_propensity: float
     average_success_rate: float
     average_payoff: float
     follower_success_rate: float
@@ -287,6 +296,11 @@ def create_colony(
                 0.0,
                 settings.max_search_distance,
             ),
+            dance_propensity=_clamp(
+                traits.dance_propensity + _dance_propensity_jitter(settings, rng),
+                0.0,
+                1.0,
+            ),
         )
         for _ in range(settings.workers_per_colony)
     )
@@ -300,6 +314,15 @@ def _search_limit_jitter(settings: DirectionSettings, rng: Random) -> float:
     if settings.foray_distribution == "gamma":
         return 0.0
     return rng.gauss(0.0, settings.stable_worker_sd * settings.max_search_distance)
+
+
+def _dance_propensity_jitter(settings: DirectionSettings, rng: Random) -> float:
+    """Per-worker deviation of the recruitment-propensity trait. Draws no
+    randomness unless the trait is under selection, so legacy runs are
+    unaffected."""
+    if not settings.evolve_dance_propensity:
+        return 0.0
+    return rng.gauss(0.0, settings.stable_worker_sd)
 
 
 def encode_dance_direction(
@@ -548,6 +571,24 @@ def _draw_foray_length(
     return _clamp(length, 0.0, settings.max_search_distance)
 
 
+def _scout_dances(
+    worker: Worker,
+    remaining_capacity: int,
+    settings: DirectionSettings,
+    rng: Random,
+) -> bool:
+    """Whether a successful scout produces a dance. Unconditional in the legacy
+    model; otherwise the scout dances with probability
+    ``1 - (1 - dance_propensity) ** remaining_capacity`` -- zero once the patch
+    is exhausted, rising with the forage still left for recruits."""
+    if not settings.evolve_dance_propensity:
+        return True
+    if remaining_capacity <= 0:
+        return False
+    probability = 1.0 - (1.0 - worker.dance_propensity) ** remaining_capacity
+    return rng.random() < probability
+
+
 def evaluate_colony(
     colony: Colony,
     settings: DirectionSettings,
@@ -614,22 +655,25 @@ def evaluate_colony(
                     sites[site_index].distance * settings.travel_cost_per_distance
                 )
                 food_payoff += sites[site_index].value
-                dances.append(
-                    Dance(
-                        signal=produce_signal(
-                            sites[site_index].direction,
-                            worker,
-                            colony.traits,
-                            settings,
-                            sun_azimuth,
-                            rng,
+                if _scout_dances(
+                    worker, remaining_capacity[site_index], settings, rng
+                ):
+                    dances.append(
+                        Dance(
+                            signal=produce_signal(
+                                sites[site_index].direction,
+                                worker,
+                                colony.traits,
+                                settings,
+                                sun_azimuth,
+                                rng,
+                            )
                         )
                     )
-                )
-                dance_cost += (
-                    settings.base_dance_cost
-                    + settings.cue_cost * worker.directional_bias
-                )
+                    dance_cost += (
+                        settings.base_dance_cost
+                        + settings.cue_cost * worker.directional_bias
+                    )
             else:
                 food_payoff -= foray_length * settings.travel_cost_per_distance
 
@@ -712,7 +756,17 @@ def _initial_traits(settings: DirectionSettings, rng: Random) -> ColonyTraits:
             0.15 * settings.max_search_distance,
             0.45 * settings.max_search_distance,
         ),
+        dance_propensity=_initial_dance_propensity(settings, rng),
     )
+
+
+def _initial_dance_propensity(settings: DirectionSettings, rng: Random) -> float:
+    """Starting recruitment propensity. Fixed at 1.0 (always dance) when the
+    trait is inert; otherwise seeded high with spread so recruitment stays
+    bootstrapped and selection can push it down where dancing does not pay."""
+    if not settings.evolve_dance_propensity:
+        return 1.0
+    return rng.uniform(0.8, 1.0)
 
 
 def _mutate_traits(
@@ -739,6 +793,11 @@ def _mutate_traits(
     search_limit_change = rng.gauss(
         0.0,
         settings.mutation_sd * settings.max_search_distance,
+    )
+    dance_propensity_change = (
+        rng.gauss(0.0, settings.mutation_sd)
+        if settings.evolve_dance_propensity
+        else 0.0
     )
 
     return ColonyTraits(
@@ -775,6 +834,11 @@ def _mutate_traits(
             traits.search_limit + search_limit_change,
             0.0,
             settings.max_search_distance,
+        ),
+        dance_propensity=_clamp(
+            traits.dance_propensity + dance_propensity_change,
+            0.0,
+            1.0,
         ),
     )
 
@@ -849,6 +913,10 @@ def _summarize(
         average_comb_orientation=average_comb_orientation,
         comb_orientation_alignment=orientation_alignment,
         average_search_limit=sum(colony.traits.search_limit for colony in colonies)
+        / count,
+        average_dance_propensity=sum(
+            colony.traits.dance_propensity for colony in colonies
+        )
         / count,
         average_success_rate=sum(
             evaluation.success_rate for evaluation in evaluations

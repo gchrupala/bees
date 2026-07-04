@@ -29,6 +29,7 @@ from bees.model import (
     _mutate_traits,
     _orientation_mean_and_alignment,
     _sample_patch_radius,
+    _scout_dances,
     _segment_disk_entry,
     _site_capacity,
 )
@@ -1085,6 +1086,75 @@ class CapacityScalingTests(unittest.TestCase):
         for site in sites:
             expected = max(1, round(6 * (site.radius / 150.0) ** 2))
             self.assertEqual(site.capacity, expected)
+
+
+class DancePropensityTests(unittest.TestCase):
+    @staticmethod
+    def _worker(dance_propensity: float) -> Worker:
+        return Worker(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=1.0,
+            dance_propensity=dance_propensity,
+        )
+
+    def test_legacy_scout_always_dances(self) -> None:
+        settings = _settings()  # evolve_dance_propensity False by default
+        worker = self._worker(0.0)
+        # Even with zero propensity and an exhausted patch, legacy always dances.
+        self.assertTrue(_scout_dances(worker, 0, settings, Random(1)))
+
+    def test_no_dance_for_exhausted_patch(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        self.assertFalse(_scout_dances(self._worker(1.0), 0, settings, Random(1)))
+
+    def test_full_propensity_dances_when_capacity_remains(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(1.0)
+        for remaining in (1, 5, 20):
+            self.assertTrue(_scout_dances(worker, remaining, settings, Random(remaining)))
+
+    def test_zero_propensity_never_dances(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(0.0)
+        self.assertFalse(
+            any(_scout_dances(worker, 5, settings, Random(seed)) for seed in range(50))
+        )
+
+    def test_dance_rate_matches_geometric_form(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(0.3)
+        rng = Random(11)
+        expected = 1.0 - (1.0 - 0.3) ** 3  # remaining capacity 3
+        rate = mean(_scout_dances(worker, 3, settings, rng) for _ in range(20000))
+        self.assertAlmostEqual(rate, expected, delta=0.02)
+
+    def test_inert_trait_stays_at_one(self) -> None:
+        settings = _settings()  # flag off
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+                search_limit=2.0,
+            ),
+            settings,
+            Random(3),
+        )
+        self.assertTrue(all(worker.dance_propensity == 1.0 for worker in colony.workers))
+
+    def test_simulation_is_reproducible_with_trait_on(self) -> None:
+        settings = _settings(
+            evolve_dance_propensity=True,
+            food_geometry="disk",
+            food_site_radius=2.0,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=2.0,
+        )
+        self.assertEqual(simulate(settings, seed=5), simulate(settings, seed=5))
 
 
 def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings:
