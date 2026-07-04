@@ -52,7 +52,6 @@ SQUARE_SIZE = 1.275  # ground square half-size; ~15% smaller than the original 1
 # note in illustrate_direct_decode_sketch's commit history.
 COMB_HALF_SIZE = 0.65
 
-GROUND_OFFSET = np.array([0.0, 0.0, 0.0])
 COMB_OFFSET = np.array([0.0, 0.0, 1.0])
 ELEV, AZIM = 22.0, -60.0
 HEX_RADIUS = 0.16
@@ -74,8 +73,6 @@ FLOWER_VISIBLE_ZORDER = 6  # above everything
 FONT_PATH = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
 EMOJI_STRIKE_SIZE = 109  # NotoColorEmoji ships a single bitmap strike at this size
 
-GROUND_COLOR = "#dce6f0"
-GROUND_EDGE = "#8fa3b8"
 COMB_COLOR = "#f0dca0"
 COMB_EDGE = "#b8963f"
 FOOD_COLOR = "#1f77b4"
@@ -89,17 +86,6 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     return parser.parse_args()
-
-
-def square_corners(u_axis, v_axis, size):
-    return np.array(
-        [
-            u_axis * size + v_axis * size,
-            -u_axis * size + v_axis * size,
-            -u_axis * size - v_axis * size,
-            u_axis * size - v_axis * size,
-        ]
-    )
 
 
 def hex_centers_square(half_size, hex_radius):
@@ -272,19 +258,8 @@ def main() -> None:
     first = np.asarray(basis.first_axis)
     second = np.asarray(basis.second_axis)
 
-    ground_corners = square_corners(
-        np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]), SQUARE_SIZE
-    ) + GROUND_OFFSET
-
     fig = plt.figure(figsize=(6.5, 6.5))
     ax = fig.add_subplot(1, 1, 1, projection="3d", computed_zorder=False)
-
-    ground_poly = Poly3DCollection(
-        [ground_corners], facecolor=GROUND_COLOR, edgecolor=GROUND_EDGE,
-        linewidth=1.0, alpha=0.6,
-    )
-    ground_poly.set_zorder(0)
-    ax.add_collection3d(ground_poly)
 
     # Comb: a hexagonal-cell tile filling a COMB_HALF_SIZE square footprint
     # (centered on its own offset, no hinging) -- smaller than the ground
@@ -345,9 +320,9 @@ def main() -> None:
         arrow_length_ratio=0.15, zorder=5,
     )
 
-    xlim = (-1.6, 1.6)
-    ylim = (-1.6, 1.6)
-    zlim = (-0.05, 2.05)
+    xlim = (-1.3, 1.3)
+    ylim = (-1.3, 1.3)
+    zlim = (-0.05, 1.85)
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
     ax.set_zlim(*zlim)
