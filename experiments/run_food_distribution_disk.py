@@ -52,8 +52,9 @@ DEFAULT_CONFIG = ROOT / "configs" / "food_distribution_disk.json"
 
 # Grid axes; all lengths in meters. Mean site count crossed with median patch
 # radius, which spans a flowering clump (~15 m) to a large mass-flowering crop
-# (~600 m); food sites sit 750-6000 m from the nest.
-SITE_COUNTS = (1, 2, 3, 4, 6, 8)
+# (~600 m); food sites sit 750-6000 m from the nest. The count axis runs high
+# enough to resolve whether many small-to-medium patches evolve communication.
+SITE_COUNTS = (1, 2, 3, 4, 6, 8, 12, 16, 24)
 PATCH_RADII = (15.0, 37.5, 75.0, 150.0, 300.0, 600.0)
 
 PARAM_FIELDNAMES = [
