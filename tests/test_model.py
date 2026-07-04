@@ -30,6 +30,7 @@ from bees.model import (
     _orientation_mean_and_alignment,
     _sample_patch_radius,
     _segment_disk_entry,
+    _site_capacity,
 )
 
 
@@ -1035,6 +1036,55 @@ class ForayDistributionTests(unittest.TestCase):
             Random(3),
         )
         self.assertTrue(all(worker.search_limit == 2.0 for worker in colony.workers))
+
+
+class CapacityScalingTests(unittest.TestCase):
+    def test_fixed_scaling_ignores_radius(self) -> None:
+        settings = _settings(food_site_capacity=6)  # default "fixed"
+        self.assertEqual(_site_capacity(settings, 999.0), 6)
+        self.assertEqual(_site_capacity(settings, 0.0), 6)
+
+    def test_area_scaling_is_quadratic_in_radius(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        self.assertEqual(_site_capacity(settings, 150.0), 6)   # reference -> base
+        self.assertEqual(_site_capacity(settings, 300.0), 24)  # 2x radius -> 4x
+        self.assertEqual(_site_capacity(settings, 600.0), 96)  # 4x radius -> 16x
+
+    def test_area_scaling_floors_tiny_patches_at_one(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        self.assertEqual(_site_capacity(settings, 15.0), 1)  # 6*0.01 -> round 0 -> 1
+
+    def test_area_scaling_falls_back_to_base_without_reference(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=0.0,
+        )
+        self.assertEqual(_site_capacity(settings, 300.0), 6)
+
+    def test_generated_disk_sites_scale_capacity_with_drawn_radius(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=50,
+            food_site_radius=150.0,
+            food_site_radius_log_sd=0.6,
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        sites = generate_food_sites(settings, Random(2))
+        self.assertTrue(all(site.capacity >= 1 for site in sites))
+        for site in sites:
+            expected = max(1, round(6 * (site.radius / 150.0) ** 2))
+            self.assertEqual(site.capacity, expected)
 
 
 def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings:

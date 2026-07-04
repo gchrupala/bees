@@ -26,6 +26,8 @@
   "max_search_distance": 6000.0,
   "foray_distribution": "gamma",
   "foray_shape": 2.0,
+  "food_capacity_scaling": "area",
+  "food_capacity_reference_radius": 150.0,
   "food_site_capacity": 6,
   "food_value": 1.0,
   "travel_cost_per_distance": 2.6666666666666667e-05,

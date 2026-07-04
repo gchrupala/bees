@@ -105,6 +105,13 @@ class DirectionSettings:
     # fixed shape ``foray_shape`` (clamped to ``max_search_distance``).
     foray_distribution: str = "fixed"
     foray_shape: float = 2.0
+    # Patch value scaling. "fixed" gives every site ``food_site_capacity`` loads.
+    # "area" makes total patch resource scale with disk area: a site's capacity
+    # is ``food_site_capacity * (radius / food_capacity_reference_radius) ** 2``
+    # (floored at 1), so larger patches feed proportionally more foragers before
+    # depletion while per-visit value stays fixed. Requires disk geometry.
+    food_capacity_scaling: str = "fixed"
+    food_capacity_reference_radius: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -388,20 +395,44 @@ def sample_sun_azimuth(settings: DirectionSettings, rng: Random) -> float:
 
 
 def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodSite, ...]:
-    return tuple(
-        FoodSite(
-            direction=rng.random() * tau,
-            distance=rng.uniform(
-                settings.food_site_min_distance,
-                settings.food_site_max_distance,
-            ),
-            width=settings.food_site_width,
-            value=settings.food_value,
-            capacity=settings.food_site_capacity,
-            radius=_sample_patch_radius(settings, rng),
+    sites = []
+    for _ in range(settings.food_site_count):
+        # RNG call order (direction, distance, radius) is fixed for
+        # reproducibility; capacity is derived from the drawn radius and draws
+        # no randomness.
+        direction = rng.random() * tau
+        distance = rng.uniform(
+            settings.food_site_min_distance,
+            settings.food_site_max_distance,
         )
-        for _ in range(settings.food_site_count)
-    )
+        radius = _sample_patch_radius(settings, rng)
+        sites.append(
+            FoodSite(
+                direction=direction,
+                distance=distance,
+                width=settings.food_site_width,
+                value=settings.food_value,
+                capacity=_site_capacity(settings, radius),
+                radius=radius,
+            )
+        )
+    return tuple(sites)
+
+
+def _site_capacity(settings: DirectionSettings, radius: float) -> int:
+    """Number of forager-loads a patch holds. Fixed by default; under "area"
+    scaling it grows with disk area so total patch resource scales with size."""
+    if settings.food_capacity_scaling == "fixed":
+        return settings.food_site_capacity
+    if settings.food_capacity_scaling != "area":
+        raise ValueError(
+            f"unknown food capacity scaling: {settings.food_capacity_scaling!r}"
+        )
+    reference = settings.food_capacity_reference_radius
+    if reference <= 0.0:
+        return settings.food_site_capacity
+    scaled = settings.food_site_capacity * (radius / reference) ** 2
+    return max(1, round(scaled))
 
 
 def _sample_patch_radius(settings: DirectionSettings, rng: Random) -> float:
