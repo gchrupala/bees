@@ -391,16 +391,18 @@ it onto the comb surface, reading off the resulting in-plane angle
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.6\textwidth]{figures/direct_projection_sketch.png}
-  \caption{The direct code's projection step. A flat ground square (the
-    world-horizontal plane) and the tilted comb square share the hive's
-    east--north position. The food direction $\mathbf{f}_d$ (blue) lies in
-    the ground plane; its orthogonal projection onto the comb (red) is found
-    by carrying both its start and end points along the comb's normal
-    $\mathbf{n}$ (black) until they land on the comb's surface, shown by the
-    dashed rays. The part of $\mathbf{f}_d$ that the comb occludes from this
-    viewpoint is rendered pale, showing through the semi-transparent comb.
-    The flower marks the food site.}
+  \includegraphics[width=0.6\textwidth]{figures/direct_decode_sketch.png}
+  \caption{The direct code's projection and the flatten decode's bias. The
+    tilted hexagonal comb and the world-horizontal plane (the grid) share the
+    hive's east--north position. The food direction $\mathbf{f}_d$ (blue) lies
+    in the world plane; its orthogonal projection onto the comb (red) --- found
+    by carrying its start and end points along the comb's normal $\mathbf{n}$
+    (black) until they meet the surface, shown by the dashed rays --- has
+    in-plane angle $\delta_\mathrm{dir}$, the encoded signal. Decoding that
+    signal back to a world heading, the flatten variant (orange) drifts off
+    the true direction by a systematic angle on any tilted comb, whereas the
+    unproject variant would recover $\mathbf{f}_d$ (blue) exactly. The flower
+    marks the food site.}
   \label{fig:direct-projection}
 \end{figure}
 
@@ -445,7 +447,8 @@ one, with weight equal to the strength.
 \paragraph{Decoding the direct code.}
 Recovering a world heading from an observed direct-code signal means inverting
 the projection used to encode it, and two variants are modelled, bracketing
-uncertainty over whether a receiver performs this geometric correction in full.
+uncertainty over whether a receiver performs this geometric correction in full
+(\Cref{fig:direct-projection}).
 \begin{description}
   \item[Flatten] The receiver lifts the signal $\delta$ back to an in-surface
     vector $\mathbf{v} = \cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$

@@ -164,6 +164,15 @@ def place_flower(ax, point3d, *, zorder=6):
     ax.add_artist(annotation)
 
 
+def place_label(ax, point3d, offset, text, color, fontsize=15):
+    """Draw a text label (mathtext) at a 3D point plus a world-space offset,
+    on top of everything so it isn't masked by the comb or arrows.
+    """
+    p = np.asarray(point3d) + np.asarray(offset)
+    ax.text(*p, text, color=color, fontsize=fontsize, zorder=10,
+            ha="center", va="center")
+
+
 def camera_direction(elev_deg, azim_deg):
     """Unit vector from the scene toward the camera, for the given view_init
     angles (matches matplotlib's own convention for an orthographic view).
@@ -354,6 +363,18 @@ def main() -> None:
     )
     flower_zorder = FLOWER_OCCLUDED_ZORDER if flower_occluded else FLOWER_VISIBLE_ZORDER
     place_flower(ax, flower_point, zorder=flower_zorder)
+
+    # Arrow labels, using the paper's symbols. The food vector doubles as the
+    # heading the unproject decode recovers exactly, so only the (biased)
+    # flatten decode gets its own arrow and word label.
+    place_label(ax, food_base + food_vec, (0.16, -0.26, 0.0),
+                r"$\mathbf{f}_d$", FOOD_COLOR)
+    place_label(ax, food_base + flatten_vec, (-0.12, 0.18, 0.0),
+                "flatten", FLATTEN_COLOR, fontsize=12)
+    place_label(ax, comb_tip, (0.22, 0.02, 0.03),
+                r"$\delta_\mathrm{dir}$", PROJECTED_COLOR)
+    place_label(ax, COMB_OFFSET + normal_vec, (0.0, 0.0, 0.13),
+                r"$\mathbf{n}$", NORMAL_COLOR)
 
     fig.savefig(args.output, dpi=190, bbox_inches="tight", pad_inches=0.05)
     print(f"saved {args.output}")
