@@ -17,6 +17,7 @@
   "sun_azimuth_center": 1.5707963267948966,
   "sun_azimuth_width": 3.141592653589793,
   "food_geometry": "disk",
+  "food_site_count_distribution": "poisson",
   "food_site_count": 2,
   "food_site_width": 0.2,
   "food_site_radius": 150.0,

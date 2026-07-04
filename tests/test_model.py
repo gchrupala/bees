@@ -29,6 +29,7 @@ from bees.model import (
     _mutate_traits,
     _orientation_mean_and_alignment,
     _sample_patch_radius,
+    _sample_site_count,
     _scout_dances,
     _segment_disk_entry,
     _site_capacity,
@@ -1155,6 +1156,41 @@ class DancePropensityTests(unittest.TestCase):
             food_capacity_reference_radius=2.0,
         )
         self.assertEqual(simulate(settings, seed=5), simulate(settings, seed=5))
+
+
+class SiteCountTests(unittest.TestCase):
+    def test_fixed_count_is_exact(self) -> None:
+        settings = _settings(food_site_count=5)  # default "fixed"
+        self.assertTrue(
+            all(_sample_site_count(settings, Random(s)) == 5 for s in range(10))
+        )
+
+    def test_poisson_count_mean_matches_setting(self) -> None:
+        settings = _settings(
+            food_site_count=3, food_site_count_distribution="poisson"
+        )
+        rng = Random(4)
+        draws = [_sample_site_count(settings, rng) for _ in range(20000)]
+        self.assertAlmostEqual(mean(draws), 3.0, delta=0.1)
+        self.assertGreater(len(set(draws)), 1)
+        self.assertTrue(all(isinstance(d, int) and d >= 0 for d in draws))
+
+    def test_poisson_generates_variable_site_counts(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=2,
+            food_site_count_distribution="poisson",
+            food_site_radius=100.0,
+        )
+        rng = Random(7)
+        counts = {len(generate_food_sites(settings, rng)) for _ in range(200)}
+        self.assertGreater(len(counts), 1)
+
+    def test_poisson_with_zero_mean_is_empty(self) -> None:
+        settings = _settings(
+            food_site_count=0, food_site_count_distribution="poisson"
+        )
+        self.assertEqual(_sample_site_count(settings, Random(1)), 0)
 
 
 def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings:

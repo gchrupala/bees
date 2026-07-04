@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import atan2, cos, hypot, log, pi, sin, sqrt, tau
+from math import atan2, cos, exp, hypot, log, pi, sin, sqrt, tau
 from random import Random
 
 EPSILON = 1e-9
@@ -114,6 +114,10 @@ class DirectionSettings:
     # depletion while per-visit value stays fixed. Requires disk geometry.
     food_capacity_scaling: str = "fixed"
     food_capacity_reference_radius: float = 0.0
+    # Number of food sites per episode. "fixed" places exactly ``food_site_count``
+    # sites; "poisson" treats ``food_site_count`` as a mean and draws the count
+    # per episode from a Poisson (so some episodes have more, fewer, or no food).
+    food_site_count_distribution: str = "fixed"
     # Capacity-conditional recruitment. When True, a successful scout dances with
     # probability 1 - (1 - dance_propensity) ** remaining_capacity, so a patch
     # with nothing left never seeds a dance and richer patches recruit more; the
@@ -419,7 +423,7 @@ def sample_sun_azimuth(settings: DirectionSettings, rng: Random) -> float:
 
 def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodSite, ...]:
     sites = []
-    for _ in range(settings.food_site_count):
+    for _ in range(_sample_site_count(settings, rng)):
         # RNG call order (direction, distance, radius) is fixed for
         # reproducibility; capacity is derived from the drawn radius and draws
         # no randomness.
@@ -440,6 +444,34 @@ def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodS
             )
         )
     return tuple(sites)
+
+
+def _sample_site_count(settings: DirectionSettings, rng: Random) -> int:
+    """Number of food sites in an episode. Exactly ``food_site_count`` by
+    default; under "poisson" that value is a mean and the count is drawn per
+    episode (drawing no randomness in the fixed case keeps legacy runs intact)."""
+    if settings.food_site_count_distribution == "fixed":
+        return settings.food_site_count
+    if settings.food_site_count_distribution != "poisson":
+        raise ValueError(
+            f"unknown food site count distribution: "
+            f"{settings.food_site_count_distribution!r}"
+        )
+    return _poisson(settings.food_site_count, rng)
+
+
+def _poisson(mean: float, rng: Random) -> int:
+    """Draw a Poisson count with the given mean using Knuth's algorithm."""
+    if mean <= 0.0:
+        return 0
+    threshold = exp(-mean)
+    count = 0
+    product = 1.0
+    while True:
+        count += 1
+        product *= rng.random()
+        if product <= threshold:
+            return count - 1
 
 
 def _site_capacity(settings: DirectionSettings, radius: float) -> int:
