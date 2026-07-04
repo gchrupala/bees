@@ -1,11 +1,11 @@
-"""Sketch of the direct code's projection step and the flatten decode bias.
+"""Illustration of the direct code's projection step and the flatten decode bias.
 
-Extends ``illustrate_direct_projection.py``: the same ground/comb squares and
-the same encoded (projected) signal, but with one more arrow on the ground
-plane showing what a receiver recovers from that signal under the
-``flatten`` decode rule, which is biased and drifts off the true food
-direction. Geometry and decoding are both taken directly from ``bees.model``
-so the figure stays faithful to the simulation.
+Extends ``illustrate_direct_projection.py``: the same comb tile and the same
+encoded (projected) signal, but with one more arrow in the world plane showing
+what a receiver recovers from that signal under the ``flatten`` decode rule,
+which is biased and drifts off the true food direction. Geometry and decoding
+are both taken directly from ``bees.model`` so the figure stays faithful to the
+simulation.
 """
 
 from __future__ import annotations
@@ -38,18 +38,18 @@ from bees.model import (  # noqa: E402
     direct_signal_to_world_flatten,
 )
 
-DEFAULT_OUTPUT = ROOT / "report" / "figures" / "direct_decode_sketch.png"
+DEFAULT_OUTPUT = ROOT / "report" / "figures" / "direct_decode.png"
 
 TILT = 0.5  # gamma: theta = 45 degrees -- larger flatten/food divergence (~19 deg)
 ORIENTATION = 0.0  # phi: comb tilts due east
 FOOD_AZIMUTH = 0.7  # d: an arbitrary food direction, in radians
 FOOD_LENGTH = 0.9  # long, but its projection (u~1.2, v~0.6) still clears SQUARE_SIZE
-SQUARE_SIZE = 1.275  # ground square half-size; ~15% smaller than the original 1.5
-# The comb tile is deliberately smaller than the ground square so it no longer
-# covers the food-site marker, which sits near the ground edge along the food
-# direction. It only has to stay large enough to contain the projected (red)
-# vector and the normal, both anchored at the comb's center; see the geometry
-# note in illustrate_direct_decode_sketch's commit history.
+SQUARE_SIZE = 1.275  # world-plane half-size, used to place the food marker near its edge
+# The comb tile is deliberately smaller than the world plane so it no longer
+# covers the food-site marker, which sits near the world-plane edge along the
+# food direction. It only has to stay large enough to contain the projected
+# (red) vector and the normal, both anchored at the comb's center; see the
+# geometry note in illustrate_direct_decode's commit history.
 COMB_HALF_SIZE = 0.65
 
 COMB_OFFSET = np.array([0.0, 0.0, 1.0])

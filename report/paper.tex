@@ -387,11 +387,11 @@ the food as a three-dimensional unit vector,
 $\mathbf{f} = (\cos d, \sin d, 0)$ for food azimuth $d$ (the vertical component
 is zero because food lies in the horizontal plane), and projects
 it onto the comb surface, reading off the resulting in-plane angle
-(\Cref{fig:direct-projection}).
+(\Cref{fig:direct-decode}).
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.6\textwidth]{figures/direct_decode_sketch.png}
+  \includegraphics[width=0.6\textwidth]{figures/direct_decode.png}
   \caption{The direct code's projection and the flatten decode's bias. The
     tilted hexagonal comb and the world-horizontal plane (the grid) share the
     hive's east--north position. The food direction $\mathbf{f}$ (blue) lies
@@ -403,7 +403,7 @@ it onto the comb surface, reading off the resulting in-plane angle
     recovers $\mathbf{r}$ (orange), which drifts off the true direction by a
     systematic angle on any tilted comb, whereas the unproject variant would
     recover $\mathbf{f}$ (blue) exactly. The flower marks the food site.}
-  \label{fig:direct-projection}
+  \label{fig:direct-decode}
 \end{figure}
 
 Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
@@ -450,7 +450,7 @@ one, with weight equal to the strength.
 Recovering a world heading from an observed direct-code signal means inverting
 the projection used to encode it, and two variants are modelled, bracketing
 uncertainty over whether a receiver performs this geometric correction in full
-(\Cref{fig:direct-projection}).
+(\Cref{fig:direct-decode}).
 \begin{description}
   \item[Flatten] The receiver lifts the signal $\delta$ back to a unit
     in-surface vector $\cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$ and
