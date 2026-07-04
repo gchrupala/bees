@@ -67,6 +67,44 @@ use only direct pointing.
   \label{tab:fixed-params}
 \end{table}
 
+The parameters that are deliberately varied are summarized in
+\Cref{tab:varied-params}: five ecological parameters (food-site count, angular
+width, capacity, maximum food distance, and travel cost) and three evolutionary
+parameters ($B$, $\sigma_m$, $\rho$). The ranges given there are the union across
+sub-experiments; the specific sweeps and grids used in each are described in the
+sections below.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    Symbol / name & Range explored & Meaning \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Ecological}} \\
+    food-site count       & $1$--$10$       & number of food sites per episode \\
+    angular width         & $0.08$--$0.50$  & angular width of each food site \\
+    capacity              & $4$--$16$       & foragers a site supplies before exhaustion \\
+    $d_{\max}$            & $4.5$--$9.0$    & maximum food-site distance \\
+    $c_{\mathrm{travel}}$ & $0.01$--$0.06$  & travel cost per unit distance \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Evolutionary}} \\
+    $B$        & $0.10$--$0.60$ & vertical-comb benefit magnitude \\
+    $\sigma_m$ & $0.04$--$0.14$ & mutation step standard deviation \\
+    $\rho$     & $0.0$--$1.0$   & sender--receiver mutation correlation \\
+    \bottomrule
+  \end{tabular}
+  \caption{Parameters varied across experiments, with the range each is explored
+    over. Ranges give the union across sub-experiments: the ecological parameters
+    and $B,\sigma_m,\rho$ are sampled continuously in the Optuna search over the
+    intervals shown; the horizontal-comb experiments sweep food-site count over
+    $\{1,2,3,4,6,8\}$ and angular width over $\{0.08,0.15,0.20,0.30,0.50\}$; and
+    the evolutionary-interaction grid uses the discrete values
+    $B \in \{0.10, 0.25, 0.44\}$, $\sigma_m \in \{0.045, 0.075, 0.090, 0.135\}$,
+    and $\rho \in \{0.0, 0.3, 0.6, 0.9\}$. Outside the search, capacity is $6$,
+    $d_{\max}$ equals $D = 8$, and the horizontal runs use $\sigma_m = 0.07$.}
+  \label{tab:varied-params}
+\end{table}
+
 \subsection{Decoding the direct code: two variants}
 \label{sec:setup-decode}
 The direct code can be decoded in two ways on a tilted comb
