@@ -218,9 +218,9 @@ def main() -> None:
     fig.suptitle(
         "Disk-geometry food-site samples "
         f"(n={settings.food_site_count}, median radius="
-        f"{settings.food_site_radius:.2f}, log-sd="
+        f"{settings.food_site_radius:.0f} m, log-sd="
         f"{settings.food_site_radius_log_sd:.2f}, max distance="
-        f"{settings.food_site_max_distance:.1f}, capacity="
+        f"{settings.food_site_max_distance:.0f} m, capacity="
         f"{settings.food_site_capacity}); flower size scales with patch radius"
     )
     plt.tight_layout(rect=(0, 0, 1, 0.96))
