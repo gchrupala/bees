@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from math import pi, tau
 from random import Random
+from statistics import mean
 
 from bees.model import (
     ColonyTraits,
@@ -24,8 +25,11 @@ from bees.model import (
     interpret_signal,
     sample_sun_azimuth,
     simulate,
+    _draw_foray_length,
     _mutate_traits,
     _orientation_mean_and_alignment,
+    _sample_patch_radius,
+    _segment_disk_entry,
 )
 
 
@@ -913,6 +917,124 @@ class DirectionModelTests(unittest.TestCase):
         second = simulate(settings, seed=4)
 
         self.assertEqual(first, second)
+
+
+class DiskGeometryTests(unittest.TestCase):
+    def test_segment_disk_entry_hits_patch_dead_ahead(self) -> None:
+        # Center 3 units ahead, radius 0.5: entry is the near edge at 2.5.
+        entry = _segment_disk_entry(0.0, 5.0, 3.0, 0.0, 0.5)
+        self.assertAlmostEqual(entry, 2.5)
+
+    def test_segment_disk_entry_misses_when_offset_exceeds_capture_angle(self) -> None:
+        from math import asin
+
+        distance, radius = 3.0, 0.5
+        capture = asin(radius / distance)
+        # Just inside the capture half-angle the path enters the disk...
+        self.assertIsNotNone(
+            _segment_disk_entry(0.0, 5.0, distance, capture - 0.01, radius)
+        )
+        # ...and just outside it misses entirely.
+        self.assertIsNone(
+            _segment_disk_entry(0.0, 5.0, distance, capture + 0.01, radius)
+        )
+
+    def test_segment_disk_entry_respects_foray_length(self) -> None:
+        self.assertIsNone(_segment_disk_entry(0.0, 2.0, 3.0, 0.0, 0.5))
+        self.assertAlmostEqual(_segment_disk_entry(0.0, 2.5, 3.0, 0.0, 0.5), 2.5)
+
+    def test_segment_disk_entry_is_zero_when_nest_is_inside_patch(self) -> None:
+        entry = _segment_disk_entry(0.0, 5.0, 0.3, 1.2, 0.5)
+        self.assertEqual(entry, 0.0)
+
+    def test_disk_search_finds_nearest_patch_by_entry_distance(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=3.0, width=0.0, value=1.0, capacity=1, radius=0.3),
+            FoodSite(direction=0.0, distance=2.0, width=0.0, value=1.0, capacity=1, radius=0.3),
+        )
+        self.assertEqual(
+            find_food_site(0.0, 5.0, sites, [1, 1], geometry="disk"),
+            1,
+        )
+
+    def test_disk_search_skips_missed_patch(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=3.0, width=0.0, value=1.0, capacity=1, radius=0.2),
+        )
+        # Heading 0.5 rad off a 0.2-radius patch at distance 3 cannot intersect it.
+        self.assertIsNone(find_food_site(0.5, 5.0, sites, [1], geometry="disk"))
+        self.assertEqual(find_food_site(0.0, 5.0, sites, [1], geometry="disk"), 0)
+
+    def test_generated_disk_radii_are_positive_and_vary(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=200,
+            food_site_radius=0.4,
+            food_site_radius_log_sd=0.6,
+        )
+        sites = generate_food_sites(settings, Random(1))
+        radii = [site.radius for site in sites]
+        self.assertTrue(all(radius > 0.0 for radius in radii))
+        self.assertGreater(len(set(radii)), 1)
+
+    def test_zero_log_sd_gives_constant_patch_radius(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_radius=0.4,
+            food_site_radius_log_sd=0.0,
+        )
+        self.assertEqual(_sample_patch_radius(settings, Random(1)), 0.4)
+
+    def test_angular_geometry_leaves_radius_at_zero(self) -> None:
+        settings = _settings(food_site_radius=0.4)  # default angular geometry
+        self.assertEqual(_sample_patch_radius(settings, Random(1)), 0.0)
+
+
+class ForayDistributionTests(unittest.TestCase):
+    def test_fixed_foray_returns_the_range_trait_unchanged(self) -> None:
+        settings = _settings(foray_distribution="fixed")
+        self.assertEqual(_draw_foray_length(3.0, settings, Random(1)), 3.0)
+
+    def test_gamma_foray_mean_matches_evolved_mean(self) -> None:
+        settings = _settings(
+            foray_distribution="gamma",
+            foray_shape=2.0,
+            max_search_distance=100.0,  # avoid clamp bias for the mean check
+        )
+        rng = Random(7)
+        draws = [_draw_foray_length(3.0, settings, rng) for _ in range(20000)]
+        self.assertAlmostEqual(mean(draws), 3.0, delta=0.1)
+        self.assertGreater(len(set(draws)), 1)
+
+    def test_gamma_foray_is_clamped_to_max_search_distance(self) -> None:
+        settings = _settings(
+            foray_distribution="gamma",
+            foray_shape=2.0,
+            max_search_distance=5.0,
+        )
+        rng = Random(7)
+        draws = [_draw_foray_length(4.0, settings, rng) for _ in range(5000)]
+        self.assertLessEqual(max(draws), 5.0)
+        self.assertTrue(all(draw >= 0.0 for draw in draws))
+
+    def test_gamma_foray_with_zero_mean_is_zero(self) -> None:
+        settings = _settings(foray_distribution="gamma")
+        self.assertEqual(_draw_foray_length(0.0, settings, Random(1)), 0.0)
+
+    def test_gamma_foray_drops_per_worker_jitter(self) -> None:
+        settings = _settings(foray_distribution="gamma", stable_worker_sd=0.2)
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+                search_limit=2.0,
+            ),
+            settings,
+            Random(3),
+        )
+        self.assertTrue(all(worker.search_limit == 2.0 for worker in colony.workers))
 
 
 def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings:
