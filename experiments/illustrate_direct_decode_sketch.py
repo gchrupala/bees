@@ -44,7 +44,13 @@ TILT = 0.5  # gamma: theta = 45 degrees -- larger flatten/food divergence (~19 d
 ORIENTATION = 0.0  # phi: comb tilts due east
 FOOD_AZIMUTH = 0.7  # d: an arbitrary food direction, in radians
 FOOD_LENGTH = 0.9  # long, but its projection (u~1.2, v~0.6) still clears SQUARE_SIZE
-SQUARE_SIZE = 1.275  # ~15% smaller than the original 1.5
+SQUARE_SIZE = 1.275  # ground square half-size; ~15% smaller than the original 1.5
+# The comb tile is deliberately smaller than the ground square so it no longer
+# covers the food-site marker, which sits near the ground edge along the food
+# direction. It only has to stay large enough to contain the projected (red)
+# vector and the normal, both anchored at the comb's center; see the geometry
+# note in illustrate_direct_decode_sketch's commit history.
+COMB_HALF_SIZE = 0.65
 
 GROUND_OFFSET = np.array([0.0, 0.0, 0.0])
 COMB_OFFSET = np.array([0.0, 0.0, 1.0])
@@ -53,10 +59,10 @@ HEX_RADIUS = 0.16
 # hex_centers_square keeps any hex whose *center* is within half_size +
 # hex_radius, and each hex's own vertices then extend up to hex_radius
 # beyond its center -- so the tiling's true visual edge reaches roughly
-# SQUARE_SIZE + 2 * HEX_RADIUS, not SQUARE_SIZE. The occlusion test must use
-# that same true extent, or points just past SQUARE_SIZE get judged
+# COMB_HALF_SIZE + 2 * HEX_RADIUS, not COMB_HALF_SIZE. The occlusion test must
+# use that same true extent, or points just past COMB_HALF_SIZE get judged
 # "unoccluded" and drawn solid on top of comb tiles that are actually there.
-COMB_OCCLUSION_HALF_SIZE = SQUARE_SIZE + 2 * HEX_RADIUS
+COMB_OCCLUSION_HALF_SIZE = COMB_HALF_SIZE + 2 * HEX_RADIUS
 
 # Food-site marker: a purple flower, rendered as a NotoColorEmoji bitmap since
 # matplotlib text cannot draw colour emoji.
@@ -280,12 +286,12 @@ def main() -> None:
     ground_poly.set_zorder(0)
     ax.add_collection3d(ground_poly)
 
-    # Comb: a hexagonal-cell tile, filling the same square footprint (still
-    # centered on its own offset, no hinging) that the occlusion test below
-    # uses as its boundary.
+    # Comb: a hexagonal-cell tile filling a COMB_HALF_SIZE square footprint
+    # (centered on its own offset, no hinging) -- smaller than the ground
+    # square, and the same footprint the occlusion test below uses.
     comb_hexes = [
         [u * first + v * second + COMB_OFFSET for u, v in hex_vertices(cx, cy, HEX_RADIUS)]
-        for cx, cy in hex_centers_square(SQUARE_SIZE, HEX_RADIUS)
+        for cx, cy in hex_centers_square(COMB_HALF_SIZE, HEX_RADIUS)
     ]
     comb_poly = Poly3DCollection(
         comb_hexes, facecolor=COMB_COLOR, edgecolor=COMB_EDGE,
