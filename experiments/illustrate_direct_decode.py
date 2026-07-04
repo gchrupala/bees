@@ -329,9 +329,12 @@ def main() -> None:
         arrow_length_ratio=0.15, zorder=5,
     )
 
-    xlim = (-1.3, 1.3)
-    ylim = (-1.3, 1.3)
-    zlim = (-0.05, 1.85)
+    # Asymmetric limits: the camera looks from +x/-y, so the empty foreground
+    # is the high-x, low-y corner. Trim those two edges harder than the others
+    # (the flower sits far back at +y, so a symmetric trim would clip it).
+    xlim = (-1.2, 0.82)
+    ylim = (-0.93, 1.4)
+    zlim = (-0.05, 1.82)
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
     ax.set_zlim(*zlim)
