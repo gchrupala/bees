@@ -384,7 +384,7 @@ reference direction, lying in that surface, against which the angle is read.
 \paragraph{The two codes.}
 In the \emph{direct} (iconic) code the worker takes the world-space direction of
 the food as a three-dimensional unit vector,
-$\mathbf{f}_d = (\cos d, \sin d, 0)$ for food azimuth $d$ (the vertical component
+$\mathbf{f} = (\cos d, \sin d, 0)$ for food azimuth $d$ (the vertical component
 is zero because food lies in the horizontal plane), and projects
 it onto the comb surface, reading off the resulting in-plane angle
 (\Cref{fig:direct-projection}).
@@ -394,28 +394,29 @@ it onto the comb surface, reading off the resulting in-plane angle
   \includegraphics[width=0.6\textwidth]{figures/direct_decode_sketch.png}
   \caption{The direct code's projection and the flatten decode's bias. The
     tilted hexagonal comb and the world-horizontal plane (the grid) share the
-    hive's east--north position. The food direction $\mathbf{f}_d$ (blue) lies
-    in the world plane; its orthogonal projection onto the comb,
-    $\mathbf{f}_d^{\parallel}$ (red) --- found by carrying its start and end
-    points along the comb's normal $\mathbf{n}$ (black) until they meet the
-    surface, shown by the dashed rays --- has in-plane angle $\delta_\mathrm{dir}$,
-    the encoded signal. Decoding that signal back to a world heading, the
-    flatten variant $\hat{\mathbf{f}}_d$ (orange) drifts off the true direction
-    by a systematic angle on any tilted comb, whereas the unproject variant
-    would recover $\mathbf{f}_d$ (blue) exactly. The flower marks the food
-    site.}
+    hive's east--north position. The food direction $\mathbf{f}$ (blue) lies
+    in the world plane; its orthogonal projection onto the comb, $\mathbf{p}$
+    (red) --- found by carrying its start and end points along the comb's
+    normal $\mathbf{n}$ (black) until they meet the surface, shown by the
+    dashed rays --- has in-plane angle $\delta_\mathrm{dir}$, the encoded
+    signal. Decoding that signal back to a world heading, the flatten variant
+    recovers $\mathbf{r}$ (orange), which drifts off the true direction by a
+    systematic angle on any tilted comb, whereas the unproject variant would
+    recover $\mathbf{f}$ (blue) exactly. The flower marks the food site.}
   \label{fig:direct-projection}
 \end{figure}
 
 Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
 surface and $M$ the $2\times 2$ matrix whose rows are their horizontal
-(east--north) parts, the encoded signal is $\delta_{\mathrm{dir}} =
-\operatorname{atan2}(b,a)$ where $(a,b)^\top = M(\cos d,\sin d)^\top$; the
+(east--north) parts, the projection of $\mathbf{f}$ onto the comb has surface
+coordinates $(a,b)^\top = M(\cos d,\sin d)^\top$, i.e.\ the in-surface vector
+$\mathbf{p} = a\,\mathbf{e}_1 + b\,\mathbf{e}_2$, and the encoded signal is its
+angle $\delta_{\mathrm{dir}} = \operatorname{atan2}(b,a)$; the
 determinant $\det M = \cos\theta$ vanishes only at full vertical tilt, where $M$
 becomes singular along the direction the comb faces.
 How well this
 works depends on how much of the food direction survives the projection, which we
-measure by the length of the projected vector,
+measure by the length of the projected vector $\mathbf{p}$,
 \begin{equation}
   s_{\mathrm{dir}} = \sqrt{1 - \sin^2\theta\,\cos^2(d-\phi)}.
 \end{equation}
@@ -451,10 +452,9 @@ the projection used to encode it, and two variants are modelled, bracketing
 uncertainty over whether a receiver performs this geometric correction in full
 (\Cref{fig:direct-projection}).
 \begin{description}
-  \item[Flatten] The receiver lifts the signal $\delta$ back to an in-surface
-    vector $\mathbf{v} = \cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$
-    and reads its horizontal heading $\operatorname{atan2}(v_y, v_x)$, the
-    recovered direction $\hat{\mathbf{f}}_d$; this
+  \item[Flatten] The receiver lifts the signal $\delta$ back to a unit
+    in-surface vector $\cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$ and
+    reads its horizontal heading, the recovered direction $\mathbf{r}$; this
     applies $M^\top$ to the unit signal vector
     $(\cos\delta,\sin\delta)^\top$ and introduces a systematic angular bias
     on any tilted comb, since $M^\top \ne M^{-1}$ there.

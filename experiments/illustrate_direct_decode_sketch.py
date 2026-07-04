@@ -364,16 +364,16 @@ def main() -> None:
     flower_zorder = FLOWER_OCCLUDED_ZORDER if flower_occluded else FLOWER_VISIBLE_ZORDER
     place_flower(ax, flower_point, zorder=flower_zorder)
 
-    # Arrow labels: the food direction in its three forms (world, projected
-    # onto the comb, and flatten-decoded) share the base symbol f_d, plus the
-    # comb normal n. The unproject decode would recover f_d exactly, so only
-    # the biased flatten estimate gets its own arrow.
+    # Arrow labels: food direction f (world), its projection p onto the comb,
+    # the flatten-recovered direction r, and the comb normal n. The unproject
+    # decode would recover f exactly, so only the biased flatten estimate r
+    # gets its own arrow.
     place_label(ax, food_base + food_vec, (0.16, -0.26, 0.0),
-                r"$\mathbf{f}_d$", FOOD_COLOR)
+                r"$\mathbf{f}$", FOOD_COLOR)
     place_label(ax, food_base + flatten_vec, (-0.16, 0.18, 0.0),
-                r"$\hat{\mathbf{f}}_d$", FLATTEN_COLOR)
-    place_label(ax, comb_tip, (0.24, 0.02, 0.03),
-                r"$\mathbf{f}_d^{\parallel}$", PROJECTED_COLOR)
+                r"$\mathbf{r}$", FLATTEN_COLOR)
+    place_label(ax, comb_tip, (0.22, 0.02, 0.03),
+                r"$\mathbf{p}$", PROJECTED_COLOR)
     place_label(ax, COMB_OFFSET + normal_vec, (0.0, 0.0, 0.13),
                 r"$\mathbf{n}$", NORMAL_COLOR)
 
