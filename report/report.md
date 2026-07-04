@@ -37,7 +37,12 @@ and capacity. Workers act sequentially. If dances are available, a worker may fo
 one; otherwise it searches in a random direction. A successful worker always adds a
 dance for the discovered site, whether the worker found it independently or by following
 another dance. Dance cost is therefore paid for every successful worker that produces a
-signal.
+signal. This describes the angular-width food model used by the vertical-transition
+pipelines below; the food-distribution experiment (see *Direct-Pointing Communication and
+Food Distribution*) swaps in an ecologically grounded extension -- physical disk patches
+in meters, variable Gamma forays, capacity that scales with patch area, capacity-
+conditional dancing, and Poisson site counts -- all of which are opt-in settings that
+leave the pipelines here unchanged.
 
 Comb geometry determines the available directional cues. Direct pointing projects the
 horizontal food direction onto the comb plane. Gravity-referenced communication uses the
@@ -119,9 +124,25 @@ Before the vertical transition, a more basic question is when the direct-pointin
 dance is worth maintaining at all. We test this on a comb held flat
 (`evolve_comb_tilt` off, `initial_comb_tilt` 0), which leaves the gravity
 reference strength at zero and the transposition traits inert, so only the
-direct-pointing dance is in play. The colony otherwise uses the baseline v2
-ecology with mutation scale 0.07 over 60 generations, and we vary only the food
-distribution across 50 held-out seeds (400-449).
+direct-pointing dance is in play, and we sweep the food ecology across 50
+held-out seeds (400-449) over 60 generations.
+
+This experiment replaces the abstract angular-width food model with an
+ecologically grounded geometry, all lengths in meters. Food sites are physical
+**disks** whose radius is drawn per site from a lognormal, independent of
+distance; a forager captures a site when its straight outbound path intersects
+the disk, so the effective angular tolerance is approximately
+$\arcsin(\text{radius}/\text{distance})$ and *shrinks with distance*, because a
+fixed patch subtends a smaller angle when farther away. Each foray's outbound
+distance is drawn from a Gamma with the colony's evolved mean, rather than a hard
+range cutoff. Total patch resource scales with area, so a disk's **capacity grows
+with its radius squared** while per-visit value stays fixed. Recruitment is
+itself an evolvable decision: a successful scout dances with probability
+$1 - (1-s)^{c}$ given remaining capacity $c$, where the propensity $s$ is a
+heritable trait, so an exhausted patch never seeds a dance. Finally the number of
+sites per episode is Poisson with an evolving mean. The grid crosses mean site
+count (1 to 24) against median patch radius (15 to 600 m); food sites sit
+750-6000 m from the nest.
 
 The outcome is the in-run *recruitment advantage*: among foraging attempts where
 a dance was available, the success rate of dance-followers minus that of matched
@@ -130,55 +151,48 @@ coin flip, searched at random). Because the follow decision is randomized within
 the same episodes, this is a contemporaneous estimate of what the dance actually
 buys, and it separates useful communication from a directional-bias trait that
 has merely drifted upward under weak selection. The latter matters here: in the
-hardest ecology mean directional bias still drifts to 0.375, which would clear a
-naive trait threshold, yet the dance is essentially useless (recruitment
-advantage 0.057, useful in only 64% of seeds, foraging success 0.010).
+smallest-patch ecologies mean directional bias still sits near 0.35-0.40, which
+would clear a naive trait threshold, yet the dance is essentially useless
+(recruitment advantage below 0.06, foraging success near zero).
 
-<figure id="fig:food-distribution-recruitment-advantage" class="figure">
-<img src="figures/food_distribution_recruitment_advantage.png" alt="Recruitment advantage across the v2 food-distribution sweeps." />
+<figure id="fig:food-distribution-disk-grid" class="figure">
+<img src="figures/food_distribution_disk_grid.png" alt="Recruitment advantage and evolved directional bias across the disk-geometry food grid." />
 <figcaption>
-In-run recruitment advantage on a flat comb across two one-dimensional food
-sweeps, 50 seeds each. Gray points are per-seed tail means; green is the
-across-seed mean. Communication value peaks at low-to-intermediate food-site
-counts and rises with patch width at low site count.
+Recruitment advantage (left) and evolved directional bias (right) on a flat comb
+across the full grid of mean site count against median patch radius, 50 seeds per
+cell. Communication is favored along a diagonal band: bias lifts off a size
+threshold that falls as patches become more numerous, while recruitment advantage
+peaks for few large patches and erodes toward both small and abundant food.
 </figcaption>
 </figure>
 
-| Condition | Sites | Width | Recruit. adv. | Useful | Bias | Success | Payoff |
-|:----------|------:|------:|--------------:|-------:|-----:|--------:|-------:|
-| Hard (anchor) | 1 | 0.08 | 0.057 | 0.64 | 0.375 | 0.010 | 0.001 |
-| Baseline (anchor) | 2 | 0.20 | 0.224 | 1.00 | 0.877 | 0.191 | 0.638 |
-| Easy (anchor) | 8 | 0.50 | 0.119 | 1.00 | 0.530 | 0.724 | 7.505 |
-| Sites sweep | 1 | 0.20 | 0.188 | 1.00 | 0.661 | 0.064 | 0.010 |
-| Sites sweep | 3 | 0.20 | 0.203 | 1.00 | 0.856 | 0.247 | 1.347 |
-| Sites sweep | 6 | 0.20 | 0.154 | 1.00 | 0.795 | 0.368 | 2.889 |
-| Sites sweep | 8 | 0.20 | 0.128 | 1.00 | 0.707 | 0.425 | 3.620 |
-| Width sweep | 2 | 0.08 | 0.056 | 0.58 | 0.398 | 0.024 | 0.001 |
-| Width sweep | 2 | 0.15 | 0.175 | 1.00 | 0.876 | 0.133 | 0.099 |
-| Width sweep | 2 | 0.30 | 0.293 | 1.00 | 0.853 | 0.287 | 1.850 |
-| Width sweep | 2 | 0.50 | 0.349 | 1.00 | 0.798 | 0.426 | 3.614 |
+Communication is favored along a diagonal band, not a single axis. Evolved
+directional bias only lifts off its ~0.38 drift floor above a patch-size
+threshold, and that threshold *falls as patches become more numerous*: a single
+patch must reach ~600 m radius before a precise dance evolves (bias 0.81),
+whereas at eight patches 75 m already suffices (0.84) and at twenty-four patches
+even 37.5 m patches lift off (0.76). Below a few tens of meters, however, the
+dance never evolves regardless of abundance -- the 15 m column stays at the drift
+floor across the whole count axis -- so there is a minimum patch size below which
+a pointing signal cannot help.
 
-Recruitment advantage is the final-generation-tail mean of the in-run
-follower-minus-matched-searcher success difference. Useful is the fraction of
-seeds whose tail advantage exceeds 0.05. Bias, success, and payoff are
-final-generation means. The two sweeps share the baseline point (2 sites, width
-0.20).
-
-The result supports a resource-distribution reading, but the two ecological axes
-are not symmetric. Adding food sites makes independent discovery easier and
-steadily erodes the value of recruitment: advantage falls from 0.224 at two
-sites to 0.128 at eight, even as foraging success and payoff climb. The single
-narrowest ecology is suppressed from the other direction, because successful
-foragers are too rare to seed dances at all. Widening patches at a fixed low
-site count has the opposite effect from adding sites: a broad target tolerates a
-noisily decoded dance direction, so the follower advantage rises monotonically
-with width, from 0.056 to 0.349. Communication is therefore most valuable when
-food is directionally concentrated but hard to stumble onto, and it is
-suppressed at both the undiscoverable extreme (no dances seeded) and the
-abundant extreme (random search already succeeds, with a matched-searcher
-success rate of 0.68 in the easy anchor). Unlike a directional-bias threshold,
+The recruitment advantage itself peaks for few, large patches (up to 0.31 at a
+single 600 m patch) and erodes in two directions. Toward small patches it falls
+because successful foragers are too rare to seed useful dances; toward many large
+patches it falls because independent discovery already succeeds -- at twenty-four
+600 m patches the advantage collapses to 0.04 even as foraging success reaches
+0.88. Communication is therefore most valuable when food is spatially
+concentrated but hard to stumble onto, and is suppressed at both the
+undiscoverable and the abundant extremes. Unlike a directional-bias threshold,
 the recruitment-advantage measure reports this directly and does not mistake
 neutral drift for evolved communication.
+
+The evolvable dance propensity, by contrast, showed little structure across the
+grid, settling near 0.6 everywhere. Under the current geometric form the dance
+probability saturates to near one whenever more than one forager-load remains, so
+the trait feels selection only at capacity-one patches and otherwise drifts;
+making recruitment suppression evolve informatively would require a
+less-saturating form together with a genuine cost of wasted recruitment.
 
 ## Held-Out Validation
 
@@ -425,15 +439,14 @@ python -u experiments/plot_evolutionary_interaction_seed_outcomes.py \
   --events results/food_transition_v2_evolutionary_interaction_events.csv \
   --output report/figures/evolutionary_interaction_seed_outcomes_binary
 
-python -u experiments/plot_food_distribution_effects.py \
-  --events results/food_distribution_v2_events.csv \
-  --output report/figures/food_distribution_recruitment_advantage
+python -u experiments/plot_food_distribution_disk_grid.py
 ```
 
-The food-distribution communication experiment is produced on Snellius with:
+The food-distribution communication experiment (disk-geometry grid) is produced on
+Snellius with:
 
 ```sh
-sbatch experiments/run_food_distribution_v2_snellius.sbatch
+bash experiments/submit_food_distribution_disk_snellius.sh
 ```
 
 The v3 (unproject) pipeline was run on Snellius with:
