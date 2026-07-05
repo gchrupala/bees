@@ -43,13 +43,18 @@ if [[ -n "${concurrency}" ]]; then
     array_spec="${array_spec}%${concurrency}"
 fi
 
+# --export=ALL forwards the BEES_* environment into the jobs. Without it this
+# cluster's sbatch does not propagate the caller's environment, so job-side
+# knobs (trials-per-task, BEES_PUSH, output paths) silently fall back to their
+# defaults -- the first launch ran 64 instead of 96 trials/task and skipped the
+# result push for exactly this reason.
 optuna_job="$(
-    sbatch --parsable \
+    sbatch --parsable --export=ALL \
         --array="${array_spec}" \
         experiments/run_food_transition_disk_optuna_snellius.sbatch
 )"
 finalize_job="$(
-    sbatch --parsable \
+    sbatch --parsable --export=ALL \
         --dependency=afterok:"${optuna_job}" \
         experiments/run_food_transition_disk_finalize_snellius.sbatch
 )"
