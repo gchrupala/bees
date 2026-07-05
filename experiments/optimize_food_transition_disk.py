@@ -598,24 +598,59 @@ def sample_settings(
         "transposition_mutation_correlation": transposition_mutation_correlation,
     }
     return SampledSettings(
-        settings=replace(
-            base_settings,
-            initial_comb_tilt=0.0,
-            vertical_comb_modifier="linear",
-            food_geometry="disk",
-            food_site_count=food_site_count,
-            food_site_radius=food_site_radius,
-            food_site_capacity=food_site_capacity,
-            food_value=food_value,
-            vertical_comb_benefit=vertical_comb_benefit,
-            food_site_max_distance=food_site_max_distance,
-            # Keep foray range able to reach the farthest patches.
-            max_search_distance=food_site_max_distance,
-            travel_cost_per_distance=travel_cost,
-            mutation_sd=mutation_sd,
-            transposition_mutation_correlation=transposition_mutation_correlation,
-        ),
+        settings=build_disk_settings(base_settings, **values),
         values=values,
+    )
+
+
+# Parameters the disk transition search and its downstream stages vary. Keeping
+# the list here lets the confirmation/sensitivity/interaction scripts share one
+# definition of "a disk candidate" and one settings mapping.
+DISK_SEARCH_PARAMS = (
+    "food_site_count",
+    "food_site_radius",
+    "food_site_capacity",
+    "food_value",
+    "vertical_comb_benefit",
+    "food_site_max_distance",
+    "travel_cost_per_distance",
+    "mutation_sd",
+    "transposition_mutation_correlation",
+)
+
+
+def build_disk_settings(
+    base_settings: DirectionSettings,
+    *,
+    food_site_count: int,
+    food_site_radius: float,
+    food_site_capacity: int,
+    food_value: float,
+    vertical_comb_benefit: float,
+    food_site_max_distance: float,
+    travel_cost_per_distance: float,
+    mutation_sd: float,
+    transposition_mutation_correlation: float,
+) -> DirectionSettings:
+    """Apply a disk transition candidate onto a base config. Centralizes the
+    transition overrides (horizontal start, linear modifier) and the coupling
+    that keeps the foray range able to reach the farthest sampled patch, so the
+    optimizer and every downstream stage build settings identically."""
+    return replace(
+        base_settings,
+        initial_comb_tilt=0.0,
+        vertical_comb_modifier="linear",
+        food_geometry="disk",
+        food_site_count=food_site_count,
+        food_site_radius=food_site_radius,
+        food_site_capacity=food_site_capacity,
+        food_value=food_value,
+        vertical_comb_benefit=vertical_comb_benefit,
+        food_site_max_distance=food_site_max_distance,
+        max_search_distance=food_site_max_distance,
+        travel_cost_per_distance=travel_cost_per_distance,
+        mutation_sd=mutation_sd,
+        transposition_mutation_correlation=transposition_mutation_correlation,
     )
 
 
