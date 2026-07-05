@@ -216,23 +216,67 @@ def evaluate_candidates(
 ) -> list[dict[str, str]]:
     """Evaluate every (candidate, seed) pair and return per-candidate summaries.
 
-    When ``seed_metrics_path`` is given, the raw per-seed metrics are also written
-    there (one row per candidate/seed), so downstream tooling can reuse the actual
-    seed-level outcomes instead of aggregates.
+    When ``seed_metrics_path`` is given, the raw per-seed metrics are streamed there
+    (one row per candidate/seed) as each candidate's seeds all complete, so the
+    per-seed outcomes survive a crash and downstream tooling can reuse the actual
+    seed-level data instead of aggregates. A progress line is flushed per completed
+    candidate. Rows are grouped by candidate (each block sorted by seed) but appear
+    in completion order, which is non-deterministic under parallelism.
     """
     jobs = [(name, params, seed) for name, params in candidates for seed in seeds]
-    results: dict[str, list[dict]] = {name: [] for name, _ in candidates}
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {
-            executor.submit(_run_one, base_settings, params, seed, thresholds): name
-            for name, params, seed in jobs
-        }
-        for future in as_completed(futures):
-            name = futures[future]
-            results[name].append(future.result())
     order = [name for name, _ in candidates]
+    results: dict[str, list[dict]] = {name: [] for name, _ in candidates}
+    remaining = {name: 0 for name, _ in candidates}
+    for name, _, _ in jobs:
+        remaining[name] += 1
+
+    seed_handle = None
+    seed_writer = None
     if seed_metrics_path is not None:
-        write_seed_metrics(seed_metrics_path, order, results)
+        seed_metrics_path.parent.mkdir(parents=True, exist_ok=True)
+        seed_handle = seed_metrics_path.open("w", newline="")
+        seed_writer = csv.DictWriter(
+            seed_handle, fieldnames=SEED_METRICS_FIELDNAMES, lineterminator="\n"
+        )
+        seed_writer.writeheader()
+        seed_handle.flush()
+
+    started = perf_counter()
+    done_points = 0
+    try:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(_run_one, base_settings, params, seed, thresholds): name
+                for name, params, seed in jobs
+            }
+            for future in as_completed(futures):
+                name = futures[future]
+                results[name].append(future.result())
+                remaining[name] -= 1
+                if remaining[name] > 0:
+                    continue
+                # This candidate's whole seed panel is in; persist and report it.
+                done_points += 1
+                metrics = sorted(results[name], key=lambda m: m["seed"])
+                if seed_writer is not None:
+                    for m in metrics:
+                        row = {"candidate": name}
+                        row.update(
+                            {k: m[k] for k in SEED_METRICS_FIELDNAMES if k != "candidate"}
+                        )
+                        seed_writer.writerow(row)
+                    seed_handle.flush()
+                stable = sum(1 for m in metrics if m["stable"])
+                print(
+                    f"[{done_points}/{len(order)}] {name}: {stable}/{len(metrics)} "
+                    f"stable ({perf_counter() - started:.0f}s)",
+                    file=sys.stderr,
+                    flush=True,
+                )
+    finally:
+        if seed_handle is not None:
+            seed_handle.close()
+
     return [summarize(name, results[name]) for name in order]
 
 
@@ -287,23 +331,6 @@ def write_summary(path: Path, summaries: list[dict[str, str]]) -> None:
         writer = csv.DictWriter(handle, fieldnames=SUMMARY_FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         writer.writerows(summaries)
-
-
-def write_seed_metrics(
-    path: Path, order: list[str], results: dict[str, list[dict]]
-) -> None:
-    """Write one row per candidate/seed. Rows are ordered by candidate, then seed,
-    so the file is deterministic despite the futures completing out of order."""
-    with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(
-            handle, fieldnames=SEED_METRICS_FIELDNAMES, lineterminator="\n"
-        )
-        writer.writeheader()
-        for name in order:
-            for metrics in sorted(results[name], key=lambda m: m["seed"]):
-                row = {"candidate": name}
-                row.update({k: metrics[k] for k in SEED_METRICS_FIELDNAMES if k != "candidate"})
-                writer.writerow(row)
 
 
 def read_rows(path: Path) -> list[dict[str, str]]:
