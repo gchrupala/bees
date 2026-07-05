@@ -7,8 +7,10 @@ and reruns every point on a held-out seed panel using the shared disk stability
 definition. Distances and radii are in metres, so the ladders are metric-scale.
 
 Outputs ``<prefix>_points.csv`` (one row per perturbation point, tagged with the
-varied parameter and whether it is the baseline) and ``<prefix>_group_summary.csv``
-(stable/collapse/success aggregates per point), reusing the panel evaluator.
+varied parameter and whether it is the baseline), ``<prefix>_group_summary.csv``
+(stable/collapse/success aggregates per point), and ``<prefix>_seed_metrics.csv``
+(one row per point/seed, so a boxplot can bootstrap real seed-level outcomes),
+reusing the panel evaluator.
 """
 
 from __future__ import annotations
@@ -75,7 +77,12 @@ def main() -> None:
     started = perf_counter()
     candidates = [(name, params) for name, params, *_ in points]
     summaries = evaluate_candidates(
-        base_settings, candidates, seeds, thresholds, args.max_workers
+        base_settings,
+        candidates,
+        seeds,
+        thresholds,
+        args.max_workers,
+        seed_metrics_path=Path(f"{prefix}_seed_metrics.csv"),
     )
     write_summary(Path(f"{prefix}_group_summary.csv"), summaries)
     print(
@@ -134,16 +141,20 @@ def build_points(baseline: dict[str, int | float]) -> list[tuple]:
         ("baseline", dict(baseline), "baseline", "", True),
     ]
     for name, (deltas, lo, hi) in LADDERS.items():
-        seen: set[float] = {float(baseline[name])}
+        # Dedup on the formatted label, not the raw float: clamping can land two
+        # deltas on values that differ only by floating-point noise (e.g. 0.04 vs
+        # 0.04000000000000001) yet format to the same point name, which would
+        # otherwise collide in the name-keyed evaluator and double-count the point.
+        seen: set[str] = {format_param(name, baseline[name])}
         for delta in deltas:
             raw = baseline[name] + delta
             value = round(clamp(raw, lo, hi)) if name in INT_PARAMS else clamp(raw, lo, hi)
-            if float(value) in seen:
+            label = format_param(name, value)
+            if label in seen:
                 continue
-            seen.add(float(value))
+            seen.add(label)
             params = dict(baseline)
             params[name] = value
-            label = format_param(name, value)
             points.append((f"{name}={label}", params, name, label, False))
     return points
 

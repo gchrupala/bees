@@ -57,6 +57,24 @@ SUMMARY_FIELDNAMES = [
     "mean_final_min_transposition",
     "mean_final_dance_propensity",
 ]
+# Per-seed metrics, written only when a caller asks for them (e.g. the OAT
+# sensitivity stage, so a boxplot can bootstrap real seed-level outcomes rather
+# than reconstruct them from counts).
+SEED_METRICS_FIELDNAMES = [
+    "candidate",
+    "seed",
+    "stable",
+    "collapsed",
+    "score",
+    "progress",
+    "final_success",
+    "final_payoff",
+    "final_comb_tilt",
+    "final_sender_transposition",
+    "final_receiver_transposition",
+    "final_min_transposition",
+    "final_dance_propensity",
+]
 
 
 def main() -> None:
@@ -194,7 +212,14 @@ def evaluate_candidates(
     seeds: list[int],
     thresholds: Thresholds,
     max_workers: int,
+    seed_metrics_path: Path | None = None,
 ) -> list[dict[str, str]]:
+    """Evaluate every (candidate, seed) pair and return per-candidate summaries.
+
+    When ``seed_metrics_path`` is given, the raw per-seed metrics are also written
+    there (one row per candidate/seed), so downstream tooling can reuse the actual
+    seed-level outcomes instead of aggregates.
+    """
     jobs = [(name, params, seed) for name, params in candidates for seed in seeds]
     results: dict[str, list[dict]] = {name: [] for name, _ in candidates}
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
@@ -206,6 +231,8 @@ def evaluate_candidates(
             name = futures[future]
             results[name].append(future.result())
     order = [name for name, _ in candidates]
+    if seed_metrics_path is not None:
+        write_seed_metrics(seed_metrics_path, order, results)
     return [summarize(name, results[name]) for name in order]
 
 
@@ -216,7 +243,7 @@ def _run_one(
     thresholds: Thresholds,
 ) -> dict:
     settings = build_disk_settings(base_settings, **params)
-    return evaluate_seed(settings, seed, thresholds)
+    return {"seed": seed, **evaluate_seed(settings, seed, thresholds)}
 
 
 def summarize(name: str, metrics: list[dict]) -> dict[str, str]:
@@ -260,6 +287,23 @@ def write_summary(path: Path, summaries: list[dict[str, str]]) -> None:
         writer = csv.DictWriter(handle, fieldnames=SUMMARY_FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         writer.writerows(summaries)
+
+
+def write_seed_metrics(
+    path: Path, order: list[str], results: dict[str, list[dict]]
+) -> None:
+    """Write one row per candidate/seed. Rows are ordered by candidate, then seed,
+    so the file is deterministic despite the futures completing out of order."""
+    with path.open("w", newline="") as handle:
+        writer = csv.DictWriter(
+            handle, fieldnames=SEED_METRICS_FIELDNAMES, lineterminator="\n"
+        )
+        writer.writeheader()
+        for name in order:
+            for metrics in sorted(results[name], key=lambda m: m["seed"]):
+                row = {"candidate": name}
+                row.update({k: metrics[k] for k in SEED_METRICS_FIELDNAMES if k != "candidate"})
+                writer.writerow(row)
 
 
 def read_rows(path: Path) -> list[dict[str, str]]:
