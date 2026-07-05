@@ -37,6 +37,17 @@ We are modeling the evolution of bee communication.
   path), `BEES_PYTHON` (interpreter), and `BEES_MODULE_LOAD` (module(s) to load)
   when the setup differs.
 
+## Collaboration and candor
+
+- Give honest, direct assessments. Push back when there is a good reason —
+  flawed ideas, weak results, bad designs — including when the idea is the user's
+  or your own. State the problem plainly and say what you would do instead.
+- Do not optimize for agreement, especially during brainstorming. The user wants
+  the best answer, not validation; agreeing to be agreeable wastes their time.
+- Do not hedge or over-diplomatically soften a negative verdict. If something is
+  bad, say it is bad and why. Reserve enthusiasm for things that earn it, so it
+  stays informative.
+
 ## Workflow
 
 - Wait for an explicit request before generating code; do not implement based
