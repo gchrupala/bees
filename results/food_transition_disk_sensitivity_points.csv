@@ -25,7 +25,6 @@ travel_cost_per_distance=1.250000e-05,travel_cost_per_distance,1.250000e-05,fals
 travel_cost_per_distance=2.250000e-05,travel_cost_per_distance,2.250000e-05,false,5,315.0000,4,1.0000,0.5600,3250.0000,2.250000e-05,0.0700,0.9000
 travel_cost_per_distance=3.250000e-05,travel_cost_per_distance,3.250000e-05,false,5,315.0000,4,1.0000,0.5600,3250.0000,3.250000e-05,0.0700,0.9000
 mutation_sd=0.0400,mutation_sd,0.0400,false,5,315.0000,4,1.0000,0.5600,3250.0000,1.750000e-05,0.0400,0.9000
-mutation_sd=0.0400,mutation_sd,0.0400,false,5,315.0000,4,1.0000,0.5600,3250.0000,1.750000e-05,0.0400,0.9000
 mutation_sd=0.0500,mutation_sd,0.0500,false,5,315.0000,4,1.0000,0.5600,3250.0000,1.750000e-05,0.0500,0.9000
 mutation_sd=0.0900,mutation_sd,0.0900,false,5,315.0000,4,1.0000,0.5600,3250.0000,1.750000e-05,0.0900,0.9000
 transposition_mutation_correlation=0.4000,transposition_mutation_correlation,0.4000,false,5,315.0000,4,1.0000,0.5600,3250.0000,1.750000e-05,0.0700,0.4000
