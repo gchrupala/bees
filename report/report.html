@@ -817,6 +817,32 @@ goes 0.44 to 0.60, and from 73 to 96 as
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
 goes 0.4 to 1.0). Patch radius, capacity, distance, and travel cost are
 comparatively flat within the tested ranges (79-98/100).</p>
+<p>The distributions below make the per-parameter picture direct: for
+each parameter a violin pools the seed-bootstrap stable-rate draws over
+its swept values (dots mark the per-value rates, orange below and green
+above the dashed baseline), with parameters sorted by worst-case drop.
+Mutation scale is the widest, most collapse-prone lever under both
+decodes; the ecological parameters are wide under flatten (food-site
+count especially) but hug the baseline under unproject.</p>
+<figure id="fig:sensitivity-flatten-report" class="figure">
+<img src="figures/food_transition_disk_sensitivity_ridge_flatten.png" alt="Per-parameter sensitivity distributions for the flatten decode." />
+<figcaption>
+One-parameter sensitivity of the flatten decode. Each parameter’s violin
+is a seed-bootstrap stable-rate density over its swept values; dots are
+the per-value rates and the dashed line the baseline. Parameters are
+sorted by worst-case drop (shared order and x-range with the unproject
+panel below).
+</figcaption>
+</figure>
+<figure id="fig:sensitivity-unproject-report" class="figure">
+<img src="figures/food_transition_disk_sensitivity_ridge_unproject.png" alt="Per-parameter sensitivity distributions for the unproject decode." />
+<figcaption>
+One-parameter sensitivity of the unproject decode, drawn as above.
+Mutation scale is again the sharpest boundary (a lone collapse at 0.04),
+while every other parameter stays tightly at baseline – unproject is
+markedly more robust to food-site count than flatten.
+</figcaption>
+</figure>
 <h3 id="evolutionary-interaction">Evolutionary Interaction</h3>
 <p>Holding each validated ecology fixed, we cross vertical-comb benefit,
 mutation scale, and sender-receiver correlation on a grid re-centred on

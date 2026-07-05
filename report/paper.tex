@@ -674,7 +674,8 @@ distances, low travel cost, high benefit.
 
 \paragraph{One-parameter sensitivity.}
 A one-parameter sweep around each validated baseline identifies the mutation scale
-as the sharpest boundary (\Cref{fig:sensitivity}): lowering it collapses the
+as the sharpest boundary (\Cref{fig:sensitivity-flatten,fig:sensitivity-unproject}):
+lowering it collapses the
 transition (flatten falls from $91/100$ to $49/100$ at $\sigma_m = 0.05$; unproject
 to $16/100$ at $0.04$), while the validated $\sigma_m$ of $0.07$--$0.09$ sits on the
 plateau. The sharpest \emph{ecological} boundary is food-site count under flatten
@@ -684,17 +685,28 @@ and patch radius, capacity, distance, and travel cost stay within a narrow band.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{figures/food_transition_disk_sensitivity_ridge.png}
-  \caption{One-parameter sensitivity of the disk vertical transition, both decodes.
-    Each parameter's violin is a kernel density over seed-bootstrap stable-rate
-    draws pooled across that parameter's swept values ($100$ held-out seeds per
-    value), so a lobe's position is a swept value's rate and its width that value's
-    sampling uncertainty; dots mark the per-value rates (orange below, green above
-    baseline) and the dashed line each decode's baseline. Parameters are sorted by
-    worst-case drop. Mutation scale is the widest, most collapse-prone lever under
-    both decodes and food-site count the sharpest ecological one under flatten,
-    while patch radius and capacity stay tightly at baseline.}
-  \label{fig:sensitivity}
+  \includegraphics[width=0.82\textwidth]{figures/food_transition_disk_sensitivity_ridge_flatten.png}
+  \caption{One-parameter sensitivity of the flatten decode. Each parameter's violin
+    is a kernel density over seed-bootstrap stable-rate draws pooled across that
+    parameter's swept values ($100$ held-out seeds per value), so a lobe's position
+    is a swept value's rate and its width that value's sampling uncertainty; dots
+    mark the per-value rates (orange below, green above baseline) and the dashed line
+    the baseline. Parameters are sorted by worst-case drop (shared order and x-range
+    with \Cref{fig:sensitivity-unproject}). Mutation scale is the widest,
+    most collapse-prone lever and food-site count the sharpest ecological one, while
+    patch radius and capacity stay tightly at baseline.}
+  \label{fig:sensitivity-flatten}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.82\textwidth]{figures/food_transition_disk_sensitivity_ridge_unproject.png}
+  \caption{One-parameter sensitivity of the unproject decode, drawn as in
+    \Cref{fig:sensitivity-flatten} and sharing its parameter order and x-range.
+    Mutation scale is again the sharpest boundary (a lone collapse at
+    $\sigma_m = 0.04$), but every other parameter stays tightly at baseline --- in
+    particular unproject is markedly more robust to food-site count than flatten.}
+  \label{fig:sensitivity-unproject}
 \end{figure}
 
 \paragraph{Evolutionary-parameter interaction.}
