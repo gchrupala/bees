@@ -209,27 +209,34 @@ less-saturating form together with a genuine cost of wasted recruitment.
 The food-distribution grid above holds the comb flat. We now free it to tilt
 (`evolve_comb_tilt` on, `initial_comb_tilt` 0) under the same disk ecology and
 ask when a stable vertical gravity-code transition evolves -- the disk-geometry
-counterpart of the angular transition search below. A positive vertical-comb
-benefit $\alpha$ rewards tilting, and once the comb stands vertical a
-gravity-referenced (transposition) code can replace the sun-referenced direct
-pointer. We optimize the ecology jointly with $\alpha$ and the mutation
-parameters using Optuna (1024 trials, ten seeds each, 120 generations), running
-512 workers across sixteen Snellius nodes against one shared study. A seed is
+counterpart of the angular transition search. A positive vertical-comb benefit
+$\alpha$ rewards tilting, and once the comb stands vertical a gravity-referenced
+(transposition) code can replace the sun-referenced direct pointer. We run the
+full transition pipeline -- Optuna search, held-out validation, one-parameter
+sensitivity, and an evolutionary-interaction grid -- under both direct-decode
+variants (flatten and unproject), mirroring the angular pipelines. A seed is
 stable when final mean comb tilt is at least 0.80 and both sender and receiver
 transposition are at least 0.50, and it collapses if foraging success ever falls
-to 0.02 or below -- the same thresholds as the angular search.
+to 0.02 or below.
 
-Stable transitions are common in the disk ecology:
+### Optuna Search
 
-| Outcome | Trials (of 1024) |
-|:--------|-----------------:|
-| Stable in all 10 seeds | 14 |
-| Stable in $\geq 8$ seeds | 123 (12%) |
-| Stable in $\geq 5$ seeds | 312 (30%) |
-| Stable in $\geq 1$ seed | 611 (60%) |
-| No stable seed | 413 (40%) |
+Each decode ran a 1024-trial search (ten seeds per trial, 120 generations, 512
+workers across sixteen Snellius nodes against one shared study), jointly
+optimizing the disk ecology, $\alpha$, and the mutation parameters. Stable
+transitions are common under both decodes, and unproject is slightly broader --
+the same ordering seen for the angular decodes:
 
-The strongly stable trials (eight or more seeds) occupy a coherent region of the
+| Outcome | Flatten trials | Unproject trials |
+|:--------|---------------:|-----------------:|
+| Stable in all 10 seeds | 14 | 24 |
+| Stable in $\geq 8$ seeds | 123 | 132 |
+| Stable in $\geq 5$ seeds | 312 | 338 |
+| Stable in $\geq 1$ seed | 611 | 641 |
+| No stable seed | 413 | 383 |
+
+Both searches concentrate their strongly stable trials in the same region. The
+flatten trials with eight or more stable seeds occupy a coherent band of the
 search space: denser, closer, reachable food paired with a strong tilt incentive.
 
 | Parameter | Median | 10th-90th pct. |
@@ -267,9 +274,61 @@ little selection.
 | 301 | 7 | 105 | 2 | 0.54 | 3000 | 2.5e-5 | 0.110 | 0.1 | 0.86 | 0.72 | 0.12 |
 
 Here $t_f$ is final mean comb tilt and $m_f$ the final mean of the lower sender or
-receiver transposition. These are search-stage results (ten seeds per trial); a
-held-out confirmation on larger seed panels, as run for the angular pipelines
-below, has not yet been carried out for the disk ecology.
+receiver transposition.
+
+### Held-Out Validation
+
+The top five distinct candidates from each search were rerun on 100 held-out
+seeds (200-299). Every candidate under both decodes produced frequent stable
+transitions and no collapse events; stable rates ran 80-91 of 100 for flatten
+and 82-92 for unproject. The strongest candidate of each decode:
+
+| Decode | Candidate | Sites | Radius (m) | Cap. | $\alpha$ | Max dist. (m) | Travel | Mut. sd | $\rho$ | Stable | Success | $t_f$ | $m_f$ |
+|:-------|:----------|------:|-----------:|-----:|---------:|--------------:|-------:|--------:|-------:|-------:|--------:|------:|------:|
+| flatten | trial_729 | 5 | 315 | 4 | 0.56 | 3250 | 1.7e-5 | 0.070 | 0.9 | 91/100 | 0.348 | 0.845 | 0.782 |
+| unproject | trial_541 | 7 | 315 | 12 | 0.60 | 4750 | 1.0e-5 | 0.090 | 0.4 | 92/100 | 0.350 | 0.848 | 0.734 |
+
+The two decodes land on very similar held-out rates (91 and 92 of 100) and on
+overlapping ecologies -- large patches (315 m), short-to-moderate distances, low
+travel cost, high benefit -- confirming that the search-stage region carries over
+to unseen seeds.
+
+### Sensitivity
+
+A one-parameter sweep around each validated baseline (100 seeds) identifies the
+same sharpest boundary as the angular pipeline: the **mutation scale**. Lowering
+it collapses the transition -- flatten falls from 91/100 at the baseline to
+49/100 at mutation 0.05, and unproject falls to 16/100 at 0.04 -- while the
+baseline mutation of 0.07-0.09 sits safely on the plateau. The sharpest
+*ecological* boundary is **food-site count** under flatten (46/100 at a Poisson
+mean of two sites, rising to 87/100 at seven); unproject is more robust to count
+(83-92/100 across four to nine sites). Vertical-comb benefit and sender-receiver
+correlation are monotone and moderate (flatten stable rises from 66 to 93 as
+$\alpha$ goes 0.44 to 0.60, and from 73 to 96 as $\rho$ goes 0.4 to 1.0). Patch
+radius, capacity, distance, and travel cost are comparatively flat within the
+tested ranges (79-98/100).
+
+### Evolutionary Interaction
+
+Holding each validated ecology fixed, we cross vertical-comb benefit, mutation
+scale, and sender-receiver correlation on a grid re-centred on the disk stable
+region (benefit 0.30/0.44/0.56, mutation 0.05-0.11, correlation 0.0-0.9; 100
+seeds per cell). Unlike the angular grid, where a weak benefit nearly eliminated
+the transition, the disk transition persists at the lower benefits tested, and
+unproject is again slightly more robust than flatten:
+
+| Vertical-comb benefit $\alpha$ | Flatten mean / best | Unproject mean / best |
+|-------------------------------:|:--------------------|:----------------------|
+| 0.30 | 32 / 56 | 40 / 67 |
+| 0.44 | 54 / 83 | 64 / 83 |
+| 0.56 | 70 / 92 | 74 / 95 |
+
+Mean and best are stable seeds of 100 across the sixteen mutation-by-correlation
+cells at each benefit. Stable rate rises with benefit under both decodes, the
+best cells pair a high mutation scale (0.09-0.11) with moderate-to-high
+correlation, and at every benefit level unproject clears a broader swath of the
+grid than flatten -- consistent with its cleaner selective pressure for the
+gravity code.
 
 ## Held-Out Validation
 
