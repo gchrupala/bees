@@ -194,6 +194,73 @@ the trait feels selection only at capacity-one patches and otherwise drifts;
 making recruitment suppression evolve informatively would require a
 less-saturating form together with a genuine cost of wasted recruitment.
 
+## Vertical Transition Under Disk Geometry
+
+The food-distribution grid above holds the comb flat. We now free it to tilt
+(`evolve_comb_tilt` on, `initial_comb_tilt` 0) under the same disk ecology and
+ask when a stable vertical gravity-code transition evolves -- the disk-geometry
+counterpart of the angular transition search below. A positive vertical-comb
+benefit $\alpha$ rewards tilting, and once the comb stands vertical a
+gravity-referenced (transposition) code can replace the sun-referenced direct
+pointer. We optimize the ecology jointly with $\alpha$ and the mutation
+parameters using Optuna (1024 trials, ten seeds each, 120 generations), running
+512 workers across sixteen Snellius nodes against one shared study. A seed is
+stable when final mean comb tilt is at least 0.80 and both sender and receiver
+transposition are at least 0.50, and it collapses if foraging success ever falls
+to 0.02 or below -- the same thresholds as the angular search.
+
+Stable transitions are common in the disk ecology:
+
+| Outcome | Trials (of 1024) |
+|:--------|-----------------:|
+| Stable in all 10 seeds | 14 |
+| Stable in $\geq 8$ seeds | 123 (12%) |
+| Stable in $\geq 5$ seeds | 312 (30%) |
+| Stable in $\geq 1$ seed | 611 (60%) |
+| No stable seed | 413 (40%) |
+
+The strongly stable trials (eight or more seeds) occupy a coherent region of the
+search space: denser, closer, reachable food paired with a strong tilt incentive.
+
+| Parameter | Median | 10th-90th pct. |
+|:----------|-------:|:---------------|
+| Food-site count (Poisson mean) | 8 | 5-8 |
+| Patch radius (m) | 210 | 165-345 |
+| Patch capacity | 7 | 2-8 |
+| Vertical-comb benefit $\alpha$ | 0.56 | 0.50-0.56 |
+| Max food distance (m) | 3250 | 3250-5250 |
+| Travel cost per meter | 2.5e-5 | 1.0e-5-2.5e-5 |
+| Mutation scale | 0.110 | 0.090-0.110 |
+| Sender-receiver correlation $\rho$ | 0.4 | 0.0-0.9 |
+
+The transition favors many patches (a Poisson mean toward the top of the tested
+1-8 range), radii of a couple hundred meters, distances near the short end of the
+range (~3250 m), low travel cost, a high vertical-comb benefit, and a high
+mutation scale; the sender-receiver mutation correlation is not decisive, its
+stable range spanning almost the whole 0-1 axis. This restates the angular
+transition's two sharpest boundaries -- too few sites and too low a mutation
+scale -- in metric terms: the gravity code stabilizes where recruitment has
+enough findable, cheap-to-reach food to pay for itself. Mean foraging success
+across the strongly stable trials is only 0.27, so the transition needs a
+reliably communicable ecology rather than an abundant one. The evolvable dance
+propensity again settles near neutral (mean 0.54 across the strongly stable set),
+consistent with the flat-comb finding that its current geometric form feels
+little selection.
+
+| # | Sites | Radius (m) | Cap. | $\alpha$ | Max dist. (m) | Travel | Mut. sd | $\rho$ | $t_f$ | $m_f$ | Success |
+|--:|------:|-----------:|-----:|---------:|--------------:|-------:|--------:|-------:|------:|------:|--------:|
+| 600 | 5 | 315 | 5 | 0.60 | 6500 | 1.8e-5 | 0.090 | 1.0 | 0.87 | 0.83 | 0.25 |
+| 770 | 7 | 225 | 7 | 0.50 | 3250 | 1.8e-5 | 0.110 | 0.1 | 0.84 | 0.76 | 0.28 |
+| 877 | 8 | 210 | 7 | 0.56 | 3750 | 2.5e-5 | 0.110 | 0.0 | 0.85 | 0.76 | 0.28 |
+| 879 | 7 | 210 | 7 | 0.56 | 3250 | 1.0e-5 | 0.110 | 0.0 | 0.83 | 0.77 | 0.27 |
+| 909 | 8 | 165 | 7 | 0.56 | 3250 | 2.5e-5 | 0.110 | 0.5 | 0.84 | 0.78 | 0.23 |
+| 301 | 7 | 105 | 2 | 0.54 | 3000 | 2.5e-5 | 0.110 | 0.1 | 0.86 | 0.72 | 0.12 |
+
+Here $t_f$ is final mean comb tilt and $m_f$ the final mean of the lower sender or
+receiver transposition. These are search-stage results (ten seeds per trial); a
+held-out confirmation on larger seed panels, as run for the angular pipelines
+below, has not yet been carried out for the disk ecology.
+
 ## Held-Out Validation
 
 The top confirmation candidates were rerun on 100 held-out seeds. All five validation
