@@ -187,6 +187,16 @@ undiscoverable and the abundant extremes. Unlike a directional-bias threshold,
 the recruitment-advantage measure reports this directly and does not mistake
 neutral drift for evolved communication.
 
+We report the advantage as an absolute difference rather than a
+follower-to-searcher success *ratio* for exactly this reason. A ratio (where 1
+denotes no advantage in either direction) inverts the pattern: it peaks in the
+small-patch corner (up to about 4.2 at a single 15 m patch), because there
+dance-followers succeed several times as often as matched searchers even though
+both almost always fail (roughly 1.5% versus 0.3% success). The ratio is
+inflated by its near-zero denominator precisely where communication is least
+useful in absolute terms, whereas the difference stays small and correctly
+locates the strongest communication benefit at few large patches.
+
 The evolvable dance propensity, by contrast, showed little structure across the
 grid, settling near 0.6 everywhere. Under the current geometric form the dance
 probability saturates to near one whenever more than one forager-load remains, so
