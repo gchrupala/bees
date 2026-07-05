@@ -1,0 +1,6 @@
+candidate,source,food_site_count,food_site_radius,food_site_capacity,food_value,vertical_comb_benefit,food_site_max_distance,travel_cost_per_distance,mutation_sd,transposition_mutation_correlation
+trial_600,panel,5,315.0000,5,1.0000,0.6000,6500.0000,1.750000e-05,0.0900,1.0000
+trial_529,panel,7,315.0000,12,1.0000,0.6000,4750.0000,1.000000e-05,0.0900,0.4000
+trial_96,panel,6,150.0000,9,1.0000,0.5400,3500.0000,2.500000e-05,0.1000,0.9000
+trial_909,panel,8,165.0000,7,1.0000,0.5600,3250.0000,2.500000e-05,0.1100,0.5000
+trial_729,panel,5,315.0000,4,1.0000,0.5600,3250.0000,1.750000e-05,0.0700,0.9000

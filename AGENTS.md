@@ -65,6 +65,17 @@ We are modeling the evolution of bee communication.
 - The submit helper accepts `BEES_ARRAY_TASKS`, `BEES_ARRAY_CONCURRENCY`,
   `BEES_VENV`, `BEES_PYTHON`, and `BEES_PUSH`. Set `BEES_PUSH=1` when the
   finalizer should commit and push merged result CSVs after the array succeeds.
+- **Slurm does not inherit the submitting shell's environment on this cluster.**
+  A plain `sbatch job.sbatch` runs with a clean environment, so any `BEES_*`
+  variable the *job* reads (`BEES_PUSH`, per-task trial counts, output-path
+  overrides, `BEES_CONFIG`) silently falls back to its default unless you pass
+  it explicitly. Always submit job-side variables with
+  `sbatch --export=ALL,VAR=value,... job.sbatch` (or bake them into the
+  `.sbatch`); variables consumed only by the submit *script* itself (e.g.
+  `BEES_ARRAY_TASKS`, `BEES_FRESH_JOURNAL`) do not need this. A launch that ran
+  the default 64 instead of the requested 96 trials/task and skipped the result
+  push traced to exactly this — the disk optuna submit helper now hard-codes
+  `--export=ALL`.
 
 ### Keep results in sync via git
 
@@ -99,6 +110,8 @@ git as the single source of truth for results:
   it when explicitly asked.
 - When editing paper text, maintain the existing writing style and the structure
   of the argument; confirm important textual changes before editing.
+- The writing in the paper should focus on the final version of the model and experimental setup. There should be no references to previous versions or superseded results.
+- The paper should use present tense, unless there is a good reason not to.
 - Follow instructions inside the paper marked with the string `% AGENTS:`.
 
 ## Token-Conservative Workflow

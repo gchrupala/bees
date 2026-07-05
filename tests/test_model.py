@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from math import pi, tau
 from random import Random
+from statistics import mean
 
 from bees.model import (
     ColonyTraits,
@@ -24,8 +25,14 @@ from bees.model import (
     interpret_signal,
     sample_sun_azimuth,
     simulate,
+    _draw_foray_length,
     _mutate_traits,
     _orientation_mean_and_alignment,
+    _sample_patch_radius,
+    _sample_site_count,
+    _scout_dances,
+    _segment_disk_entry,
+    _site_capacity,
 )
 
 
@@ -913,6 +920,277 @@ class DirectionModelTests(unittest.TestCase):
         second = simulate(settings, seed=4)
 
         self.assertEqual(first, second)
+
+
+class DiskGeometryTests(unittest.TestCase):
+    def test_segment_disk_entry_hits_patch_dead_ahead(self) -> None:
+        # Center 3 units ahead, radius 0.5: entry is the near edge at 2.5.
+        entry = _segment_disk_entry(0.0, 5.0, 3.0, 0.0, 0.5)
+        self.assertAlmostEqual(entry, 2.5)
+
+    def test_segment_disk_entry_misses_when_offset_exceeds_capture_angle(self) -> None:
+        from math import asin
+
+        distance, radius = 3.0, 0.5
+        capture = asin(radius / distance)
+        # Just inside the capture half-angle the path enters the disk...
+        self.assertIsNotNone(
+            _segment_disk_entry(0.0, 5.0, distance, capture - 0.01, radius)
+        )
+        # ...and just outside it misses entirely.
+        self.assertIsNone(
+            _segment_disk_entry(0.0, 5.0, distance, capture + 0.01, radius)
+        )
+
+    def test_segment_disk_entry_respects_foray_length(self) -> None:
+        self.assertIsNone(_segment_disk_entry(0.0, 2.0, 3.0, 0.0, 0.5))
+        self.assertAlmostEqual(_segment_disk_entry(0.0, 2.5, 3.0, 0.0, 0.5), 2.5)
+
+    def test_segment_disk_entry_is_zero_when_nest_is_inside_patch(self) -> None:
+        entry = _segment_disk_entry(0.0, 5.0, 0.3, 1.2, 0.5)
+        self.assertEqual(entry, 0.0)
+
+    def test_disk_search_finds_nearest_patch_by_entry_distance(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=3.0, width=0.0, value=1.0, capacity=1, radius=0.3),
+            FoodSite(direction=0.0, distance=2.0, width=0.0, value=1.0, capacity=1, radius=0.3),
+        )
+        self.assertEqual(
+            find_food_site(0.0, 5.0, sites, [1, 1], geometry="disk"),
+            1,
+        )
+
+    def test_disk_search_skips_missed_patch(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=3.0, width=0.0, value=1.0, capacity=1, radius=0.2),
+        )
+        # Heading 0.5 rad off a 0.2-radius patch at distance 3 cannot intersect it.
+        self.assertIsNone(find_food_site(0.5, 5.0, sites, [1], geometry="disk"))
+        self.assertEqual(find_food_site(0.0, 5.0, sites, [1], geometry="disk"), 0)
+
+    def test_generated_disk_radii_are_positive_and_vary(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=200,
+            food_site_radius=0.4,
+            food_site_radius_log_sd=0.6,
+        )
+        sites = generate_food_sites(settings, Random(1))
+        radii = [site.radius for site in sites]
+        self.assertTrue(all(radius > 0.0 for radius in radii))
+        self.assertGreater(len(set(radii)), 1)
+
+    def test_zero_log_sd_gives_constant_patch_radius(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_radius=0.4,
+            food_site_radius_log_sd=0.0,
+        )
+        self.assertEqual(_sample_patch_radius(settings, Random(1)), 0.4)
+
+    def test_angular_geometry_leaves_radius_at_zero(self) -> None:
+        settings = _settings(food_site_radius=0.4)  # default angular geometry
+        self.assertEqual(_sample_patch_radius(settings, Random(1)), 0.0)
+
+
+class ForayDistributionTests(unittest.TestCase):
+    def test_fixed_foray_returns_the_range_trait_unchanged(self) -> None:
+        settings = _settings(foray_distribution="fixed")
+        self.assertEqual(_draw_foray_length(3.0, settings, Random(1)), 3.0)
+
+    def test_gamma_foray_mean_matches_evolved_mean(self) -> None:
+        settings = _settings(
+            foray_distribution="gamma",
+            foray_shape=2.0,
+            max_search_distance=100.0,  # avoid clamp bias for the mean check
+        )
+        rng = Random(7)
+        draws = [_draw_foray_length(3.0, settings, rng) for _ in range(20000)]
+        self.assertAlmostEqual(mean(draws), 3.0, delta=0.1)
+        self.assertGreater(len(set(draws)), 1)
+
+    def test_gamma_foray_is_clamped_to_max_search_distance(self) -> None:
+        settings = _settings(
+            foray_distribution="gamma",
+            foray_shape=2.0,
+            max_search_distance=5.0,
+        )
+        rng = Random(7)
+        draws = [_draw_foray_length(4.0, settings, rng) for _ in range(5000)]
+        self.assertLessEqual(max(draws), 5.0)
+        self.assertTrue(all(draw >= 0.0 for draw in draws))
+
+    def test_gamma_foray_with_zero_mean_is_zero(self) -> None:
+        settings = _settings(foray_distribution="gamma")
+        self.assertEqual(_draw_foray_length(0.0, settings, Random(1)), 0.0)
+
+    def test_gamma_foray_drops_per_worker_jitter(self) -> None:
+        settings = _settings(foray_distribution="gamma", stable_worker_sd=0.2)
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+                search_limit=2.0,
+            ),
+            settings,
+            Random(3),
+        )
+        self.assertTrue(all(worker.search_limit == 2.0 for worker in colony.workers))
+
+
+class CapacityScalingTests(unittest.TestCase):
+    def test_fixed_scaling_ignores_radius(self) -> None:
+        settings = _settings(food_site_capacity=6)  # default "fixed"
+        self.assertEqual(_site_capacity(settings, 999.0), 6)
+        self.assertEqual(_site_capacity(settings, 0.0), 6)
+
+    def test_area_scaling_is_quadratic_in_radius(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        self.assertEqual(_site_capacity(settings, 150.0), 6)   # reference -> base
+        self.assertEqual(_site_capacity(settings, 300.0), 24)  # 2x radius -> 4x
+        self.assertEqual(_site_capacity(settings, 600.0), 96)  # 4x radius -> 16x
+
+    def test_area_scaling_floors_tiny_patches_at_one(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        self.assertEqual(_site_capacity(settings, 15.0), 1)  # 6*0.01 -> round 0 -> 1
+
+    def test_area_scaling_falls_back_to_base_without_reference(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=0.0,
+        )
+        self.assertEqual(_site_capacity(settings, 300.0), 6)
+
+    def test_generated_disk_sites_scale_capacity_with_drawn_radius(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=50,
+            food_site_radius=150.0,
+            food_site_radius_log_sd=0.6,
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        sites = generate_food_sites(settings, Random(2))
+        self.assertTrue(all(site.capacity >= 1 for site in sites))
+        for site in sites:
+            expected = max(1, round(6 * (site.radius / 150.0) ** 2))
+            self.assertEqual(site.capacity, expected)
+
+
+class DancePropensityTests(unittest.TestCase):
+    @staticmethod
+    def _worker(dance_propensity: float) -> Worker:
+        return Worker(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=1.0,
+            dance_propensity=dance_propensity,
+        )
+
+    def test_legacy_scout_always_dances(self) -> None:
+        settings = _settings()  # evolve_dance_propensity False by default
+        worker = self._worker(0.0)
+        # Even with zero propensity and an exhausted patch, legacy always dances.
+        self.assertTrue(_scout_dances(worker, 0, settings, Random(1)))
+
+    def test_no_dance_for_exhausted_patch(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        self.assertFalse(_scout_dances(self._worker(1.0), 0, settings, Random(1)))
+
+    def test_full_propensity_dances_when_capacity_remains(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(1.0)
+        for remaining in (1, 5, 20):
+            self.assertTrue(_scout_dances(worker, remaining, settings, Random(remaining)))
+
+    def test_zero_propensity_never_dances(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(0.0)
+        self.assertFalse(
+            any(_scout_dances(worker, 5, settings, Random(seed)) for seed in range(50))
+        )
+
+    def test_dance_rate_matches_geometric_form(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(0.3)
+        rng = Random(11)
+        expected = 1.0 - (1.0 - 0.3) ** 3  # remaining capacity 3
+        rate = mean(_scout_dances(worker, 3, settings, rng) for _ in range(20000))
+        self.assertAlmostEqual(rate, expected, delta=0.02)
+
+    def test_inert_trait_stays_at_one(self) -> None:
+        settings = _settings()  # flag off
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+                search_limit=2.0,
+            ),
+            settings,
+            Random(3),
+        )
+        self.assertTrue(all(worker.dance_propensity == 1.0 for worker in colony.workers))
+
+    def test_simulation_is_reproducible_with_trait_on(self) -> None:
+        settings = _settings(
+            evolve_dance_propensity=True,
+            food_geometry="disk",
+            food_site_radius=2.0,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=2.0,
+        )
+        self.assertEqual(simulate(settings, seed=5), simulate(settings, seed=5))
+
+
+class SiteCountTests(unittest.TestCase):
+    def test_fixed_count_is_exact(self) -> None:
+        settings = _settings(food_site_count=5)  # default "fixed"
+        self.assertTrue(
+            all(_sample_site_count(settings, Random(s)) == 5 for s in range(10))
+        )
+
+    def test_poisson_count_mean_matches_setting(self) -> None:
+        settings = _settings(
+            food_site_count=3, food_site_count_distribution="poisson"
+        )
+        rng = Random(4)
+        draws = [_sample_site_count(settings, rng) for _ in range(20000)]
+        self.assertAlmostEqual(mean(draws), 3.0, delta=0.1)
+        self.assertGreater(len(set(draws)), 1)
+        self.assertTrue(all(isinstance(d, int) and d >= 0 for d in draws))
+
+    def test_poisson_generates_variable_site_counts(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=2,
+            food_site_count_distribution="poisson",
+            food_site_radius=100.0,
+        )
+        rng = Random(7)
+        counts = {len(generate_food_sites(settings, rng)) for _ in range(200)}
+        self.assertGreater(len(counts), 1)
+
+    def test_poisson_with_zero_mean_is_empty(self) -> None:
+        settings = _settings(
+            food_site_count=0, food_site_count_distribution="poisson"
+        )
+        self.assertEqual(_sample_site_count(settings, Random(1)), 0)
 
 
 def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings:

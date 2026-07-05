@@ -1,0 +1,6 @@
+candidate,seed_count,stable_count,collapse_count,mean_final_success,mean_final_payoff,mean_final_comb_tilt,mean_final_min_transposition,mean_final_dance_propensity
+trial_600,100,86,0,0.242,3.119,0.819,0.796,0.587
+trial_529,100,89,0,0.344,5.618,0.843,0.758,0.535
+trial_96,100,87,0,0.165,1.870,0.834,0.796,0.581
+trial_909,100,80,0,0.226,3.038,0.827,0.755,0.557
+trial_729,100,91,0,0.348,5.442,0.845,0.782,0.565

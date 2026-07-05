@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import atan2, cos, hypot, pi, sin, sqrt, tau
+from math import atan2, cos, exp, hypot, log, pi, sin, sqrt, tau
 from random import Random
 
 EPSILON = 1e-9
@@ -17,6 +17,7 @@ class ColonyTraits:
     search_limit: float
     comb_tilt: float = 0.0
     comb_orientation: float = 0.0
+    dance_propensity: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,7 @@ class Worker:
     sender_transposition: float
     receiver_transposition: float
     search_limit: float
+    dance_propensity: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -41,6 +43,7 @@ class FoodSite:
     width: float
     value: float
     capacity: int
+    radius: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -87,6 +90,40 @@ class DirectionSettings:
     vertical_comb_modifier: str = "linear"
     direct_decode: str = "flatten"
     evolve_comb_tilt: bool = True
+    # Food-patch geometry. "angular" is the legacy point-site model where a
+    # forager captures a site whose bearing falls within ``food_site_width``
+    # radians of its heading. "disk" gives each site a physical radius (drawn
+    # per site, independent of distance) and captures it when the straight
+    # outbound foray path intersects the disk within range.
+    food_geometry: str = "angular"
+    # Lognormal patch radius (disk geometry only): ``food_site_radius`` is the
+    # median (scale) and ``food_site_radius_log_sd`` the log-scale spread; a
+    # spread of 0 makes every patch exactly ``food_site_radius``.
+    food_site_radius: float = 0.0
+    food_site_radius_log_sd: float = 0.0
+    # Foray length. "fixed" keeps the legacy behavior where ``search_limit`` is
+    # a hard per-worker range cutoff. "gamma" makes each foraging attempt draw
+    # its outbound distance from a Gamma with evolved mean ``search_limit`` and
+    # fixed shape ``foray_shape`` (clamped to ``max_search_distance``).
+    foray_distribution: str = "fixed"
+    foray_shape: float = 2.0
+    # Patch value scaling. "fixed" gives every site ``food_site_capacity`` loads.
+    # "area" makes total patch resource scale with disk area: a site's capacity
+    # is ``food_site_capacity * (radius / food_capacity_reference_radius) ** 2``
+    # (floored at 1), so larger patches feed proportionally more foragers before
+    # depletion while per-visit value stays fixed. Requires disk geometry.
+    food_capacity_scaling: str = "fixed"
+    food_capacity_reference_radius: float = 0.0
+    # Number of food sites per episode. "fixed" places exactly ``food_site_count``
+    # sites; "poisson" treats ``food_site_count`` as a mean and draws the count
+    # per episode from a Poisson (so some episodes have more, fewer, or no food).
+    food_site_count_distribution: str = "fixed"
+    # Capacity-conditional recruitment. When True, a successful scout dances with
+    # probability 1 - (1 - dance_propensity) ** remaining_capacity, so a patch
+    # with nothing left never seeds a dance and richer patches recruit more; the
+    # dance_propensity trait then evolves. When False, every successful scout
+    # dances unconditionally (legacy behavior) and the trait draws no randomness.
+    evolve_dance_propensity: bool = False
 
 
 @dataclass(frozen=True)
@@ -110,6 +147,7 @@ class GenerationSummary:
     average_comb_orientation: float
     comb_orientation_alignment: float
     average_search_limit: float
+    average_dance_propensity: float
     average_success_rate: float
     average_payoff: float
     follower_success_rate: float
@@ -258,19 +296,37 @@ def create_colony(
                 1.0,
             ),
             search_limit=_clamp(
-                traits.search_limit
-                + rng.gauss(
-                    0.0,
-                    settings.stable_worker_sd * settings.max_search_distance,
-                ),
+                traits.search_limit + _search_limit_jitter(settings, rng),
                 0.0,
                 settings.max_search_distance,
+            ),
+            dance_propensity=_clamp(
+                traits.dance_propensity + _dance_propensity_jitter(settings, rng),
+                0.0,
+                1.0,
             ),
         )
         for _ in range(settings.workers_per_colony)
     )
 
     return Colony(traits=traits, workers=workers)
+
+
+def _search_limit_jitter(settings: DirectionSettings, rng: Random) -> float:
+    """Per-worker deviation of the range trait. Suppressed under gamma forays,
+    where within-colony variation comes from the per-foray draw instead."""
+    if settings.foray_distribution == "gamma":
+        return 0.0
+    return rng.gauss(0.0, settings.stable_worker_sd * settings.max_search_distance)
+
+
+def _dance_propensity_jitter(settings: DirectionSettings, rng: Random) -> float:
+    """Per-worker deviation of the recruitment-propensity trait. Draws no
+    randomness unless the trait is under selection, so legacy runs are
+    unaffected."""
+    if not settings.evolve_dance_propensity:
+        return 0.0
+    return rng.gauss(0.0, settings.stable_worker_sd)
 
 
 def encode_dance_direction(
@@ -366,19 +422,84 @@ def sample_sun_azimuth(settings: DirectionSettings, rng: Random) -> float:
 
 
 def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodSite, ...]:
-    return tuple(
-        FoodSite(
-            direction=rng.random() * tau,
-            distance=rng.uniform(
-                settings.food_site_min_distance,
-                settings.food_site_max_distance,
-            ),
-            width=settings.food_site_width,
-            value=settings.food_value,
-            capacity=settings.food_site_capacity,
+    sites = []
+    for _ in range(_sample_site_count(settings, rng)):
+        # RNG call order (direction, distance, radius) is fixed for
+        # reproducibility; capacity is derived from the drawn radius and draws
+        # no randomness.
+        direction = rng.random() * tau
+        distance = rng.uniform(
+            settings.food_site_min_distance,
+            settings.food_site_max_distance,
         )
-        for _ in range(settings.food_site_count)
-    )
+        radius = _sample_patch_radius(settings, rng)
+        sites.append(
+            FoodSite(
+                direction=direction,
+                distance=distance,
+                width=settings.food_site_width,
+                value=settings.food_value,
+                capacity=_site_capacity(settings, radius),
+                radius=radius,
+            )
+        )
+    return tuple(sites)
+
+
+def _sample_site_count(settings: DirectionSettings, rng: Random) -> int:
+    """Number of food sites in an episode. Exactly ``food_site_count`` by
+    default; under "poisson" that value is a mean and the count is drawn per
+    episode (drawing no randomness in the fixed case keeps legacy runs intact)."""
+    if settings.food_site_count_distribution == "fixed":
+        return settings.food_site_count
+    if settings.food_site_count_distribution != "poisson":
+        raise ValueError(
+            f"unknown food site count distribution: "
+            f"{settings.food_site_count_distribution!r}"
+        )
+    return _poisson(settings.food_site_count, rng)
+
+
+def _poisson(mean: float, rng: Random) -> int:
+    """Draw a Poisson count with the given mean using Knuth's algorithm."""
+    if mean <= 0.0:
+        return 0
+    threshold = exp(-mean)
+    count = 0
+    product = 1.0
+    while True:
+        count += 1
+        product *= rng.random()
+        if product <= threshold:
+            return count - 1
+
+
+def _site_capacity(settings: DirectionSettings, radius: float) -> int:
+    """Number of forager-loads a patch holds. Fixed by default; under "area"
+    scaling it grows with disk area so total patch resource scales with size."""
+    if settings.food_capacity_scaling == "fixed":
+        return settings.food_site_capacity
+    if settings.food_capacity_scaling != "area":
+        raise ValueError(
+            f"unknown food capacity scaling: {settings.food_capacity_scaling!r}"
+        )
+    reference = settings.food_capacity_reference_radius
+    if reference <= 0.0:
+        return settings.food_site_capacity
+    scaled = settings.food_site_capacity * (radius / reference) ** 2
+    return max(1, round(scaled))
+
+
+def _sample_patch_radius(settings: DirectionSettings, rng: Random) -> float:
+    """Draw a physical patch radius, independent of the site's distance. Zero in
+    angular geometry (radius is unused there); lognormal in disk geometry."""
+    if settings.food_geometry != "disk":
+        return 0.0
+    median = settings.food_site_radius
+    log_sd = settings.food_site_radius_log_sd
+    if median <= 0.0 or log_sd <= 0.0:
+        return max(0.0, median)
+    return rng.lognormvariate(log(median), log_sd)
 
 
 def find_food_site(
@@ -386,7 +507,15 @@ def find_food_site(
     search_limit: float,
     sites: tuple[FoodSite, ...],
     remaining_capacity: list[int],
+    geometry: str = "angular",
 ) -> int | None:
+    if geometry == "disk":
+        return _find_food_site_disk(
+            search_direction, search_limit, sites, remaining_capacity
+        )
+    if geometry != "angular":
+        raise ValueError(f"unknown food geometry: {geometry!r}")
+
     available_sites = [
         (site.distance, angular_distance(search_direction, site.direction), index)
         for index, site in enumerate(sites)
@@ -399,6 +528,97 @@ def find_food_site(
         return None
 
     return min(available_sites)[2]
+
+
+def _find_food_site_disk(
+    search_direction: float,
+    search_limit: float,
+    sites: tuple[FoodSite, ...],
+    remaining_capacity: list[int],
+) -> int | None:
+    """Return the first patch a straight outbound foray enters, ordered by
+    ray-entry distance among sites with remaining capacity."""
+    reached = []
+    for index, site in enumerate(sites):
+        if remaining_capacity[index] <= 0:
+            continue
+        entry = _segment_disk_entry(
+            search_direction, search_limit, site.distance, site.direction, site.radius
+        )
+        if entry is not None:
+            reached.append((entry, index))
+
+    if not reached:
+        return None
+
+    return min(reached)[1]
+
+
+def _segment_disk_entry(
+    search_direction: float,
+    search_limit: float,
+    center_distance: float,
+    center_bearing: float,
+    radius: float,
+) -> float | None:
+    """Along-ray distance at which a forager leaving the nest along
+    ``search_direction`` first enters a disk of ``radius`` centered at polar
+    ``(center_distance, center_bearing)``, or ``None`` if the straight foray of
+    length ``search_limit`` never intersects the disk.
+    """
+    offset = center_bearing - search_direction
+    along = center_distance * cos(offset)       # projection onto the ray
+    perpendicular = center_distance * sin(offset)
+    gap = radius * radius - perpendicular * perpendicular
+    if gap < 0.0:
+        return None                             # ray line misses the disk
+    half_chord = sqrt(gap)
+    entry = along - half_chord
+    exit_point = along + half_chord
+    if exit_point < 0.0:
+        return None                             # disk lies entirely behind the nest
+    if entry > search_limit:
+        return None                             # disk beyond the foray length
+    return max(0.0, entry)                       # clamp when the nest is inside the disk
+
+
+def _draw_foray_length(
+    mean_length: float,
+    settings: DirectionSettings,
+    rng: Random,
+) -> float:
+    """Outbound distance of a single foray. In the legacy "fixed" model this is
+    the worker's hard range cutoff; in the "gamma" model it is a per-foray draw
+    from a Gamma with the evolved mean ``mean_length`` and fixed shape, clamped
+    to ``max_search_distance``."""
+    if settings.foray_distribution == "fixed":
+        return mean_length
+    if settings.foray_distribution != "gamma":
+        raise ValueError(
+            f"unknown foray distribution: {settings.foray_distribution!r}"
+        )
+    if mean_length <= 0.0 or settings.foray_shape <= 0.0:
+        return 0.0
+    length = rng.gammavariate(settings.foray_shape, mean_length / settings.foray_shape)
+    return _clamp(length, 0.0, settings.max_search_distance)
+
+
+def _scout_dances(
+    worker: Worker,
+    remaining_capacity: int,
+    settings: DirectionSettings,
+    rng: Random,
+) -> bool:
+    """Whether a successful scout produces a dance. Unconditional in the legacy
+    model; otherwise the scout dances with probability
+    ``1 - (1 - dance_propensity) ** remaining_capacity`` -- zero once the patch
+    is exhausted, rising with the forage still left for recruits."""
+    if not settings.evolve_dance_propensity:
+        return True
+    if remaining_capacity <= 0:
+        return False
+    probability = 1.0 - (1.0 - worker.dance_propensity) ** remaining_capacity
+    return rng.random() < probability
 
 
 def evaluate_colony(
@@ -445,11 +665,13 @@ def evaluate_colony(
             else:
                 search_direction = rng.random() * tau
 
+            foray_length = _draw_foray_length(worker.search_limit, settings, rng)
             site_index = find_food_site(
                 search_direction,
-                worker.search_limit,
+                foray_length,
                 sites,
                 remaining_capacity,
+                settings.food_geometry,
             )
             succeeded = site_index is not None
             if follows_dance:
@@ -465,24 +687,27 @@ def evaluate_colony(
                     sites[site_index].distance * settings.travel_cost_per_distance
                 )
                 food_payoff += sites[site_index].value
-                dances.append(
-                    Dance(
-                        signal=produce_signal(
-                            sites[site_index].direction,
-                            worker,
-                            colony.traits,
-                            settings,
-                            sun_azimuth,
-                            rng,
+                if _scout_dances(
+                    worker, remaining_capacity[site_index], settings, rng
+                ):
+                    dances.append(
+                        Dance(
+                            signal=produce_signal(
+                                sites[site_index].direction,
+                                worker,
+                                colony.traits,
+                                settings,
+                                sun_azimuth,
+                                rng,
+                            )
                         )
                     )
-                )
-                dance_cost += (
-                    settings.base_dance_cost
-                    + settings.cue_cost * worker.directional_bias
-                )
+                    dance_cost += (
+                        settings.base_dance_cost
+                        + settings.cue_cost * worker.directional_bias
+                    )
             else:
-                food_payoff -= worker.search_limit * settings.travel_cost_per_distance
+                food_payoff -= foray_length * settings.travel_cost_per_distance
 
         total_successes += success_count
         episode_payoff = (
@@ -563,7 +788,17 @@ def _initial_traits(settings: DirectionSettings, rng: Random) -> ColonyTraits:
             0.15 * settings.max_search_distance,
             0.45 * settings.max_search_distance,
         ),
+        dance_propensity=_initial_dance_propensity(settings, rng),
     )
+
+
+def _initial_dance_propensity(settings: DirectionSettings, rng: Random) -> float:
+    """Starting recruitment propensity. Fixed at 1.0 (always dance) when the
+    trait is inert; otherwise seeded high with spread so recruitment stays
+    bootstrapped and selection can push it down where dancing does not pay."""
+    if not settings.evolve_dance_propensity:
+        return 1.0
+    return rng.uniform(0.8, 1.0)
 
 
 def _mutate_traits(
@@ -590,6 +825,11 @@ def _mutate_traits(
     search_limit_change = rng.gauss(
         0.0,
         settings.mutation_sd * settings.max_search_distance,
+    )
+    dance_propensity_change = (
+        rng.gauss(0.0, settings.mutation_sd)
+        if settings.evolve_dance_propensity
+        else 0.0
     )
 
     return ColonyTraits(
@@ -626,6 +866,11 @@ def _mutate_traits(
             traits.search_limit + search_limit_change,
             0.0,
             settings.max_search_distance,
+        ),
+        dance_propensity=_clamp(
+            traits.dance_propensity + dance_propensity_change,
+            0.0,
+            1.0,
         ),
     )
 
@@ -700,6 +945,10 @@ def _summarize(
         average_comb_orientation=average_comb_orientation,
         comb_orientation_alignment=orientation_alignment,
         average_search_limit=sum(colony.traits.search_limit for colony in colonies)
+        / count,
+        average_dance_propensity=sum(
+            colony.traits.dance_propensity for colony in colonies
+        )
         / count,
         average_success_rate=sum(
             evaluation.success_rate for evaluation in evaluations

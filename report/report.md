@@ -15,13 +15,14 @@ resource density, patch size, reward, distance, and habitat [@sherman_visscher_2
 @dornhaus_chittka_2004; @dornhaus_etal_2006; @beekman_lew_2008;
 @donaldson_matasci_dornhaus_2012; @schurch_gruter_2014; @price_gruter_2015].
 
-This report covers the current v2 model run under two direct-decode variants and their
-tracked result files. The model is intentionally small: it asks whether horizontal-start
-populations can evolve both a vertical comb and a sender-receiver gravity code under
-simple foraging, inheritance, and mutation rules. The v2 pipeline (flatten decode) and v3
-pipeline (unproject decode) differ only in how direct-pointing projects the food direction
-onto the comb plane; all other model parameters and the evolutionary pipeline structure
-are identical.
+This report covers the current disk-geometry model run under two direct-decode variants
+and their tracked result files. The model is intentionally small: it asks whether
+horizontal-start populations can evolve both a vertical comb and a sender-receiver gravity
+code under simple foraging, inheritance, and mutation rules. The two variants differ only
+in how direct-pointing projects the food direction onto the comb plane -- the *flatten*
+decode drops the component perpendicular to the comb plane, and the *unproject* decode
+inverts that projection -- while all other model parameters and the evolutionary pipeline
+structure are identical.
 
 # Current Model
 
@@ -32,19 +33,27 @@ comb orientation. Directional bias controls the concentration of dance signals; 
 attention controls whether a worker follows an available dance; sender and receiver
 transposition interpolate between direct pointing and a sun/gravity-referenced code.
 
-Each foraging episode samples food sites with direction, distance, angular width, value,
-and capacity. Workers act sequentially. If dances are available, a worker may follow
-one; otherwise it searches in a random direction. A successful worker always adds a
-dance for the discovered site, whether the worker found it independently or by following
-another dance. Dance cost is therefore paid for every successful worker that produces a
-signal.
+Each foraging episode samples food sites from an ecologically grounded disk geometry,
+with all lengths in meters. Food sites are physical disk patches whose radius is drawn per
+site from a lognormal, independent of distance; the number of sites per episode is Poisson
+with an evolving mean; each foray's outbound distance is drawn from a Gamma with the
+colony's evolved mean rather than a hard range cutoff; a patch's capacity scales with its
+area, so total resource grows with radius squared while per-visit value stays fixed; and
+recruitment is itself an evolvable, capacity-conditional decision. Workers act
+sequentially. If dances are available, a worker may follow one; otherwise it searches in a
+random direction. A successful worker adds a dance for the discovered site with its
+capacity-conditional propensity, whether it found the site independently or by following
+another dance, so an exhausted patch never seeds a dance. Dance cost is paid for every
+successful worker that produces a signal. The *Direct-Pointing Communication and Food
+Distribution* section characterizes this ecology on a flat comb; the vertical-transition
+pipelines then free the comb to tilt under the same geometry.
 
 Comb geometry determines the available directional cues. Direct pointing projects the
 horizontal food direction onto the comb plane. Gravity-referenced communication uses the
 projection of gravity into the comb plane together with the episode sun azimuth. A
 horizontal comb has no gravity reference in the dance plane; the gravity cue strengthens
-as the comb becomes vertical. The reported v2 transition experiments use axial comb
-orientation, so orientations that differ by 180 degrees represent the same comb plane.
+as the comb becomes vertical. The transition experiments use axial comb orientation, so
+orientations that differ by 180 degrees represent the same comb plane.
 
 For a worker with sender transposition $s$, the encoded dance angle is a weighted
 circular mean of direct and gravity-referenced angles:
@@ -74,12 +83,13 @@ not rescue a colony whose foraging payoff has collapsed. Daughter colonies are s
 in proportion to payoff. All heritable traits mutate with the shared mutation scale;
 sender and receiver transposition mutations may be correlated by $\rho$.
 
-Unless stated otherwise, v2 runs use 60 colonies, 80 workers per colony, 120
-generations, 50 foraging episodes per colony per generation, 12 foraging attempts per
-episode, maximum search distance 8, food value 1, baseline dance cost 0, directional
-cue cost 0.02, attention cost 0.01, dance-production noise 0.18, interpretation noise
-0.12, within-colony worker variation 0.08, horizontal initial combs, axial orientation,
-and the linear vertical-comb modifier $1+\alpha t$.
+Unless stated otherwise, runs use 60 colonies, 80 workers per colony, 120 generations, 50
+foraging episodes per colony per generation, 12 foraging attempts per episode, food sites
+750-6000 m from the nest, a median patch radius of 150 m (lognormal, log-sd 0.6), Gamma
+forays (shape 2), area-scaled capacity, food value 1, travel cost 2.67e-5 per meter,
+baseline dance cost 0, directional cue cost 0.02, attention cost 0.01, dance-production
+noise 0.18, interpretation noise 0.12, within-colony worker variation 0.08, horizontal
+initial combs, axial orientation, and the linear vertical-comb modifier $1+\alpha t$.
 
 A seed is counted as a stable vertical gravity-code outcome when final mean comb tilt is
 at least 0.80 and both final mean sender and receiver transposition are at least 0.50.
@@ -88,28 +98,32 @@ is counted as collapsed if mean success falls to 0.02 or below.
 
 # Experiments
 
-Both pipelines share the same stage structure and seed panels. The v3 pipeline omits
-the sensitivity and interaction stages; those remain v2-only for now.
+The disk-geometry model is exercised by a flat-comb experiment that characterizes the food
+ecology, followed by a vertical-transition pipeline run under each direct-decode variant
+(flatten and unproject). The two decode pipelines share the same stage structure and seed
+panels and differ only in how direct pointing projects onto a tilted comb. Each stage reads
+and writes tracked CSVs under `results/`.
 
 | Pipeline | Stage | Source files | Seed panel |
 |:---------|:------|:-------------|:-----------|
-| v2 (flatten) | Optuna search | `results/food_transition_v2_optuna_trials.csv`, `results/food_transition_v2_optuna_seed_metrics.csv` | seeds 100-109 |
-| v2 (flatten) | Candidate confirmation | `results/food_transition_v2_confirmation_*` | seeds 110-149 |
-| v2 (flatten) | Held-out validation | `results/food_transition_v2_validation_*` | seeds 200-299 |
-| v2 (flatten) | One-parameter sensitivity | `results/food_transition_v2_oat_sensitivity_*`, `results/food_transition_v2_sensitivity_refinement_*` | seeds 300-399 |
-| v2 (flatten) | Evolutionary interaction grid | `results/food_transition_v2_evolutionary_interaction_*` | seeds 300-399 |
-| v2 (flatten) | Low-benefit generation budget | `results/food_transition_v2_low_regime_generation_sensitivity_*`, `..._mut_0p075_*` | seeds 300-399 |
-| v2 (flatten) | Food-distribution communication | `results/food_distribution_v2_*` | seeds 400-449 |
-| v3 (unproject) | Optuna search | `results/food_transition_v3_optuna_trials.csv`, `results/food_transition_v3_optuna_seed_metrics.csv` | seeds 100-109 |
-| v3 (unproject) | Candidate confirmation | `results/food_transition_v3_confirmation_*` | seeds 110-149 |
-| v3 (unproject) | Held-out validation | `results/food_transition_v3_validation_*` | seeds 200-299 |
+| Flat comb | Food-distribution grid | `results/food_distribution_disk_*` | seeds 400-449 |
+| Transition (flatten) | Optuna search | `results/food_transition_disk_optuna_trials.csv`, `results/food_transition_disk_optuna_seed_metrics.csv` | 10 seeds/trial |
+| Transition (flatten) | Candidate confirmation | `results/food_transition_disk_confirmation_*` | 100 seeds |
+| Transition (flatten) | Held-out validation | `results/food_transition_disk_validation_*` | seeds 200-299 |
+| Transition (flatten) | One-parameter sensitivity | `results/food_transition_disk_sensitivity_*` | 100 seeds |
+| Transition (flatten) | Evolutionary interaction grid | `results/food_transition_disk_interaction.csv` | 100 seeds/cell |
+| Transition (unproject) | Optuna search | `results/food_transition_disk_unproject_optuna_trials.csv`, `results/food_transition_disk_unproject_optuna_seed_metrics.csv` | 10 seeds/trial |
+| Transition (unproject) | Candidate confirmation | `results/food_transition_disk_unproject_confirmation_*` | 100 seeds |
+| Transition (unproject) | Held-out validation | `results/food_transition_disk_unproject_validation_*` | seeds 200-299 |
+| Transition (unproject) | One-parameter sensitivity | `results/food_transition_disk_unproject_sensitivity_*` | 100 seeds |
+| Transition (unproject) | Evolutionary interaction grid | `results/food_transition_disk_unproject_interaction.csv` | 100 seeds/cell |
 
-The Optuna search evaluated 512 trials over food-site count, angular width, capacity,
-vertical-comb benefit, maximum food distance, travel cost, mutation scale, and
-sender-receiver mutation correlation. Food value was fixed at 1.0. The objective
-prioritized stable seed count, then a bounded near-miss progress score, and penalized
-collapse. Of the 512 completed trials, 61 were stable in all ten optimization seeds and
-another 109 were stable in nine of ten seeds.
+Each transition Optuna search evaluated 1024 trials (ten seeds per trial) over the disk
+ecology (food-site count, patch radius, capacity), the vertical-comb benefit, maximum food
+distance, travel cost, mutation scale, and sender-receiver mutation correlation; food value
+was fixed at 1.0. The objective prioritized stable seed count, then a bounded near-miss
+progress score, and penalized collapse. Per-decode outcomes are reported in the *Vertical
+Transition Under Disk Geometry* section below.
 
 # Results
 
@@ -119,9 +133,25 @@ Before the vertical transition, a more basic question is when the direct-pointin
 dance is worth maintaining at all. We test this on a comb held flat
 (`evolve_comb_tilt` off, `initial_comb_tilt` 0), which leaves the gravity
 reference strength at zero and the transposition traits inert, so only the
-direct-pointing dance is in play. The colony otherwise uses the baseline v2
-ecology with mutation scale 0.07 over 60 generations, and we vary only the food
-distribution across 50 held-out seeds (400-449).
+direct-pointing dance is in play, and we sweep the food ecology across 50
+held-out seeds (400-449) over 60 generations.
+
+This experiment lays out the disk-geometry ecology in full, all lengths in
+meters. Food sites are physical
+**disks** whose radius is drawn per site from a lognormal, independent of
+distance; a forager captures a site when its straight outbound path intersects
+the disk, so the effective angular tolerance is approximately
+$\arcsin(\text{radius}/\text{distance})$ and *shrinks with distance*, because a
+fixed patch subtends a smaller angle when farther away. Each foray's outbound
+distance is drawn from a Gamma with the colony's evolved mean, rather than a hard
+range cutoff. Total patch resource scales with area, so a disk's **capacity grows
+with its radius squared** while per-visit value stays fixed. Recruitment is
+itself an evolvable decision: a successful scout dances with probability
+$1 - (1-s)^{c}$ given remaining capacity $c$, where the propensity $s$ is a
+heritable trait, so an exhausted patch never seeds a dance. Finally the number of
+sites per episode is Poisson with an evolving mean. The grid crosses mean site
+count (1 to 24) against median patch radius (15 to 600 m); food sites sit
+750-6000 m from the nest.
 
 The outcome is the in-run *recruitment advantage*: among foraging attempts where
 a dance was available, the success rate of dance-followers minus that of matched
@@ -130,276 +160,208 @@ coin flip, searched at random). Because the follow decision is randomized within
 the same episodes, this is a contemporaneous estimate of what the dance actually
 buys, and it separates useful communication from a directional-bias trait that
 has merely drifted upward under weak selection. The latter matters here: in the
-hardest ecology mean directional bias still drifts to 0.375, which would clear a
-naive trait threshold, yet the dance is essentially useless (recruitment
-advantage 0.057, useful in only 64% of seeds, foraging success 0.010).
+smallest-patch ecologies mean directional bias still sits near 0.35-0.40, which
+would clear a naive trait threshold, yet the dance is essentially useless
+(recruitment advantage below 0.06, foraging success near zero).
 
-<figure id="fig:food-distribution-recruitment-advantage" class="figure">
-<img src="figures/food_distribution_recruitment_advantage.png" alt="Recruitment advantage across the v2 food-distribution sweeps." />
+<figure id="fig:food-distribution-disk-grid" class="figure">
+<img src="figures/food_distribution_disk_grid.png" alt="Recruitment advantage and evolved directional bias across the disk-geometry food grid." />
 <figcaption>
-In-run recruitment advantage on a flat comb across two one-dimensional food
-sweeps, 50 seeds each. Gray points are per-seed tail means; green is the
-across-seed mean. Communication value peaks at low-to-intermediate food-site
-counts and rises with patch width at low site count.
+Recruitment advantage (left) and evolved directional bias (right) on a flat comb
+across the full grid of mean site count against median patch radius, 50 seeds per
+cell. Communication is favored along a diagonal band: bias lifts off a size
+threshold that falls as patches become more numerous, while recruitment advantage
+peaks for few large patches and erodes toward both small and abundant food.
 </figcaption>
 </figure>
 
-| Condition | Sites | Width | Recruit. adv. | Useful | Bias | Success | Payoff |
-|:----------|------:|------:|--------------:|-------:|-----:|--------:|-------:|
-| Hard (anchor) | 1 | 0.08 | 0.057 | 0.64 | 0.375 | 0.010 | 0.001 |
-| Baseline (anchor) | 2 | 0.20 | 0.224 | 1.00 | 0.877 | 0.191 | 0.638 |
-| Easy (anchor) | 8 | 0.50 | 0.119 | 1.00 | 0.530 | 0.724 | 7.505 |
-| Sites sweep | 1 | 0.20 | 0.188 | 1.00 | 0.661 | 0.064 | 0.010 |
-| Sites sweep | 3 | 0.20 | 0.203 | 1.00 | 0.856 | 0.247 | 1.347 |
-| Sites sweep | 6 | 0.20 | 0.154 | 1.00 | 0.795 | 0.368 | 2.889 |
-| Sites sweep | 8 | 0.20 | 0.128 | 1.00 | 0.707 | 0.425 | 3.620 |
-| Width sweep | 2 | 0.08 | 0.056 | 0.58 | 0.398 | 0.024 | 0.001 |
-| Width sweep | 2 | 0.15 | 0.175 | 1.00 | 0.876 | 0.133 | 0.099 |
-| Width sweep | 2 | 0.30 | 0.293 | 1.00 | 0.853 | 0.287 | 1.850 |
-| Width sweep | 2 | 0.50 | 0.349 | 1.00 | 0.798 | 0.426 | 3.614 |
+Communication is favored along a diagonal band, not a single axis. Evolved
+directional bias only lifts off its ~0.38 drift floor above a patch-size
+threshold, and that threshold *falls as patches become more numerous*: a single
+patch must reach ~600 m radius before a precise dance evolves (bias 0.81),
+whereas at eight patches 75 m already suffices (0.84) and at twenty-four patches
+even 37.5 m patches lift off (0.76). Below a few tens of meters, however, the
+dance never evolves regardless of abundance -- the 15 m column stays at the drift
+floor across the whole count axis -- so there is a minimum patch size below which
+a pointing signal cannot help.
 
-Recruitment advantage is the final-generation-tail mean of the in-run
-follower-minus-matched-searcher success difference. Useful is the fraction of
-seeds whose tail advantage exceeds 0.05. Bias, success, and payoff are
-final-generation means. The two sweeps share the baseline point (2 sites, width
-0.20).
-
-The result supports a resource-distribution reading, but the two ecological axes
-are not symmetric. Adding food sites makes independent discovery easier and
-steadily erodes the value of recruitment: advantage falls from 0.224 at two
-sites to 0.128 at eight, even as foraging success and payoff climb. The single
-narrowest ecology is suppressed from the other direction, because successful
-foragers are too rare to seed dances at all. Widening patches at a fixed low
-site count has the opposite effect from adding sites: a broad target tolerates a
-noisily decoded dance direction, so the follower advantage rises monotonically
-with width, from 0.056 to 0.349. Communication is therefore most valuable when
-food is directionally concentrated but hard to stumble onto, and it is
-suppressed at both the undiscoverable extreme (no dances seeded) and the
-abundant extreme (random search already succeeds, with a matched-searcher
-success rate of 0.68 in the easy anchor). Unlike a directional-bias threshold,
+The recruitment advantage itself peaks for few, large patches (up to 0.31 at a
+single 600 m patch) and erodes in two directions. Toward small patches it falls
+because successful foragers are too rare to seed useful dances; toward many large
+patches it falls because independent discovery already succeeds -- at twenty-four
+600 m patches the advantage collapses to 0.04 even as foraging success reaches
+0.88. Communication is therefore most valuable when food is spatially
+concentrated but hard to stumble onto, and is suppressed at both the
+undiscoverable and the abundant extremes. Unlike a directional-bias threshold,
 the recruitment-advantage measure reports this directly and does not mistake
 neutral drift for evolved communication.
 
-## Held-Out Validation
+We report the advantage as an absolute difference rather than a
+follower-to-searcher success *ratio* for exactly this reason. A ratio (where 1
+denotes no advantage in either direction) inverts the pattern: it peaks in the
+small-patch corner (up to about 4.2 at a single 15 m patch), because there
+dance-followers succeed several times as often as matched searchers even though
+both almost always fail (roughly 1.5% versus 0.3% success). The ratio is
+inflated by its near-zero denominator precisely where communication is least
+useful in absolute terms, whereas the difference stays small and correctly
+locates the strongest communication benefit at few large patches.
 
-The top confirmation candidates were rerun on 100 held-out seeds. All five validation
-candidates produced frequent stable vertical gravity-code transitions and no collapse
-events.
+The evolvable dance propensity, by contrast, showed little structure across the
+grid, settling near 0.6 everywhere. Under the current geometric form the dance
+probability saturates to near one whenever more than one forager-load remains, so
+the trait feels selection only at capacity-one patches and otherwise drifts;
+making recruitment suppression evolve informatively would require a
+less-saturating form together with a genuine cost of wasted recruitment.
 
-| Candidate | Sites | Width | Cap. | $\alpha$ | Max dist. | Travel cost | Mut. sd | $\rho$ | Stable | Success | $t_f$ | $m_f$ |
-|:----------|------:|------:|-----:|-----------:|----------:|------------:|--------:|---------:|-------:|--------:|--------:|--------:|
-| trial_257 | 8 | 0.270 | 9 | 0.600 | 6.5 | 0.055 | 0.090 | 1.0 | 99/100 | 0.563 | 0.856 | 0.832 |
-| trial_471 | 8 | 0.240 | 8 | 0.580 | 6.5 | 0.055 | 0.090 | 1.0 | 95/100 | 0.516 | 0.848 | 0.822 |
-| trial_425 | 8 | 0.340 | 9 | 0.600 | 8.0 | 0.055 | 0.090 | 0.8 | 93/100 | 0.618 | 0.852 | 0.805 |
-| trial_243 | 8 | 0.280 | 9 | 0.540 | 7.0 | 0.055 | 0.090 | 1.0 | 88/100 | 0.572 | 0.841 | 0.823 |
-| trial_139 | 8 | 0.290 | 9 | 0.540 | 8.0 | 0.055 | 0.110 | 1.0 | 86/100 | 0.547 | 0.834 | 0.805 |
+## Vertical Transition Under Disk Geometry
 
-Here $t_f$ is final mean comb tilt and $m_f$ is final mean of the lower sender or
-receiver transposition value. The strongest held-out candidate, `trial_257`, reached
-stable vertical gravity-code outcomes in 99 of 100 seeds. The candidates share a narrow
-region of parameter space: eight food sites, moderate angular widths, high
-vertical-comb benefit, non-negligible travel cost, moderate-to-high mutation scale, and
-strong sender-receiver mutation coupling.
-
-## Sensitivity
-
-The sensitivity panels use `trial_257` as the baseline. On the later 100-seed
-sensitivity panel, the baseline produced 91 stable transitions, 98 gravity-reached
-seeds, 92 vertically retained seeds, and no collapses. Mean final success was 0.561.
-
-<figure id="fig:oat-sensitivity-stable-delta" class="figure">
-<img src="figures/oat_sensitivity_stable_delta.png" alt="Stable transition rates under v2 one-parameter perturbations." />
-<figcaption>
-Coarse v2 one-parameter sensitivity around the validated baseline. Boxes show
-seed-bootstrap distributions of the stable vertical gravity-code fraction; points show
-the observed 100-seed stable fraction. The dashed line marks the baseline.
-</figcaption>
-</figure>
-
-The refined sensitivity results identify two main cliffs: too few food sites and too
-low a mutation scale. Other one-parameter perturbations are less damaging within the
-tested ranges.
-
-| Parameter | Baseline | Weakest tested value | Stable | Strongest tested value | Stable |
-|:----------|:---------|:---------------------|-------:|:-----------------------|-------:|
-| Food-site count | 8 | 5 | 5/100 | 9 | 93/100 |
-| Food-site width | 0.270 | 0.200 | 58/100 | 0.300 | 96/100 |
-| Food-site capacity | 9 | 5 | 82/100 | 11 | 94/100 |
-| Max food distance | 6.5 | 5.5 or 7.5 | 92/100 | 7.0 | 96/100 |
-| Travel cost | 0.055 | 0.040 | 89/100 | 0.050, 0.055, or 0.060 | 91/100 |
-| Vertical-comb benefit | 0.600 | 0.480 | 83/100 | 0.560 | 94/100 |
-| Mutation scale | 0.090 | 0.050 | 47/100 | 0.080 | 94/100 |
-| Sender-receiver correlation | 1.0 | 0.600 | 87/100 | 0.900 | 94/100 |
-
-The food-site-count result is the sharpest ecological boundary. Reducing the baseline
-from eight sites to five almost eliminates the transition even though colonies still
-forage. Mutation scale is the sharpest evolutionary boundary: at 0.05, many seeds
-retain verticality or partial transposition but fail to coordinate both by generation
-120. The baseline does not require perfect sender-receiver coupling, but high coupling
-remains favorable.
-
-## Evolutionary-Parameter Interaction
-
-The interaction grid keeps the validated ecology fixed but varies vertical-comb
-benefit, mutation scale, and sender-receiver mutation correlation. It maps whether
-mutation parameters can compensate for weaker architectural benefit.
-
-<figure id="fig:evolutionary-interaction-stable-heatmap" class="figure">
-<img src="figures/evolutionary_interaction_stable_heatmap.png" alt="Stable transition rates across the v2 evolutionary interaction grid." />
-<figcaption>
-Stable vertical gravity-code transition rates across the v2 interaction grid. Panels
-vary vertical-comb benefit; columns vary sender-receiver mutation correlation; rows vary
-the shared mutation scale. Each cell summarizes 100 held-out seeds.
-</figcaption>
-</figure>
-
-| $\alpha$ | Mean stable rate across cells | Best cell | Best stable count |
-|-----------:|------------------------------:|:----------|------------------:|
-| 0.10 | 1.3% | mutation 0.090, $\rho=0.9$ | 7/100 |
-| 0.25 | 13.6% | mutation 0.135, $\rho=0.9$ | 37/100 |
-| 0.44 | 39.6% | mutation 0.090, $\rho=0.9$ | 76/100 |
-
-<figure id="fig:evolutionary-interaction-seed-outcomes" class="figure">
-<img src="figures/evolutionary_interaction_seed_outcomes_binary.png" alt="Seed-level stable and non-stable outcomes across the v2 evolutionary interaction grid." />
-<figcaption>
-Seed-level view of the interaction grid. Each dot is one seed in one parameter cell;
-black dots are stable vertical gravity-code transitions and pale gray dots are other
-outcomes.
-</figcaption>
-</figure>
-
-Low vertical-comb benefit is not rescued by sender-receiver coupling. At
-$\alpha=0.10$, stable outcomes are almost absent. At $\alpha=0.25$, transitions
-remain minority outcomes even at high mutation and high coupling. At $\alpha=0.44$,
-intermediate mutation and strong coupling produce the best cell, but the rate remains
-below the validated baseline because the grid does not include the baseline's higher
-$\alpha=0.60$ value.
-
-## Generation Budget in the Low-Benefit Regime
-
-The interaction grid showed that a low vertical-comb benefit nearly eliminates the
-transition by the default 120 generations. This experiment asks whether a much longer
-evolutionary horizon can rescue that regime. It fixes the validated ecology but sets a
-weak benefit ($\alpha=0.10$), low mutation coupling ($\rho=0.3$), and a low mutation
-scale, then runs 240, 480, and 960 generations over 100 held-out seeds. Two jobs were
-run: a baseline mutation scale of 0.045 and a higher scale of 0.075.
-
-| Mutation scale | Generations | Gravity reached | Vertical retained | Stable |
-| ---: | ---: | ---: | ---: | ---: |
-| 0.045 | 240 | 0.04 | 0.00 | 0.00 |
-| 0.045 | 480 | 0.08 | 0.00 | 0.00 |
-| 0.045 | 960 | 0.10 | 0.00 | 0.00 |
-| 0.075 | 240 | 0.02 | 0.00 | 0.00 |
-| 0.075 | 480 | 0.02 | 0.00 | 0.00 |
-| 0.075 | 960 | 0.06 | 0.01 | 0.01 |
-
-More generations do not unlock the transition in this regime. A longer horizon slowly
-raises the fraction of seeds that ever cross the gravity threshold (0.04 to 0.10 at
-mutation 0.045), but those seeds end as gravity alignment without retained verticality,
-and vertical retention stays at essentially zero throughout. Most seeds remain flat
-direct pointers, with a partial-transposition minority that grows modestly with mutation
-scale but never coordinates both traits. Across all 600 runs only a single seed (mutation
-0.075, 960 generations) reached a stable vertical gravity-code outcome. The low-benefit
-regime is therefore a genuine barrier rather than a slow approach: it is not overcome by
-time or by a modestly higher mutation scale.
-
-## Unproject Decode (v3)
-
-The two pipelines differ only in how the direct-pointing dance is decoded when the comb
-is tilted. The *flatten* decode drops the component of the food direction perpendicular
-to the comb plane; this attenuates the signal and introduces a directional bias whose
-magnitude grows with tilt. The *unproject* decode inverts the projection ($M^{-1}$),
-which removes the directional bias so that only the attenuation remains. The gravity-referenced
-code does not suffer this bias under either method, so the relative advantage of
-switching to gravity coding on a tilted comb is different: under flatten the gravity
-code removes both bias and attenuation, whereas under unproject it removes only the
-attenuation, making the selective pressure for the gravity code cleaner and more
-directly tied to the vertical-comb benefit parameter. All other model parameters and
-the pipeline structure are identical.
+The food-distribution grid above holds the comb flat. We now free it to tilt
+(`evolve_comb_tilt` on, `initial_comb_tilt` 0) under the same disk ecology and
+ask when a stable vertical gravity-code transition evolves. A positive
+vertical-comb benefit
+$\alpha$ rewards tilting, and once the comb stands vertical a gravity-referenced
+(transposition) code can replace the sun-referenced direct pointer. We run the
+full transition pipeline -- Optuna search, held-out validation, one-parameter
+sensitivity, and an evolutionary-interaction grid -- under both direct-decode
+variants (flatten and unproject). A seed is
+stable when final mean comb tilt is at least 0.80 and both sender and receiver
+transposition are at least 0.50, and it collapses if foraging success ever falls
+to 0.02 or below.
 
 ### Optuna Search
 
-Running the same 512-trial Optuna search under the unproject decode found a somewhat
-broader stable region than flatten:
+Each decode ran a 1024-trial search (ten seeds per trial, 120 generations, 512
+workers across sixteen Snellius nodes against one shared study), jointly
+optimizing the disk ecology, $\alpha$, and the mutation parameters. Stable
+transitions are common under both decodes, and unproject is slightly broader:
 
-| Pipeline | Total trials | Stable in all 10 seeds | Stable in 9+ seeds |
-|:---------|-------------:|----------------------:|-------------------:|
-| v2 (flatten) | 512 | 61 | 170 |
-| v3 (unproject) | 512 | 82 | 177 |
+| Outcome | Flatten trials | Unproject trials |
+|:--------|---------------:|-----------------:|
+| Stable in all 10 seeds | 14 | 24 |
+| Stable in $\geq 8$ seeds | 123 | 132 |
+| Stable in $\geq 5$ seeds | 312 | 338 |
+| Stable in $\geq 1$ seed | 611 | 641 |
+| No stable seed | 413 | 383 |
 
-### Validation
+Both searches concentrate their strongly stable trials in the same region. The
+flatten trials with eight or more stable seeds occupy a coherent band of the
+search space: denser, closer, reachable food paired with a strong tilt incentive.
 
-The top confirmation candidates were rerun on 100 held-out seeds. All five v3 candidates
-produced frequent stable transitions and no collapse events.
+| Parameter | Median | 10th-90th pct. |
+|:----------|-------:|:---------------|
+| Food-site count (Poisson mean) | 8 | 5-8 |
+| Patch radius (m) | 210 | 165-345 |
+| Patch capacity | 7 | 2-8 |
+| Vertical-comb benefit $\alpha$ | 0.56 | 0.50-0.56 |
+| Max food distance (m) | 3250 | 3250-5250 |
+| Travel cost per meter | 2.5e-5 | 1.0e-5-2.5e-5 |
+| Mutation scale | 0.110 | 0.090-0.110 |
+| Sender-receiver correlation $\rho$ | 0.4 | 0.0-0.9 |
 
-| Candidate | Sites | Width | Cap. | $\alpha$ | Max dist. | Travel cost | Mut. sd | $\rho$ | Stable | Success | $t_f$ | $m_f$ |
-|:----------|------:|------:|-----:|-----------:|----------:|------------:|--------:|-------:|-------:|--------:|-------:|-------:|
-| trial_318 | 7 | 0.220 | 14 | 0.580 | 7.5 | 0.020 | 0.080 | 0.9 | 96/100 | 0.436 | 0.857 | 0.800 |
-| trial_173 | 8 | 0.200 | 13 | 0.560 | 8.0 | 0.025 | 0.080 | 0.9 | 89/100 | 0.425 | 0.841 | 0.780 |
-| trial_239 | 8 | 0.190 | 11 | 0.560 | 7.5 | 0.020 | 0.080 | 0.9 | 88/100 | 0.419 | 0.840 | 0.793 |
-| trial_432 | 8 | 0.220 | 14 | 0.540 | 8.0 | 0.020 | 0.080 | 0.9 | 87/100 | 0.453 | 0.836 | 0.771 |
-| trial_196 | 8 | 0.180 | 12 | 0.540 | 7.5 | 0.030 | 0.080 | 0.9 | 87/100 | 0.406 | 0.822 | 0.773 |
+The transition favors many patches (a Poisson mean toward the top of the tested
+1-8 range), radii of a couple hundred meters, distances near the short end of the
+range (~3250 m), low travel cost, a high vertical-comb benefit, and a high
+mutation scale; the sender-receiver mutation correlation is not decisive, its
+stable range spanning almost the whole 0-1 axis. The transition's two sharpest
+boundaries -- too few sites and too low a mutation scale -- both say the same
+thing in metric terms: the gravity code stabilizes where recruitment has
+enough findable, cheap-to-reach food to pay for itself. Mean foraging success
+across the strongly stable trials is only 0.27, so the transition needs a
+reliably communicable ecology rather than an abundant one. The evolvable dance
+propensity again settles near neutral (mean 0.54 across the strongly stable set),
+consistent with the flat-comb finding that its current geometric form feels
+little selection.
 
-Here $t_f$ is final mean comb tilt and $m_f$ is final mean of the lower sender or
-receiver transposition value. The strongest v3 candidate, `trial_318`, reached stable
-outcomes in 96 of 100 seeds.
+| # | Sites | Radius (m) | Cap. | $\alpha$ | Max dist. (m) | Travel | Mut. sd | $\rho$ | $t_f$ | $m_f$ | Success |
+|--:|------:|-----------:|-----:|---------:|--------------:|-------:|--------:|-------:|------:|------:|--------:|
+| 600 | 5 | 315 | 5 | 0.60 | 6500 | 1.8e-5 | 0.090 | 1.0 | 0.87 | 0.83 | 0.25 |
+| 770 | 7 | 225 | 7 | 0.50 | 3250 | 1.8e-5 | 0.110 | 0.1 | 0.84 | 0.76 | 0.28 |
+| 877 | 8 | 210 | 7 | 0.56 | 3750 | 2.5e-5 | 0.110 | 0.0 | 0.85 | 0.76 | 0.28 |
+| 879 | 7 | 210 | 7 | 0.56 | 3250 | 1.0e-5 | 0.110 | 0.0 | 0.83 | 0.77 | 0.27 |
+| 909 | 8 | 165 | 7 | 0.56 | 3250 | 2.5e-5 | 0.110 | 0.5 | 0.84 | 0.78 | 0.23 |
+| 301 | 7 | 105 | 2 | 0.54 | 3000 | 2.5e-5 | 0.110 | 0.1 | 0.86 | 0.72 | 0.12 |
 
-### Comparison with Flatten Decode
+Here $t_f$ is final mean comb tilt and $m_f$ the final mean of the lower sender or
+receiver transposition.
 
-The unproject decode supports a reliable transition in a shifted region of parameter
-space. Relative to the v2 (flatten) validated region, the v3 candidates share a
-consistently lower travel cost (0.020–0.030 vs 0.055) and higher food-site capacity
-(11–14 vs 9), while food-site count (7–8 vs 8), vertical-comb benefit (0.54–0.58 vs
-0.60), and mutation parameters (sd 0.08 vs 0.09, $\rho$ 0.9 vs 1.0) are broadly
-similar. Final foraging success is lower under the v3 candidates (0.41–0.45 vs 0.52–0.62),
-but because the two searches converged to different parameter regions this difference
-cannot be attributed to the decode method alone. Both decode variants show no collapse events across all validated
-seeds.
+### Held-Out Validation
 
-The two decode methods create different selective landscapes for the joint evolution of
-comb tilt and transposition. Under flatten, switching to the gravity code on a tilted comb
-removes both the directional bias and the attenuation, so the raw fitness gain is larger.
-But flatten also creates a conflict: the directional bias makes direct-pointing costly on
-a tilted comb, which generates selection pressure to revert tilt and stay flat, working
-against the vertical-comb benefit. Under unproject, the fitness gain from adopting the
-gravity code is smaller (only the attenuation is removed), but there is no tilt-reversion
-conflict — direct-pointing remains accurate regardless of tilt, so the vertical-comb
-benefit drives tilt upward without counterpressure from dance quality. These two effects
-push in opposite directions and it is not yet clear which dominates or how they interact
-across parameter space.
+The top five distinct candidates from each search were rerun on 100 held-out
+seeds (200-299). Every candidate under both decodes produced frequent stable
+transitions and no collapse events; stable rates ran 80-91 of 100 for flatten
+and 82-92 for unproject. The strongest candidate of each decode:
 
-The broader stable region found by Optuna under unproject (82 vs 61 fully-stable trials)
-suggests the selective landscape is more permissive under unproject, but the mechanism
-behind this difference requires further investigation.
+| Decode | Candidate | Sites | Radius (m) | Cap. | $\alpha$ | Max dist. (m) | Travel | Mut. sd | $\rho$ | Stable | Success | $t_f$ | $m_f$ |
+|:-------|:----------|------:|-----------:|-----:|---------:|--------------:|-------:|--------:|-------:|-------:|--------:|------:|------:|
+| flatten | trial_729 | 5 | 315 | 4 | 0.56 | 3250 | 1.7e-5 | 0.070 | 0.9 | 91/100 | 0.348 | 0.845 | 0.782 |
+| unproject | trial_541 | 7 | 315 | 12 | 0.60 | 4750 | 1.0e-5 | 0.090 | 0.4 | 92/100 | 0.350 | 0.848 | 0.734 |
 
-The key result is qualitative robustness: the vertical gravity-code transition is not an
-artifact of the flatten projection choice. It arises under both geometric decode methods.
+The two decodes land on very similar held-out rates (91 and 92 of 100) and on
+overlapping ecologies -- large patches (315 m), short-to-moderate distances, low
+travel cost, high benefit -- confirming that the search-stage region carries over
+to unseen seeds.
+
+### Sensitivity
+
+A one-parameter sweep around each validated baseline (100 seeds) identifies the
+sharpest boundary: the **mutation scale**. Lowering
+it collapses the transition -- flatten falls from 91/100 at the baseline to
+49/100 at mutation 0.05, and unproject falls to 16/100 at 0.04 -- while the
+baseline mutation of 0.07-0.09 sits safely on the plateau. The sharpest
+*ecological* boundary is **food-site count** under flatten (46/100 at a Poisson
+mean of two sites, rising to 87/100 at seven); unproject is more robust to count
+(83-92/100 across four to nine sites). Vertical-comb benefit and sender-receiver
+correlation are monotone and moderate (flatten stable rises from 66 to 93 as
+$\alpha$ goes 0.44 to 0.60, and from 73 to 96 as $\rho$ goes 0.4 to 1.0). Patch
+radius, capacity, distance, and travel cost are comparatively flat within the
+tested ranges (79-98/100).
+
+### Evolutionary Interaction
+
+Holding each validated ecology fixed, we cross vertical-comb benefit, mutation
+scale, and sender-receiver correlation on a grid re-centred on the disk stable
+region (benefit 0.30/0.44/0.56, mutation 0.05-0.11, correlation 0.0-0.9; 100
+seeds per cell). The transition persists at the lower benefits tested, and
+unproject is again slightly more robust than flatten:
+
+| Vertical-comb benefit $\alpha$ | Flatten mean / best | Unproject mean / best |
+|-------------------------------:|:--------------------|:----------------------|
+| 0.30 | 32 / 56 | 40 / 67 |
+| 0.44 | 54 / 83 | 64 / 83 |
+| 0.56 | 70 / 92 | 74 / 95 |
+
+Mean and best are stable seeds of 100 across the sixteen mutation-by-correlation
+cells at each benefit. Stable rate rises with benefit under both decodes, the
+best cells pair a high mutation scale (0.09-0.11) with moderate-to-high
+correlation, and at every benefit level unproject clears a broader swath of the
+grid than flatten -- consistent with its cleaner selective pressure for the
+gravity code.
 
 # Conclusion
 
-In the current model, horizontal-start colonies can reliably evolve a vertical comb and
-a gravity-referenced sender-receiver code under both direct-decode variants tested. The
-strongest flatten-decode candidate (v2 `trial_257`) is stable in 99 of 100 held-out
-seeds, and the same parameter region remains stable in 91 of 100 later sensitivity
-seeds. The strongest unproject-decode candidate (v3 `trial_318`) is stable in 96 of 100
-held-out seeds.
+In the current disk-geometry model, horizontal-start colonies can reliably evolve a
+vertical comb and a gravity-referenced sender-receiver code under both direct-decode
+variants tested. The strongest flatten-decode candidate (`trial_729`) is stable in 91 of
+100 held-out seeds, and the strongest unproject-decode candidate (`trial_541`) in 92 of
+100 -- on overlapping ecologies of large patches, short-to-moderate distances, low travel
+cost, and a high vertical-comb benefit.
 
 The result is conditional, not universal. The transition depends on an ecology with
 enough recruitable food sites, a substantial vertical-comb benefit, and mutation
 parameters that let comb tilt and sender-receiver transposition move together. Too few
 food sites or too small a mutation scale returns the population to productive but flat
-direct pointing. Weak vertical-comb benefit is not compensated for by mutation coupling.
+direct pointing.
 
 The decode-method comparison adds a robustness check: the transition is not an artifact
-of the flatten projection. Under the geometrically more correct unproject decode, a
-comparable transition corridor exists at lower travel cost and higher food capacity,
-indicating that the qualitative result is stable across reasonable geometric
-interpretations of the direct-pointing dance.
+of the flatten projection. It arises under both geometric decode methods, with unproject
+clearing a slightly broader region of both the Optuna search and the interaction grid --
+consistent with its cleaner selective pressure for the gravity code.
 
-The main conclusion is therefore modest: the model contains a reproducible transition
-corridor under both decode methods, but that corridor is parameter-dependent. The next
-scientific step is to make the vertical-comb benefit and food ecology less abstract,
-then test whether the same transition remains under more explicit biological constraints.
+The main conclusion is therefore modest: within an ecologically grounded disk geometry the
+model contains a reproducible transition corridor under both decode methods, but that
+corridor is parameter-dependent. The next scientific step is to test whether the same
+transition remains under more explicit biological constraints on the vertical-comb benefit
+and foraging ecology.
 
 # Reproducibility
 
@@ -409,43 +371,26 @@ The working report is `report/report.md` and is rendered with:
 python -u experiments/render_report_html.py
 ```
 
-The v2 figures in this report were regenerated from tracked CSVs with:
+The food-distribution grid figure in this report was regenerated from tracked CSVs with:
 
 ```sh
-python -u experiments/plot_oat_sensitivity_effects.py \
-  --points results/food_transition_v2_oat_sensitivity_points.csv \
-  --events results/food_transition_v2_oat_sensitivity_events.csv \
-  --output report/figures/oat_sensitivity_stable_delta
-
-python -u experiments/plot_evolutionary_interaction_heatmap.py \
-  --group-summary results/food_transition_v2_evolutionary_interaction_group_summary.csv \
-  --output report/figures/evolutionary_interaction_stable_heatmap
-
-python -u experiments/plot_evolutionary_interaction_seed_outcomes.py \
-  --events results/food_transition_v2_evolutionary_interaction_events.csv \
-  --output report/figures/evolutionary_interaction_seed_outcomes_binary
-
-python -u experiments/plot_food_distribution_effects.py \
-  --events results/food_distribution_v2_events.csv \
-  --output report/figures/food_distribution_recruitment_advantage
+python -u experiments/plot_food_distribution_disk_grid.py
 ```
 
-The food-distribution communication experiment is produced on Snellius with:
+The flat-comb food-distribution experiment is produced on Snellius with:
 
 ```sh
-sbatch experiments/run_food_distribution_v2_snellius.sbatch
+bash experiments/submit_food_distribution_disk_snellius.sh
 ```
 
-The v3 (unproject) pipeline was run on Snellius with:
+The vertical-transition pipeline under both direct-decode variants (flatten and unproject)
+is run on Snellius with:
 
 ```sh
-bash experiments/submit_food_transition_v3_snellius.sh
+bash experiments/submit_food_transition_disk_pipeline_snellius.sh
 ```
 
-Results are synced locally with:
-
-```sh
-rsync -av gchrupala1@snellius.surf.nl:/gpfs/home2/gchrupala1/bees/results/food_transition_v3_*.csv results/
-```
+Results are kept in sync between the local and Snellius checkouts through git (commit and
+push run outputs rather than copying result CSVs between machines).
 
 # References
