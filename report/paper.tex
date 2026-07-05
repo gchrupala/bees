@@ -684,14 +684,16 @@ and patch radius, capacity, distance, and travel cost stay within a narrow band.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{figures/food_transition_disk_sensitivity_boxplot.png}
+  \includegraphics[width=\textwidth]{figures/food_transition_disk_sensitivity_ridge.png}
   \caption{One-parameter sensitivity of the disk vertical transition, both decodes.
-    For each perturbation the box is a seed-bootstrap distribution of the stable
-    rate over $100$ held-out seeds, the dot the observed rate, and the dashed line
-    each decode's baseline. Because each decode is perturbed around its own
-    validated candidate, the swept values differ between panels. Mutation scale is
-    the sharpest boundary under both decodes; food-site count is the sharpest
-    ecological boundary under flatten.}
+    Each parameter's violin is a kernel density over seed-bootstrap stable-rate
+    draws pooled across that parameter's swept values ($100$ held-out seeds per
+    value), so a lobe's position is a swept value's rate and its width that value's
+    sampling uncertainty; dots mark the per-value rates (orange below, green above
+    baseline) and the dashed line each decode's baseline. Parameters are sorted by
+    worst-case drop. Mutation scale is the widest, most collapse-prone lever under
+    both decodes and food-site count the sharpest ecological one under flatten,
+    while patch radius and capacity stay tightly at baseline.}
   \label{fig:sensitivity}
 \end{figure}
 
