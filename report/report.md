@@ -108,12 +108,12 @@ and writes tracked CSVs under `results/`.
 |:---------|:------|:-------------|:-----------|
 | Flat comb | Food-distribution grid | `results/food_distribution_disk_*` | seeds 400-449 |
 | Transition (flatten) | Optuna search | `results/food_transition_disk_optuna_trials.csv`, `results/food_transition_disk_optuna_seed_metrics.csv` | 10 seeds/trial |
-| Transition (flatten) | Candidate confirmation | `results/food_transition_disk_confirmation_*` | 100 seeds |
+| Transition (flatten) | Candidate confirmation | `results/food_transition_disk_confirmation_*` | 40 seeds |
 | Transition (flatten) | Held-out validation | `results/food_transition_disk_validation_*` | seeds 200-299 |
 | Transition (flatten) | One-parameter sensitivity | `results/food_transition_disk_sensitivity_*` | 100 seeds |
 | Transition (flatten) | Evolutionary interaction grid | `results/food_transition_disk_interaction.csv` | 100 seeds/cell |
 | Transition (unproject) | Optuna search | `results/food_transition_disk_unproject_optuna_trials.csv`, `results/food_transition_disk_unproject_optuna_seed_metrics.csv` | 10 seeds/trial |
-| Transition (unproject) | Candidate confirmation | `results/food_transition_disk_unproject_confirmation_*` | 100 seeds |
+| Transition (unproject) | Candidate confirmation | `results/food_transition_disk_unproject_confirmation_*` | 40 seeds |
 | Transition (unproject) | Held-out validation | `results/food_transition_disk_unproject_validation_*` | seeds 200-299 |
 | Transition (unproject) | One-parameter sensitivity | `results/food_transition_disk_unproject_sensitivity_*` | 100 seeds |
 | Transition (unproject) | Evolutionary interaction grid | `results/food_transition_disk_unproject_interaction.csv` | 100 seeds/cell |

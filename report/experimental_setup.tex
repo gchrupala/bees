@@ -24,18 +24,24 @@ evolving for $120$ non-overlapping generations; each colony is evaluated over
 $50$ independent foraging episodes of $12$ foraging attempts. Workers express
 colony traits with variation scale $\eta = 0.08$ (\Cref{sec:traits}); dances are
 emitted with maximum concentration $\kappa_{\max} = 14$ and production noise
-$0.18$, and read with interpretation noise $0.12$ (\Cref{sec:signals}). The
-maximum search distance is $D = 8$ and food sites lie at distances in
-$[1, d_{\max}]$. Foraging carries a per-distance travel cost, a dance cost
+$0.18$, and read with interpretation noise $0.12$ (\Cref{sec:signals}). All
+lengths are in meters: the maximum search distance is $D = 6000$ m and food
+patches lie at distances in $[750, d_{\max}]$ m. Food patches are physical disks
+whose radius is drawn from a lognormal of median $150$ m and log-scale spread
+$0.6$; capacity scales with patch area from a base of $6$ loads at the median
+radius, and the number of patches per episode is Poisson (\Cref{sec:environment}).
+Each foray draws its outbound distance from a Gamma of shape $2$ with the colony's
+evolved mean. Foraging carries a per-distance travel cost, a dance cost
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$ with $c_{\mathrm{base}} = 0$ and
 $c_{\mathrm{cue}} = 0.02$, and an attention cost $c_{\mathrm{att}} = 0.01$
 (\Cref{sec:foraging}). The sun is drawn from an arc of width $\pi$ centered on
 $\pi/2$, and the comb orientation is treated as axially symmetric (period $\pi$).
 Colonies start with little communicative ability: the initial directional bias is
 drawn from $\mathcal{U}(0,0.15)$, receiver attention from $\mathcal{U}(0,0.25)$,
-the search limit from $\mathcal{U}(0.15D, 0.45D)$, and both transposition traits
-start at $0$, so early foragers signal weakly, rarely attend to one another, and
-use only direct pointing.
+the foray distance from $\mathcal{U}(0.15D, 0.45D)$, the dance propensity from
+$\mathcal{U}(0.8,1.0)$, and both transposition traits start at $0$, so early
+foragers signal weakly, rarely attend to one another, and use only direct
+pointing.
 
 \begin{table}
   \centering
@@ -52,8 +58,11 @@ use only direct pointing.
     $\kappa_{\max}$ & $14$ & maximum dance concentration \\
     dance noise & $0.18$ & production noise (wrapped Gaussian) \\
     interpretation noise & $0.12$ & receiver decoding noise \\
-    $D$ & $8$ & maximum search distance \\
-    $d_{\min}$ & $1$ & minimum food distance \\
+    $D$ & $6000$ m & maximum search distance \\
+    $d_{\min}$ & $750$ m & minimum food distance \\
+    $\rho_r$ & $150$ m & median patch radius (lognormal) \\
+    $\sigma_r$ & $0.6$ & patch-radius log-scale spread \\
+    foray shape & $2$ & Gamma shape of per-foray distance \\
     $c_{\mathrm{base}},\,c_{\mathrm{cue}}$ & $0,\ 0.02$ & dance cost terms \\
     $c_{\mathrm{att}}$ & $0.01$ & attention cost \\
     $v$ & $1$ & food value \\
@@ -61,15 +70,15 @@ use only direct pointing.
     \bottomrule
   \end{tabular}
   \caption{Parameters held fixed across all experiments. Ecological parameters
-    (food-site count, angular width, capacity, maximum distance, travel cost) and
+    (food-site count, patch radius, capacity, maximum distance, travel cost) and
     evolutionary parameters ($B$, $\sigma_m$, $\rho$) are varied as described in
     the text.}
   \label{tab:fixed-params}
 \end{table}
 
 The parameters that are deliberately varied are summarized in
-\Cref{tab:varied-params}: five ecological parameters (food-site count, angular
-width, capacity, maximum food distance, and travel cost) and three evolutionary
+\Cref{tab:varied-params}: five ecological parameters (food-site count, patch
+radius, capacity, maximum food distance, and travel cost) and three evolutionary
 parameters ($B$, $\sigma_m$, $\rho$). The ranges given there are the union across
 sub-experiments; the specific sweeps and grids used in each are described in the
 sections below.
@@ -81,11 +90,11 @@ sections below.
     Symbol / name & Range explored & Meaning \\
     \midrule
     \multicolumn{3}{l}{\emph{Ecological}} \\
-    food-site count       & $1$--$10$       & number of food sites per episode \\
-    angular width         & $0.08$--$0.50$  & angular width of each food site \\
-    capacity              & $4$--$16$       & foragers a site supplies before exhaustion \\
-    $d_{\max}$            & $4.5$--$9.0$    & maximum food-site distance \\
-    $c_{\mathrm{travel}}$ & $0.01$--$0.06$  & travel cost per unit distance \\
+    food-site count       & $1$--$8$          & Poisson mean number of patches per episode \\
+    patch radius          & $60$--$360$ m     & median disk radius (lognormal) \\
+    capacity              & $2$--$12$         & base loads a patch supplies at the median radius \\
+    $d_{\max}$            & $3000$--$7500$ m  & maximum patch distance \\
+    $c_{\mathrm{travel}}$ & $10^{-5}$--$6\times10^{-5}$ & travel cost per meter \\
     \midrule
     \multicolumn{3}{l}{\emph{Evolutionary}} \\
     $B$        & $0.10$--$0.60$ & vertical-comb benefit magnitude \\
@@ -96,12 +105,14 @@ sections below.
   \caption{Parameters varied across experiments, with the range each is explored
     over. Ranges give the union across sub-experiments: the ecological parameters
     and $B,\sigma_m,\rho$ are sampled continuously in the Optuna search over the
-    intervals shown; the horizontal-comb experiments sweep food-site count over
-    $\{1,2,3,4,6,8\}$ and angular width over $\{0.08,0.15,0.20,0.30,0.50\}$; and
-    the evolutionary-interaction grid uses the discrete values
-    $B \in \{0.10, 0.25, 0.44\}$, $\sigma_m \in \{0.045, 0.075, 0.090, 0.135\}$,
-    and $\rho \in \{0.0, 0.3, 0.6, 0.9\}$. Outside the search, capacity is $6$,
-    $d_{\max}$ equals $D = 8$, and the horizontal runs use $\sigma_m = 0.07$.}
+    intervals shown; the horizontal-comb experiment sweeps a grid of food-site
+    count $\{1,2,3,4,6,8,12,16,24\}$ against median patch radius
+    $\{15, 37.5, 75, 150, 300, 600\}$ m; and the evolutionary-interaction grid
+    uses the discrete values $B \in \{0.30, 0.44, 0.56\}$,
+    $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
+    $\rho \in \{0.0, 0.3, 0.6, 0.9\}$. Outside the search, capacity is $6$ at the
+    median radius, $d_{\max} = 6000$ m, and the horizontal runs use
+    $\sigma_m = 0.07$.}
   \label{tab:varied-params}
 \end{table}
 
@@ -111,10 +122,9 @@ The direct code can be decoded in two ways on a tilted comb
 (\Cref{sec:vertical}), and we run the whole transition pipeline under each. The
 \emph{flatten} decode applies $M^\top$, introducing a tilt-dependent directional
 bias; the \emph{unproject} decode applies $M^{-1}$, recovering the heading without
-bias. We refer to the flatten pipeline as v2 and the unproject pipeline as v3.
-The two pipelines are identical in every other respect, so comparing them isolates
-the effect of the geometric decode assumption on whether and where the transition
-occurs.
+bias. The two pipelines are identical in every other respect, so comparing them
+isolates the effect of the geometric decode assumption on whether and where the
+transition occurs.
 
 \subsection{Emergence of direct pointing (horizontal comb)}
 \label{sec:setup-horizontal}
@@ -123,11 +133,12 @@ tilt is fixed at $0$ and not allowed to evolve, so the gravity reference has zer
 strength and the transposition traits are inert, leaving only the direct-pointing
 code in play. Colonies evolve for $60$ generations under mutation rate
 $\sigma_m = 0.07$, and we vary only the food distribution across $50$ replicate
-seeds. Conditions comprise three anchors --- a \emph{hard} ecology ($1$ site,
-angular width $0.08$), a \emph{baseline} ($2$ sites, width $0.20$), and an
-\emph{easy} ecology ($8$ sites, width $0.50$) --- together with two orthogonal
-one-dimensional sweeps that share the baseline point: a sweep over food-site
-count at fixed width, and a sweep over angular width at fixed site count.
+seeds ($400$--$449$). The conditions form a full grid crossing the Poisson mean
+patch count $\{1,2,3,4,6,8,12,16,24\}$ against the median patch radius
+$\{15, 37.5, 75, 150, 300, 600\}$ m, so that the ecology ranges from single small
+patches (essentially undiscoverable) to many large ones (easily found by random
+search). All other ecological parameters are held at their fixed values
+(\Cref{tab:fixed-params}).
 
 The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}):
 among attempts where a dance was available, the success rate of workers that
@@ -150,15 +161,18 @@ The transition is governed by the interaction of the ecology with three
 evolutionary parameters: the benefit magnitude $B$, the mutation rate
 $\sigma_m$, and the sender--receiver coupling $\rho$. Because the joint search
 space is large, we locate viable regions by optimization and then probe their
-robustness, in the sequence of sub-experiments below. Each stage draws from a
-distinct block of seeds so that tuning and evaluation never overlap.
+robustness, in the sequence of sub-experiments below. Tuning and evaluation draw
+from disjoint seed blocks: the search uses seeds $100$--$109$ and confirmation
+$110$--$149$, while all held-out evaluation uses seeds $200$--$299$.
 
 \paragraph{Parameter search.}
-We search nine parameters --- food-site count, angular width, capacity, maximum
+We search eight parameters --- food-site count, patch radius, capacity, maximum
 distance, and travel cost, together with $B$, $\sigma_m$, and $\rho$ (food value
 fixed at $v = 1$) --- with the Tree-structured Parzen Estimator sampler of Optuna,
-running $512$ trials with $64$ initial random trials. Each trial evaluates a
-panel of $10$ seeds ($100$--$109$) and is scored by
+running $1024$ trials in total across sixteen parallel workers evaluated against a
+single shared study, each worker seeded independently and drawing $64$ startup
+random trials. Each trial evaluates a panel of $10$ seeds ($100$--$109$) and is
+scored by
 \begin{equation}
   \text{stable seed count} + \overline{\text{progress}} - \text{collapse count},
 \end{equation}
@@ -178,22 +192,16 @@ the two transposition traits.
 
 \paragraph{One-parameter sensitivity.}
 Around the strongest validated candidate we perturb each parameter in turn,
-holding the others at their validated values, over $100$ seeds ($300$--$399$),
-to identify which parameters the transition is most sensitive to.
+holding the others at their validated values, over the same $100$ held-out seeds
+($200$--$299$), to identify which parameters the transition is most sensitive to.
 
 \paragraph{Evolutionary-parameter interaction.}
 To ask whether mutation parameters can compensate for a weaker architectural
 benefit, we hold the validated ecology fixed and run a full-factorial grid over
-the three evolutionary parameters, $B \in \{0.10, 0.25, 0.44\}$,
-$\sigma_m \in \{0.045, 0.075, 0.090, 0.135\}$, and
-$\rho \in \{0.0, 0.3, 0.6, 0.9\}$, evaluating each of the $48$ cells over $100$
-seeds.
-
-\paragraph{Generation budget in the low-benefit regime.}
-Finally, to test whether a low benefit merely slows the transition rather than
-preventing it, we take the weakest regime ($B = 0.10$, low $\rho$, low
-$\sigma_m$) and extend the evolutionary horizon to $240$, $480$, and $960$
-generations over $100$ seeds, at two mutation scales.
+the three evolutionary parameters, re-centred on the disk stable region,
+$B \in \{0.30, 0.44, 0.56\}$, $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
+$\rho \in \{0.0, 0.3, 0.6, 0.9\}$, evaluating each of the $48$ cells over the same
+$100$ held-out seeds ($200$--$299$).
 
 \paragraph{Outcome measures.}
 Across the transition experiments we summarize runs by the same thresholds used in
