@@ -49,9 +49,7 @@ from bees.model import DirectionSettings, simulate
 # search stays consistent with the angular optimizer.
 from optimize_food_transition import (  # noqa: E402
     Thresholds,
-    attr_value,
     bool_string,
-    format_attr_float,
     format_metric_float,
     format_optional_float,
     param_value,
@@ -442,6 +440,10 @@ def run_worker(
         seeds=seeds,
         thresholds=thresholds,
         search_space=search_space,
+        # Per-seed reporting only earns its journal writes when a pruner can act
+        # on it. With many workers sharing one journal each extra write is lock
+        # contention, so skip reporting entirely when pruning is off.
+        report_progress=args.pruner != "none",
     )
     study.optimize(
         objective,
@@ -458,27 +460,17 @@ class DiskTransitionObjective:
         seeds: list[int],
         thresholds: Thresholds,
         search_space: DiskSearchSpace,
+        report_progress: bool = False,
     ) -> None:
         self.base_settings = base_settings
         self.seeds = seeds
         self.thresholds = thresholds
         self.search_space = search_space
+        self.report_progress = report_progress
 
     def __call__(self, trial: optuna.Trial) -> float:
         started = perf_counter()
         sample = sample_settings(trial, self.base_settings, self.search_space)
-        for name, value in sample.values.items():
-            trial.set_user_attr(f"setting_{name}", value)
-        # Record disk settings held fixed from the config so the exported CSV
-        # is self-describing even though these are not sampled.
-        trial.set_user_attr(
-            "setting_food_site_min_distance", sample.settings.food_site_min_distance
-        )
-        trial.set_user_attr("setting_foray_shape", sample.settings.foray_shape)
-        trial.set_user_attr(
-            "setting_food_site_radius_log_sd",
-            sample.settings.food_site_radius_log_sd,
-        )
 
         seed_scores = []
         seed_metrics = []
@@ -487,37 +479,42 @@ class DiskTransitionObjective:
             metrics["seed"] = seed
             seed_metrics.append(metrics)
             seed_scores.append(metrics["score"])
-            trial.report(mean(seed_scores), step=step)
-            if trial.should_prune():
-                raise optuna.TrialPruned()
+            if self.report_progress:
+                trial.report(mean(seed_scores), step=step)
+                if trial.should_prune():
+                    raise optuna.TrialPruned()
 
         stable_count = sum(metric["stable"] for metric in seed_metrics)
         collapse_count = sum(metric["collapsed"] for metric in seed_metrics)
-        trial.set_user_attr("stable_count", stable_count)
-        trial.set_user_attr("seed_count", len(seed_metrics))
-        trial.set_user_attr("collapse_count", collapse_count)
-        trial.set_user_attr(
-            "mean_progress", mean(m["progress"] for m in seed_metrics)
-        )
-        trial.set_user_attr(
-            "mean_final_success", mean(m["final_success"] for m in seed_metrics)
-        )
-        trial.set_user_attr(
-            "mean_final_payoff", mean(m["final_payoff"] for m in seed_metrics)
-        )
-        trial.set_user_attr(
-            "mean_final_comb_tilt", mean(m["final_comb_tilt"] for m in seed_metrics)
-        )
-        trial.set_user_attr(
-            "mean_final_min_transposition",
-            mean(m["final_min_transposition"] for m in seed_metrics),
-        )
-        trial.set_user_attr(
-            "mean_final_dance_propensity",
-            mean(m["final_dance_propensity"] for m in seed_metrics),
-        )
-        trial.set_user_attr("seed_metrics", seed_metrics)
-        trial.set_user_attr("elapsed_seconds", perf_counter() - started)
+
+        # One consolidated attribute instead of ~20 separate writes. Each
+        # ``set_user_attr`` is a journal append that locks the shared file, so
+        # batching keeps lock traffic to a single write per trial. Sampled
+        # parameters are already persisted as trial params and are not repeated
+        # here; only fixed-from-config settings and derived summaries are.
+        record = {
+            "food_site_min_distance": sample.settings.food_site_min_distance,
+            "foray_shape": sample.settings.foray_shape,
+            "food_site_radius_log_sd": sample.settings.food_site_radius_log_sd,
+            "stable_count": stable_count,
+            "seed_count": len(seed_metrics),
+            "collapse_count": collapse_count,
+            "mean_progress": mean(m["progress"] for m in seed_metrics),
+            "mean_final_success": mean(m["final_success"] for m in seed_metrics),
+            "mean_final_payoff": mean(m["final_payoff"] for m in seed_metrics),
+            "mean_final_comb_tilt": mean(
+                m["final_comb_tilt"] for m in seed_metrics
+            ),
+            "mean_final_min_transposition": mean(
+                m["final_min_transposition"] for m in seed_metrics
+            ),
+            "mean_final_dance_propensity": mean(
+                m["final_dance_propensity"] for m in seed_metrics
+            ),
+            "elapsed_seconds": perf_counter() - started,
+            "seed_metrics": seed_metrics,
+        }
+        trial.set_user_attr("record", record)
 
         # Same objective shape as the angular search: an extra stable seed
         # always dominates near-miss progress; collapses subtract.
@@ -685,17 +682,32 @@ def create_study(args: argparse.Namespace, worker_index: int) -> optuna.Study:
     )
 
 
+def _record(trial: optuna.trial.FrozenTrial) -> dict:
+    """The single consolidated user attribute written per completed trial."""
+    return trial.user_attrs.get("record", {})
+
+
+def _rec_str(record: dict, name: str) -> str:
+    value = record.get(name)
+    return "" if value is None else str(value)
+
+
+def _rec_float(record: dict, name: str) -> str:
+    value = record.get(name)
+    return "" if value is None else f"{float(value):.3f}"
+
+
 def print_progress(study: optuna.Study, trial: optuna.trial.FrozenTrial) -> None:
     if trial.state != optuna.trial.TrialState.COMPLETE:
         return
+    record = _record(trial)
     print(
         f"trial={trial.number} value={trial.value:.3f} "
-        f"stable={trial.user_attrs.get('stable_count')}/"
-        f"{trial.user_attrs.get('seed_count')} "
-        f"progress={trial.user_attrs.get('mean_progress'):.3f} "
-        f"tilt={trial.user_attrs.get('mean_final_comb_tilt'):.3f} "
-        f"m={trial.user_attrs.get('mean_final_min_transposition'):.3f} "
-        f"success={trial.user_attrs.get('mean_final_success'):.3f}",
+        f"stable={record.get('stable_count')}/{record.get('seed_count')} "
+        f"progress={record.get('mean_progress', 0.0):.3f} "
+        f"tilt={record.get('mean_final_comb_tilt', 0.0):.3f} "
+        f"m={record.get('mean_final_min_transposition', 0.0):.3f} "
+        f"success={record.get('mean_final_success', 0.0):.3f}",
         file=sys.stderr,
         flush=True,
     )
@@ -718,47 +730,44 @@ def export_seed_metrics(study: optuna.Study, output_path: Path) -> None:
         )
         writer.writeheader()
         for trial in study.trials:
-            for metric in trial.user_attrs.get("seed_metrics", []):
+            for metric in _record(trial).get("seed_metrics", []):
                 writer.writerow(seed_row(trial, metric))
 
 
 def trial_row(trial: optuna.trial.FrozenTrial) -> dict[str, str]:
+    record = _record(trial)
     return {
         "number": str(trial.number),
         "state": trial.state.name,
         "value": format_optional_float(trial.value),
         "food_site_count": param_value(trial, "food_site_count"),
         "food_site_radius": param_value(trial, "food_site_radius"),
-        "food_site_radius_log_sd": attr_value(
-            trial, "setting_food_site_radius_log_sd"
-        ),
+        "food_site_radius_log_sd": _rec_str(record, "food_site_radius_log_sd"),
         "food_site_capacity": param_value(trial, "food_site_capacity"),
         "food_value": param_value(trial, "food_value"),
         "vertical_comb_benefit": param_value(trial, "vertical_comb_benefit"),
-        "food_site_min_distance": attr_value(
-            trial, "setting_food_site_min_distance"
-        ),
+        "food_site_min_distance": _rec_str(record, "food_site_min_distance"),
         "food_site_max_distance": param_value(trial, "food_site_max_distance"),
-        "foray_shape": attr_value(trial, "setting_foray_shape"),
+        "foray_shape": _rec_str(record, "foray_shape"),
         "travel_cost_per_distance": format_travel_cost(trial),
         "mutation_sd": param_value(trial, "mutation_sd"),
         "transposition_mutation_correlation": param_value(
             trial, "transposition_mutation_correlation"
         ),
-        "stable_count": attr_value(trial, "stable_count"),
-        "seed_count": attr_value(trial, "seed_count"),
-        "collapse_count": attr_value(trial, "collapse_count"),
-        "mean_progress": format_attr_float(trial, "mean_progress"),
-        "mean_final_success": format_attr_float(trial, "mean_final_success"),
-        "mean_final_payoff": format_attr_float(trial, "mean_final_payoff"),
-        "mean_final_comb_tilt": format_attr_float(trial, "mean_final_comb_tilt"),
-        "mean_final_min_transposition": format_attr_float(
-            trial, "mean_final_min_transposition"
+        "stable_count": _rec_str(record, "stable_count"),
+        "seed_count": _rec_str(record, "seed_count"),
+        "collapse_count": _rec_str(record, "collapse_count"),
+        "mean_progress": _rec_float(record, "mean_progress"),
+        "mean_final_success": _rec_float(record, "mean_final_success"),
+        "mean_final_payoff": _rec_float(record, "mean_final_payoff"),
+        "mean_final_comb_tilt": _rec_float(record, "mean_final_comb_tilt"),
+        "mean_final_min_transposition": _rec_float(
+            record, "mean_final_min_transposition"
         ),
-        "mean_final_dance_propensity": format_attr_float(
-            trial, "mean_final_dance_propensity"
+        "mean_final_dance_propensity": _rec_float(
+            record, "mean_final_dance_propensity"
         ),
-        "elapsed_seconds": format_attr_float(trial, "elapsed_seconds"),
+        "elapsed_seconds": _rec_float(record, "elapsed_seconds"),
     }
 
 
