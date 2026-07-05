@@ -564,6 +564,158 @@ whether the transition proceeds without a breakdown of communication.
 \section{Results}
 \label{sec:results}
 
+We report the two stages in turn: the horizontal-comb ecology that fixes when the
+direct-pointing code is worth maintaining (\Cref{sec:setup-horizontal}), and the
+vertical transition under both decode variants (\Cref{sec:setup-transition}).
+
+\subsection{Emergence of direct pointing}
+\label{sec:results-horizontal}
+On a comb held flat, communication is favored along a diagonal band of the
+food grid rather than along a single axis (\Cref{fig:food-grid}). Evolved
+directional bias lifts off its ${\sim}0.38$ drift floor only above a patch-size
+threshold that falls as patches become more numerous: a single patch must reach
+${\sim}600$ m radius before a precise dance evolves (bias $0.81$), whereas at
+eight patches $75$ m already suffices ($0.84$); below a few tens of meters the
+dance never evolves regardless of abundance. The recruitment advantage peaks for
+few, large patches (up to $0.31$ at a single $600$ m patch) and erodes toward both
+small patches (successful foragers too rare to seed dances) and many large patches
+(independent discovery already succeeds; the advantage falls to $0.04$ at
+twenty-four $600$ m patches even as foraging success reaches $0.88$). The evolvable
+dance propensity shows little structure across the grid, settling near $0.6$
+everywhere.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/food_distribution_disk_grid.png}
+  \caption{Recruitment advantage (left) and evolved directional bias (right) on a
+    flat comb across the grid of Poisson mean site count against median patch
+    radius, $50$ seeds per cell. Communication is favored along a diagonal band:
+    directional bias lifts off a size threshold that falls as patches become more
+    numerous, while the recruitment advantage peaks for few large patches and
+    erodes toward both small and abundant food.}
+  \label{fig:food-grid}
+\end{figure}
+
+\subsection{Evolution of the gravity code}
+\label{sec:results-transition}
+
+\paragraph{Parameter search.}
+Stable vertical-gravity transitions are common under both decodes, and unproject is
+slightly broader (\Cref{tab:optuna-stability}). Both searches concentrate their
+strongly stable trials in the same region --- denser, closer, reachable food paired
+with a strong tilt incentive and a high mutation scale
+(\Cref{tab:optuna-region}). The sender--receiver correlation $\rho$ is not
+decisive, its stable range spanning almost the whole $[0,1]$ axis, and mean
+foraging success across the strongly stable trials is only $0.27$, so the
+transition needs a reliably communicable ecology rather than an abundant one.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lrr}
+    \toprule
+    Outcome & Flatten trials & Unproject trials \\
+    \midrule
+    Stable in all $10$ seeds & $14$ & $24$ \\
+    Stable in $\ge 8$ seeds   & $123$ & $132$ \\
+    Stable in $\ge 5$ seeds   & $312$ & $338$ \\
+    Stable in $\ge 1$ seed    & $611$ & $641$ \\
+    No stable seed            & $413$ & $383$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Stability counts over the $1024$ Optuna trials (ten seeds each) under
+    each decode.}
+  \label{tab:optuna-stability}
+\end{table}
+
+\begin{table}
+  \centering
+  \begin{tabular}{lrl}
+    \toprule
+    Parameter & Median & 10th--90th pct. \\
+    \midrule
+    Food-site count (Poisson mean) & $8$    & $5$--$8$ \\
+    Patch radius (m)               & $210$  & $165$--$345$ \\
+    Patch capacity                 & $7$    & $2$--$8$ \\
+    Vertical-comb benefit $B$      & $0.56$ & $0.50$--$0.56$ \\
+    Max food distance (m)          & $3250$ & $3250$--$5250$ \\
+    Travel cost per meter          & $2.5\mathrm{e}{-5}$ & $1.0\mathrm{e}{-5}$--$2.5\mathrm{e}{-5}$ \\
+    Mutation scale $\sigma_m$      & $0.110$ & $0.090$--$0.110$ \\
+    Correlation $\rho$             & $0.4$   & $0.0$--$0.9$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Parameter distribution of the strongly stable flatten trials (eight or
+    more stable seeds).}
+  \label{tab:optuna-region}
+\end{table}
+
+\paragraph{Held-out validation.}
+The top five distinct candidates from each search, rerun on $100$ held-out seeds
+($200$--$299$), all produced frequent stable transitions and no collapse events;
+stable rates ran $80$--$91$ of $100$ for flatten and $82$--$92$ for unproject. The
+strongest candidate of each decode (\Cref{tab:validation}) lands on very similar
+held-out rates and on overlapping ecologies --- large patches, short-to-moderate
+distances, low travel cost, high benefit.
+
+\begin{table}
+  \centering
+  \small
+  \begin{tabular}{llrrrrrrrrr}
+    \toprule
+    Decode & Cand. & Sites & Rad. (m) & Cap. & $B$ & Dist. (m) & Travel & $\sigma_m$ & Stable & $t_f$ \\
+    \midrule
+    flatten   & 729 & $5$ & $315$ & $4$  & $0.56$ & $3250$ & $1.7\mathrm{e}{-5}$ & $0.070$ & $91/100$ & $0.845$ \\
+    unproject & 541 & $7$ & $315$ & $12$ & $0.60$ & $4750$ & $1.0\mathrm{e}{-5}$ & $0.090$ & $92/100$ & $0.848$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Strongest validated candidate per decode over $100$ held-out seeds;
+    $t_f$ is final mean comb tilt. Both reach foraging success ${\approx}0.35$.}
+  \label{tab:validation}
+\end{table}
+
+\paragraph{One-parameter sensitivity.}
+A one-parameter sweep around each validated baseline identifies the mutation scale
+as the sharpest boundary (\Cref{fig:sensitivity}): lowering it collapses the
+transition (flatten falls from $91/100$ to $49/100$ at $\sigma_m = 0.05$; unproject
+to $16/100$ at $0.04$), while the validated $\sigma_m$ of $0.07$--$0.09$ sits on the
+plateau. The sharpest \emph{ecological} boundary is food-site count under flatten
+($46/100$ at a Poisson mean of two, rising to $87/100$ at seven); unproject is more
+robust to count. Vertical-comb benefit and correlation are monotone and moderate,
+and patch radius, capacity, distance, and travel cost stay within a narrow band.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/food_transition_disk_sensitivity_boxplot.png}
+  \caption{One-parameter sensitivity of the disk vertical transition, both decodes.
+    For each perturbation the box is a seed-bootstrap distribution of the stable
+    rate over $100$ held-out seeds, the dot the observed rate, and the dashed line
+    each decode's baseline. Because each decode is perturbed around its own
+    validated candidate, the swept values differ between panels. Mutation scale is
+    the sharpest boundary under both decodes; food-site count is the sharpest
+    ecological boundary under flatten.}
+  \label{fig:sensitivity}
+\end{figure}
+
+\paragraph{Evolutionary-parameter interaction.}
+Holding each validated ecology fixed and crossing $B$, $\sigma_m$, and $\rho$, the
+transition persists at the lower benefits tested, and unproject is again slightly
+more robust than flatten (\Cref{fig:interaction}). Stable rate rises with benefit
+across the panels; within each panel it rises with mutation scale and with
+correlation, and the best cells pair a high mutation scale ($0.09$--$0.11$) with
+moderate-to-high correlation.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/food_transition_disk_interaction_heatmap.png}
+  \caption{Stable transition rate across the evolutionary-parameter interaction
+    grid, holding each decode's validated ecology fixed. Tiles cross the
+    sender--receiver mutation correlation $\rho$ against the mutation scale
+    $\sigma_m$, faceted by decode (rows) and vertical-comb benefit $B$ (columns);
+    each cell summarizes $100$ held-out seeds. Stable rate rises with benefit,
+    mutation scale, and correlation, and unproject clears a broader region than
+    flatten at every benefit.}
+  \label{fig:interaction}
+\end{figure}
+
 \section{Discussion}
 \label{sec:discussion}
 
