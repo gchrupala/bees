@@ -110,6 +110,8 @@ git as the single source of truth for results:
   it when explicitly asked.
 - When editing paper text, maintain the existing writing style and the structure
   of the argument; confirm important textual changes before editing.
+- The writing in the paper should focus on the final version of the model and experimental setup. There should be no references to previous versions or superseded results.
+- The paper should use present tense, unless there is a good reason not to.
 - Follow instructions inside the paper marked with the string `% AGENTS:`.
 
 ## Token-Conservative Workflow
