@@ -94,7 +94,7 @@ sections below.
     patch radius          & $60$--$360$ m     & median disk radius (lognormal) \\
     capacity              & $2$--$12$         & base loads a patch supplies at the median radius \\
     $d_{\max}$            & $3000$--$7500$ m  & maximum patch distance \\
-    $c_{\mathrm{travel}}$ & $10^{-5}$--$6\times10^{-5}$ & travel cost per meter \\
+    travel cost (per km)  & $0.010$--$0.060$ & cost charged per km of foray distance \\
     \midrule
     \multicolumn{3}{l}{\emph{Evolutionary}} \\
     $B$        & $0.10$--$0.60$ & vertical-comb benefit magnitude \\
@@ -102,13 +102,14 @@ sections below.
     $\rho$     & $0.0$--$1.0$   & sender--receiver mutation correlation \\
     \bottomrule
   \end{tabular}
-  \caption{Parameters varied across experiments, with the range each is explored
-    over. Ranges give the union across sub-experiments: the ecological parameters
-    and $B,\sigma_m,\rho$ are sampled continuously in the Optuna search over the
-    intervals shown; the horizontal-comb experiment sweeps a grid of food-site
-    count $\{1,2,3,4,6,8,12,16,24\}$ against median patch radius
+  \caption{Parameters varied across experiments. The \emph{Range explored} column
+    gives the interval each parameter is sampled over in the Optuna search; the
+    other sub-experiments use fixed grids that can extend beyond it. The ecological
+    parameters and $B,\sigma_m,\rho$ are sampled continuously in the Optuna search
+    over the intervals shown; the horizontal-comb experiment sweeps a grid of
+    food-site count $\{1,2,3,4,6,8,12,16,24\}$ against median patch radius
     $\{15, 37.5, 75, 150, 300, 600\}$ m; and the evolutionary-interaction grid
-    uses the discrete values $B \in \{0.30, 0.44, 0.56\}$,
+    uses the discrete values $B \in \{0.10, 0.30, 0.45, 0.60\}$,
     $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
     $\rho \in \{0.0, 0.3, 0.6, 0.9\}$. Outside the search, capacity is $6$ at the
     median radius, $d_{\max} = 6000$ m, and the horizontal runs use
@@ -140,11 +141,9 @@ patches (essentially undiscoverable) to many large ones (easily found by random
 search). All other ecological parameters are held at their fixed values
 (\Cref{tab:fixed-params}).
 
-The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}):
-among attempts where a dance was available, the success rate of workers that
-followed a dance minus that of contemporaneous workers that searched at random.
+The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}).
 Because the follow decision is a randomized coin flip on receiver attention within
-the same episodes, this is a near-randomized, contemporaneous estimate of what the
+the same episodes, it is a near-randomized, contemporaneous estimate of what the
 dance actually buys, and it distinguishes functioning communication from a
 directional-bias trait that has merely drifted upward. We report it as a mean over
 the final generations, alongside final-generation mean directional bias, foraging
@@ -198,9 +197,10 @@ holding the others at their validated values, over the same $100$ held-out seeds
 \paragraph{Evolutionary-parameter interaction.}
 To ask whether mutation parameters can compensate for a weaker architectural
 benefit, we hold the validated ecology fixed and run a full-factorial grid over
-the three evolutionary parameters, re-centred on the disk stable region,
-$B \in \{0.30, 0.44, 0.56\}$, $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
-$\rho \in \{0.0, 0.3, 0.6, 0.9\}$, evaluating each of the $48$ cells over the same
+the three evolutionary parameters, sweeping the benefit across the full search
+range while re-centring the mutation parameters on the disk stable region,
+$B \in \{0.10, 0.30, 0.45, 0.60\}$, $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
+$\rho \in \{0.0, 0.3, 0.6, 0.9\}$, evaluating each of the $64$ cells over the same
 $100$ held-out seeds ($200$--$299$).
 
 \paragraph{Outcome measures.}
