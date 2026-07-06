@@ -195,8 +195,8 @@ must reach whichever of several sites a sender has seen to hold food. Their
 central finding concerns the raw material from which a displaced signal
 arises. Although senders could in principle modulate a dedicated signal
 amplitude, communication instead evolved from incidental, movement-derived
-cues --- the onset delay and duration of a sender's presence in the shared
-communication zone --- which were subsequently ritualized into signals; the more
+cues (the onset delay and duration of a sender's presence in the shared
+communication zone), which were subsequently ritualized into signals; the more
 efficient amplitude-based scheme evolved only when the cheaper cue was
 experimentally suppressed, because it took far longer to appear. This model
 shares our evolutionary framing but selects at the level of individual
@@ -256,7 +256,7 @@ directional code at the level of colonies, using a small set of interpretable,
 heritable traits rather than opaque neural controllers and no gradient-based
 learning. This lets us treat costs, benefits, and comb geometry as explicit
 parameters and ask which ecological and evolutionary conditions drive the shift
-from iconic direct pointing to an abstract gravity-referenced code --- a question
+from iconic direct pointing to an abstract gravity-referenced code: a question
 about the conditions and dynamics of a communicative transition that none of
 this prior work addresses.
 
@@ -445,8 +445,8 @@ evolutionary change.
 The first version of the model is exactly the one described above: the comb is
 horizontal and the only code available is direct pointing. We use it to
 investigate the conditions under which a referential code emerges and stabilizes,
-starting from an initial population with little communicative ability --- low
-directional bias and low attention --- so that early foragers signal weakly and
+starting from an initial population with little communicative ability (low
+directional bias and low attention), so that early foragers signal weakly and
 rarely attend to one another.
 
 \subsection{Evolution of vertical combs}
@@ -467,7 +467,7 @@ $\sigma_m P$ rather than $\sigma_m$.
 \paragraph{Comb geometry.}
 The comb is a flat surface on which dances are performed, and its tilt determines
 which reference directions a dance can use. We represent the comb by its unit
-normal --- the direction perpendicular to its face. When the comb is horizontal
+normal, the direction perpendicular to its face. When the comb is horizontal
 this normal points straight up; as the comb tilts, the normal swings down toward
 the horizon in the compass direction $\phi$, until on a vertical comb it lies
 flat. Writing the tilt as a physical angle $\theta = \gamma\,\pi/2$ (so
@@ -500,9 +500,9 @@ it onto the comb surface, reading off the resulting in-plane angle
     tilted hexagonal comb and the world-horizontal plane (the grid) share the
     hive's east--north position. The food direction $\mathbf{f}$ (blue) lies
     in the world plane; its orthogonal projection onto the comb, $\mathbf{p}$
-    (red) --- found by carrying its start and end points along the comb's
+    (red), found by carrying its start and end points along the comb's
     normal $\mathbf{n}$ (black) until they meet the surface, shown by the
-    dashed rays --- has in-plane angle $\delta_\mathrm{dir}$, the encoded
+    dashed rays, has in-plane angle $\delta_\mathrm{dir}$, the encoded
     signal. Decoding that signal back to a world heading, the flatten variant
     recovers $\mathbf{r}$ (orange), which drifts off the true direction by a
     systematic angle on any tilted comb, whereas the unproject variant would
@@ -683,9 +683,9 @@ everywhere.
 \paragraph{Parameter search.}
 Stable vertical-gravity transitions are common under both decodes, and unproject is
 slightly broader (\Cref{tab:optuna-stability}). Both searches concentrate their
-strongly stable trials in much the same region --- abundant, large, reachable food
+strongly stable trials in much the same region: abundant, large, reachable food
 paired with a strong tilt incentive and a high mutation scale
-(\Cref{tab:optuna-region}) --- the main difference being that unproject tolerates
+(\Cref{tab:optuna-region}). The main difference is that unproject tolerates
 food at longer range (median maximum distance $5250$ against flatten's $3250$ m).
 The sender--receiver correlation $\rho$ is not
 decisive, its stable range spanning almost the whole $[0,1]$ axis under both
@@ -740,7 +740,7 @@ The top five distinct candidates from each search, rerun on $100$ held-out seeds
 ($200$--$299$), all produced frequent stable transitions and no collapse events;
 stable rates ran $80$--$91$ of $100$ for flatten and $82$--$92$ for unproject. The
 strongest candidate of each decode (\Cref{tab:validation}) lands on very similar
-held-out rates and on overlapping ecologies --- large patches, short-to-moderate
+held-out rates and on overlapping ecologies: large patches, short-to-moderate
 distances, low travel cost, high benefit.
 
 \begin{table}
@@ -793,8 +793,8 @@ and patch radius, capacity, distance, and travel cost stay within a narrow band.
   \caption{One-parameter sensitivity of the unproject decode, drawn as in
     \Cref{fig:sensitivity-flatten} and sharing its parameter order and x-range.
     Mutation scale is again the sharpest boundary (a lone collapse at
-    $\sigma_m = 0.04$), but every other parameter stays tightly at baseline --- in
-    particular unproject is markedly more robust to food-site count than flatten.}
+    $\sigma_m = 0.04$), but every other parameter stays tightly at baseline; in
+    particular, unproject is markedly more robust to food-site count than flatten.}
   \label{fig:sensitivity-unproject}
 \end{figure}
 

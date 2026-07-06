@@ -165,10 +165,10 @@ from disjoint seed blocks: the search uses seeds $100$--$109$ and confirmation
 $110$--$149$, while all held-out evaluation uses seeds $200$--$299$.
 
 \paragraph{Parameter search.}
-We search eight parameters --- food-site count, patch radius, capacity, maximum
-distance, and travel cost, together with $B$, $\sigma_m$, and $\rho$ (food value
-fixed at $v = 1$) --- with the Tree-structured Parzen Estimator sampler of Optuna,
-running $1024$ trials in total across sixteen parallel workers evaluated against a
+We search eight parameters with the Tree-structured Parzen Estimator sampler of
+Optuna: food-site count, patch radius, capacity, maximum distance, and travel
+cost, together with $B$, $\sigma_m$, and $\rho$ (food value fixed at $v = 1$). We
+run $1024$ trials in total across sixteen parallel workers evaluated against a
 single shared study, each worker seeded independently and drawing $64$ startup
 random trials. Each trial evaluates a panel of $10$ seeds ($100$--$109$) and is
 scored by
