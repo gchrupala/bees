@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=bees-disk-inter
 #SBATCH --time=24:00:00
-#SBATCH --cpus-per-task=64
-#SBATCH --mem=48G
+#SBATCH --partition=genoa
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=192
+#SBATCH --exclusive
+#SBATCH --mem=0
 #SBATCH --output=logs/slurm-%x-%j.out
 #SBATCH --error=logs/slurm-%x-%j.err
 
