@@ -185,8 +185,49 @@ cooperative referential tasks \citep{lazaridou2017multi}.
   emergent-communication simulations.}
 
 \subsection{Computational models of the waggle dance}
-\citet{10.1371/journal.pcbi.1010487}: displaced communication, evolving neural agents.
-\citet{siregar2026emergent}: compositionality, interacting neural agents, gradient descent.
+Two recent studies model the waggle dance with neural-network agents, and
+each places a different mechanism at the center of its analysis.
+\citet{10.1371/journal.pcbi.1010487} treat displaced communication as an
+evolutionary phenomenon: pairs of foraging agents, each controlled by a
+continuous-time recurrent neural network, undergo experimental evolution over
+tens of thousands of generations in a one-dimensional arena where a receiver
+must reach whichever of several sites a sender has seen to hold food. Their
+central finding concerns the raw material from which a displaced signal
+arises. Although senders could in principle modulate a dedicated signal
+amplitude, communication instead evolved from incidental, movement-derived
+cues---the onset delay and duration of a sender's presence in the shared
+communication zone---which were subsequently ritualized into signals; the more
+efficient amplitude-based scheme evolved only when the cheaper cue was
+experimentally suppressed, because it took far longer to appear. This model
+shares our evolutionary framing but selects at the level of individual
+sender--receiver pairs rather than colonies, and it abstracts away the geometry
+of the dance: the object of study is how any displaced signal bootstraps from
+behavior, not how a specific directional code is structured.
+
+\citet{siregar2026emergent} instead ask what internal representations and
+channel properties allow a compositional, waggle-dance-like code to be
+\emph{learned}. A single sender--receiver pair, implemented as graph neural
+networks operating over map-like graphs of routes between the nest and
+candidate sites, is trained by gradient descent on a referential game to
+transmit two real-valued tokens identifying the food node. Their questions
+concern the emergent semantics of that code: whether the two tokens factor into
+independent direction and distance components (compositionality), how this
+depends on the overlap between the sender's and receiver's mental maps, and
+whether constraining the channel to the kinematic range of a real dance helps.
+They find that direction is readily encoded whereas direct distance is not,
+that representational overlap is the main driver of compositionality, and that
+channel constraints have only a small effect. This is a within-lifetime study
+of representation and structure, with no population dynamics or selection.
+
+Our study occupies a different point in this space. We model the emergence and,
+in particular, the evolutionary \emph{transition} between two forms of a
+directional code at the level of colonies, using a small set of interpretable,
+heritable traits rather than opaque neural controllers and no gradient-based
+learning. This lets us treat costs, benefits, and comb geometry as explicit
+parameters and ask which ecological and evolutionary conditions drive the shift
+from iconic direct pointing to an abstract gravity-referenced code---a question
+about the conditions and dynamics of a communicative transition that neither of
+the neural-agent models addresses.
 
 \section{Method}
 \label{sec:method}
