@@ -19,7 +19,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
-from matplotlib.patches import Arc, Circle, Ellipse, Rectangle, RegularPolygon
+from matplotlib.patches import (
+    Arc,
+    Circle,
+    Ellipse,
+    FancyBboxPatch,
+    Rectangle,
+    RegularPolygon,
+)
+from matplotlib.transforms import Bbox, TransformedBbox
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,7 +43,7 @@ plt.rcParams.update(
     {
         "font.family": "sans-serif",
         "font.sans-serif": ["DejaVu Sans", "Liberation Sans"],
-        "font.size": 12,
+        "font.size": 13,
     }
 )
 
@@ -45,6 +53,15 @@ HEX_COLOR = "#e9cf86"
 RUN_COLOR = "#c0392b"
 SUN_COLOR = "#e8a200"
 REF_COLOR = "#34495e"
+
+# Panel header colours (blue for the horizontal comb, green for the vertical one)
+# and a common style for the large arrow annotations.
+HEAD_H = "#1f5fa8"
+HEAD_V = "#2e7d32"
+LABEL_SIZE = 15
+# Light grey for the angle theta, so it does not clash with the orange sun
+# reference or the red waggle run.
+THETA_COLOR = "#8a8a8a"
 
 # Shared field geometry, measured counter-clockwise from east (the +x axis).
 # The food patch sits 40 degrees clockwise of (i.e. to the right of) the sun.
@@ -100,6 +117,12 @@ def draw_comb_texture(ax, clip_patch, bbox: tuple[float, float, float, float], r
     dx = sqrt(3.0) * radius
     dy = 1.5 * radius
 
+    # Clip to the comb outline, plus its bounding box as a robust fallback
+    # (path clipping alone can leak hexagons past a rectangular comb).
+    clip_box = TransformedBbox(
+        Bbox.from_extents(x_min, y_min, x_max, y_max), ax.transData
+    )
+
     row = 0
     y = y_min - dy
     while y <= y_max + dy:
@@ -116,8 +139,9 @@ def draw_comb_texture(ax, clip_patch, bbox: tuple[float, float, float, float], r
                 linewidth=0.6,
                 zorder=1,
             )
-            hexagon.set_clip_path(clip_patch)
             ax.add_patch(hexagon)
+            hexagon.set_clip_path(clip_patch)
+            hexagon.set_clip_box(clip_box)
             x += dx
         y += dy
         row += 1
@@ -130,14 +154,15 @@ def draw_waggle(ax, center: tuple[float, float], angle_deg: float, length: float
     px, py = -sin(angle), cos(angle)
     cx, cy = center
 
-    # The two return loops, offset perpendicular to the run and overlapping
-    # along it so the straight run threads through the middle of the "8".
-    loop_offset = 0.30 * length
+    # Two return loops bulge to either side of the run (perpendicular to it) and
+    # meet at a single waist at the centre, hidden by the bee: the classic
+    # figure-eight, with the straight waggle run threading through toward the food.
+    loop_offset = 0.36 * length
     for sign in (-1.0, 1.0):
         loop = Ellipse(
             (cx + sign * loop_offset * px, cy + sign * loop_offset * py),
-            width=1.18 * length,
-            height=0.74 * length,
+            width=0.66 * length,
+            height=0.72 * length,
             angle=angle_deg,
             fill=False,
             edgecolor=RUN_COLOR,
@@ -171,12 +196,34 @@ def draw_ray(ax, angle_deg: float, length: float, color: str, style: str, lw: fl
     )
 
 
+def draw_panel_frame(ax, color: str, title: str) -> None:
+    """Draw a rounded border box with a coloured header for one panel."""
+    frame = FancyBboxPatch(
+        (0.02, 0.02),
+        0.96,
+        0.96,
+        boxstyle="round,pad=0,rounding_size=0.035",
+        transform=ax.transAxes,
+        facecolor="none",
+        edgecolor=color,
+        linewidth=2.4,
+        zorder=20,
+        clip_on=False,
+    )
+    ax.add_patch(frame)
+    ax.text(
+        0.5, 0.895, title,
+        transform=ax.transAxes, ha="center", va="center",
+        fontsize=19, fontweight="bold", color=color, zorder=21,
+    )
+
+
 def draw_horizontal_panel(ax) -> None:
-    ax.set_title("(1) Horizontal comb — run points straight at the food", pad=14)
-    ax.set_xlim(-1.7, 1.7)
-    ax.set_ylim(-1.7, 1.9)
+    ax.set_xlim(-1.75, 1.75)
+    ax.set_ylim(-1.5, 2.2)
     ax.set_aspect("equal")
     ax.axis("off")
+    draw_panel_frame(ax, HEAD_H, "Horizontal comb")
 
     comb = Circle(
         (0, 0), 1.0, facecolor=COMB_FILL, edgecolor=COMB_EDGE, linewidth=1.6, zorder=0
@@ -186,72 +233,47 @@ def draw_horizontal_panel(ax) -> None:
 
     # Guide rays toward the sun and the food, in the bee's own (world) frame.
     draw_ray(ax, SUN_AZIMUTH_DEG, 1.5, SUN_COLOR, (0, (4, 3)), lw=1.4)
-    draw_ray(ax, FOOD_AZIMUTH_DEG, 1.3, RUN_COLOR, (0, (1, 2)), lw=1.2)
+    draw_ray(ax, FOOD_AZIMUTH_DEG, 1.35, RUN_COLOR, (0, (1, 2)), lw=1.4)
 
     draw_waggle(ax, (0.0, 0.0), FOOD_AZIMUTH_DEG, length=1.0)
-    place_emoji(ax, 0, 0, "🐝", 46)
-
+    place_emoji(ax, 0, 0, "🐝", 48)
     place_emoji(
         ax,
         1.5 * cos(radians(FOOD_AZIMUTH_DEG)),
         1.5 * sin(radians(FOOD_AZIMUTH_DEG)),
         "🌼",
-        46,
+        48,
     )
     place_emoji(
         ax,
         1.62 * cos(radians(SUN_AZIMUTH_DEG)),
         1.62 * sin(radians(SUN_AZIMUTH_DEG)),
         "☀️",
-        44,
-    )
-    ax.text(
-        0.0,
-        -1.45,
-        "On a level comb the bee sees the sky, so the waggle run is\n"
-        "aimed directly along the true food direction.",
-        ha="center",
-        va="center",
-        fontsize=10.5,
-        color="#333333",
+        46,
     )
 
-
-def draw_field_inset(ax) -> None:
-    ax.set_xlim(-1.25, 1.25)
-    ax.set_ylim(-0.5, 1.4)
-    ax.set_aspect("equal")
-    ax.axis("off")
-    ax.set_title("in the field (from above)", fontsize=9.5, pad=2)
-
-    draw_ray(ax, SUN_AZIMUTH_DEG, 1.0, SUN_COLOR, (0, (4, 3)), lw=1.3)
-    draw_ray(ax, FOOD_AZIMUTH_DEG, 0.95, RUN_COLOR, "-", lw=1.6)
+    # Angle between the food and sun directions (the food–sun angle theta) --
+    # the same angle the vertical comb reproduces against gravity.
     ax.add_patch(
         Arc(
-            (0, 0),
-            1.1,
-            1.1,
-            angle=0.0,
-            theta1=FOOD_AZIMUTH_DEG,
-            theta2=SUN_AZIMUTH_DEG,
-            color=REF_COLOR,
-            linewidth=1.3,
+            (0, 0), 1.3, 1.3, angle=0.0,
+            theta1=FOOD_AZIMUTH_DEG, theta2=SUN_AZIMUTH_DEG,
+            color=THETA_COLOR, linewidth=2.0,
         )
     )
     mid = radians((SUN_AZIMUTH_DEG + FOOD_AZIMUTH_DEG) / 2.0)
-    ax.text(0.72 * cos(mid), 0.72 * sin(mid), "θ", fontsize=12, color=REF_COLOR)
-
-    place_emoji(ax, 0, 0, "🐝", 24)
-    place_emoji(ax, 1.05 * cos(radians(SUN_AZIMUTH_DEG)), 1.05 * sin(radians(SUN_AZIMUTH_DEG)), "☀️", 24)
-    place_emoji(ax, 1.05 * cos(radians(FOOD_AZIMUTH_DEG)), 1.05 * sin(radians(FOOD_AZIMUTH_DEG)), "🌼", 24)
+    ax.text(
+        0.82 * cos(mid), 0.82 * sin(mid), "θ",
+        fontsize=22, color=THETA_COLOR, ha="center", va="center", fontweight="bold",
+    )
 
 
 def draw_vertical_panel(ax) -> None:
-    ax.set_title("(2) Vertical comb — angle from vertical = food's angle from the sun", pad=14)
-    ax.set_xlim(-1.7, 1.7)
-    ax.set_ylim(-1.7, 1.9)
+    ax.set_xlim(-1.75, 1.75)
+    ax.set_ylim(-1.5, 2.2)
     ax.set_aspect("equal")
     ax.axis("off")
+    draw_panel_frame(ax, HEAD_V, "Vertical comb")
 
     comb = Rectangle(
         (-1.0, -1.0),
@@ -268,57 +290,49 @@ def draw_vertical_panel(ax) -> None:
     # "Up" on the comb represents the direction of the sun.
     ax.annotate(
         "",
-        xy=(0.0, 1.45),
+        xy=(0.0, 1.5),
         xytext=(0.0, 0.0),
-        arrowprops=dict(arrowstyle="-|>", color=SUN_COLOR, lw=1.6, mutation_scale=18),
+        arrowprops=dict(arrowstyle="-|>", color=SUN_COLOR, lw=2.2, mutation_scale=22),
         zorder=3,
     )
-    ax.text(0.06, 1.5, "up ≡ toward the sun", color=SUN_COLOR, fontsize=10, va="center")
+    ax.text(
+        0.14, 1.18, "up = toward sun",
+        color=SUN_COLOR, fontsize=LABEL_SIZE, va="center", ha="left",
+        fontweight="bold",
+    )
 
     # Gravity reference.
     ax.annotate(
         "",
-        xy=(-1.45, -0.55),
-        xytext=(-1.45, 0.55),
-        arrowprops=dict(arrowstyle="-|>", color=REF_COLOR, lw=2.0, mutation_scale=18),
+        xy=(-1.28, -0.6),
+        xytext=(-1.28, 0.6),
+        arrowprops=dict(arrowstyle="-|>", color=REF_COLOR, lw=2.4, mutation_scale=20),
         zorder=3,
     )
-    ax.text(-1.6, 0.0, "gravity", color=REF_COLOR, fontsize=10, rotation=90, va="center", ha="center")
+    ax.text(
+        -1.44, 0.0, "gravity",
+        color=REF_COLOR, fontsize=LABEL_SIZE, rotation=90, va="center", ha="center",
+        fontweight="bold",
+    )
 
     # Waggle run is THETA_DEG clockwise of straight up (90 deg from +x axis).
     run_angle = 90.0 - THETA_DEG
     draw_waggle(ax, (0.0, 0.0), run_angle, length=1.0)
-    place_emoji(ax, 0, 0, "🐝", 46)
+    place_emoji(ax, 0, 0, "🐝", 48)
 
     # Angle arc between "up" and the waggle run.
     ax.add_patch(
         Arc(
-            (0, 0),
-            0.95,
-            0.95,
-            angle=0.0,
-            theta1=run_angle,
-            theta2=90.0,
-            color=REF_COLOR,
-            linewidth=1.6,
+            (0, 0), 0.98, 0.98, angle=0.0,
+            theta1=run_angle, theta2=90.0,
+            color=THETA_COLOR, linewidth=2.0,
         )
     )
     mid = radians((90.0 + run_angle) / 2.0)
-    ax.text(0.66 * cos(mid), 0.66 * sin(mid), "θ", fontsize=14, color=REF_COLOR)
-
     ax.text(
-        0.0,
-        -1.45,
-        "On a vertical comb the bee cannot see the sun, so it uses gravity:\n"
-        "it rotates the run away from vertical by the food–sun angle θ.",
-        ha="center",
-        va="center",
-        fontsize=10.5,
-        color="#333333",
+        0.74 * cos(mid), 0.74 * sin(mid), "θ",
+        fontsize=22, color=THETA_COLOR, ha="center", va="center", fontweight="bold",
     )
-
-    inset = ax.inset_axes([0.66, 0.7, 0.34, 0.32])
-    draw_field_inset(inset)
 
 
 def main() -> None:
@@ -329,8 +343,10 @@ def main() -> None:
     draw_horizontal_panel(left)
     draw_vertical_panel(right)
 
-    fig.suptitle("Schematic of the honeybee waggle dance", fontsize=16, y=0.98)
-    fig.tight_layout(rect=(0, 0, 1, 0.95))
+    fig.suptitle(
+        "The honeybee waggle dance", fontsize=20, fontweight="bold", y=0.98
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
     fig.savefig(args.output, dpi=180)
     print(f"saved {args.output}")
 
