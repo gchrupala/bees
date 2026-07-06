@@ -223,21 +223,32 @@ learn to both produce and follow dance-like movements that encode a nectar
 location, again treating the dance as a code to be acquired within an
 individual's lifetime rather than shaped by selection.
 
-A separate and older tradition uses individual-based simulations to ask a
-different question: given that the dance exists, \emph{when does it pay off}?
-Here the code is fixed and the ecology is varied. \citet{dornhaus2006benefits}
-find that recruitment benefits a colony mainly when resources are patchy,
-variable, and hard to find, and that the advantage depends on colony size;
-\citet{schurch2014dancing} show that the dance's long-term benefits can
-outweigh its short-term costs; and \citet{iansonprice2019honeybees} report the
-converse, that in some human-modified landscapes colonies with disoriented
-dances actually forage more successfully, so spatial signaling is not
-universally advantageous. More abstractly, \citet{bailis2010positional}
-analyze when positional communication beats reliance on private information in
-a foraging model. This literature is the closest in spirit to our own benefit
-parameter, but it holds the communication system constant and measures its
-payoff in a given environment; it does not model the code itself as an evolving
-trait.
+A separate and older tradition asks a different question: given that the dance
+exists, \emph{when does it pay off}? The main tool here is the individual-based
+(agent-based) foraging simulation. A colony of many simple forager agents
+follows fixed behavioral rules; dance recruitment is present as a switch---
+recruits are either guided by a successful forager's spatial information or
+left to search on their own---while the ecology (the density, quality, spread,
+and persistence of food patches, and sometimes colony size) is varied across
+runs. The readout is colony-level foraging performance, typically the net
+energy or nectar collected. Importantly, these models represent neither
+evolution nor within-lifetime learning: the communication strategy is fixed and
+the agents do not adapt. What they model is the ecological cost--benefit
+accounting of a given strategy---how a fixed colony fares, with recruitment
+versus without, in one environment or another. Using such a model,
+\citet{dornhaus2006benefits} find that recruitment benefits a colony mainly when
+resources are patchy, variable, and hard to find, with the advantage depending
+on colony size, and \citet{schurch2014dancing} show that the dance's long-term
+benefits can outweigh its short-term costs. \citet{bailis2010positional} pose a
+more abstract version of the same question, analyzing when positional
+communication beats reliance on private information. The empirical counterpart
+to this modeling is \citet{iansonprice2019honeybees}, who disrupted the spatial
+component of the dance in real colonies and found that in some human-modified
+landscapes these colonies actually foraged \emph{more} successfully---direct
+evidence that spatial signaling is not universally advantageous. This body of
+work is the closest in spirit to our own benefit parameter, but it holds the
+communication system constant and measures its payoff in a fixed environment; it
+does not model the code itself as an evolving trait.
 
 Our study occupies a different point in this space. We model the emergence and,
 in particular, the evolutionary \emph{transition} between two forms of a
