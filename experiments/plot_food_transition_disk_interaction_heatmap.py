@@ -107,7 +107,7 @@ def add_labels(grid: pd.DataFrame) -> pd.DataFrame:
 
 def write_figure(frame: pd.DataFrame, output_prefix: Path) -> None:
     output_prefix.parent.mkdir(parents=True, exist_ok=True)
-    width = 8.5
+    width = 10.5
     height = 5.2
     plot = (
         ggplot(frame, aes(x="rho_label", y="mutation_label", fill="stable_percent"))

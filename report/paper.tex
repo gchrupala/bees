@@ -710,23 +710,27 @@ and patch radius, capacity, distance, and travel cost stay within a narrow band.
 \end{figure}
 
 \paragraph{Evolutionary-parameter interaction.}
-Holding each validated ecology fixed and crossing $B$, $\sigma_m$, and $\rho$, the
-transition persists at the lower benefits tested, and unproject is again slightly
-more robust than flatten (\Cref{fig:interaction}). Stable rate rises with benefit
-across the panels; within each panel it rises with mutation scale and with
-correlation, and the best cells pair a high mutation scale ($0.09$--$0.11$) with
-moderate-to-high correlation.
+Fixing each decode's validated ecology and sweeping $B$, $\sigma_m$, and $\rho$
+across the search range, stable rate falls steeply with benefit: robust near the
+validated $B\approx0.56$--$0.60$, already marginal by $B=0.30$, and collapsing at
+the search floor $B=0.10$, with unproject again slightly more robust than flatten
+(\Cref{fig:interaction}). Within each benefit panel the rate rises with mutation
+scale and with correlation, and the best cells pair a high mutation scale
+($0.09$--$0.11$) with moderate-to-high correlation, so higher mutation and
+correlation only partly compensate for weaker architectural benefit.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{figures/food_transition_disk_interaction_heatmap.png}
   \caption{Stable transition rate across the evolutionary-parameter interaction
-    grid, holding each decode's validated ecology fixed. Tiles cross the
-    sender--receiver mutation correlation $\rho$ against the mutation scale
-    $\sigma_m$, faceted by decode (rows) and vertical-comb benefit $B$ (columns);
-    each cell summarizes $100$ held-out seeds. Stable rate rises with benefit,
-    mutation scale, and correlation, and unproject clears a broader region than
-    flatten at every benefit.}
+    grid, holding each decode's validated ecology fixed. Benefit is swept across
+    the full search range ($0.10$--$0.60$) as a generic gradient rather than
+    through the validated operating points (flatten $B{=}0.56$, unproject
+    $B{=}0.60$). Tiles cross the sender--receiver mutation correlation $\rho$
+    against the mutation scale $\sigma_m$, faceted by decode (rows) and
+    vertical-comb benefit $B$ (columns); each cell summarizes $100$ held-out
+    seeds. Stable rate rises with benefit, mutation scale, and correlation, and
+    unproject clears a broader region than flatten at every benefit.}
   \label{fig:interaction}
 \end{figure}
 

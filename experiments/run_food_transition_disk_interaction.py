@@ -33,10 +33,14 @@ from run_food_transition_disk_panel import (  # noqa: E402
     read_rows,
 )
 
-# Grid re-centred on the disk stable region (angular used 0.10/0.25/0.44 benefit,
-# 0.045-0.135 mutation). Disk transitions concentrate near benefit ~0.56 and
-# mutation ~0.11, so the grid brackets that with weaker values to test rescue.
-VERTICAL_COMB_BENEFIT_VALUES = (0.30, 0.44, 0.56)
+# Benefit spans the full Optuna search range (0.10-0.60) rather than the stable
+# region alone: the low end (0.10) is the search floor (a collapse control), the
+# high end (0.60) covers both decodes' validated benefit (flatten 0.56, unproject
+# 0.60), and the interior points bracket the transition shoulder. Note the grid is
+# a generic sweep and no longer passes exactly through either validated point.
+# Mutation still brackets the stable region (~0.11) with weaker values to test
+# whether higher mutation/correlation can rescue a weaker architectural benefit.
+VERTICAL_COMB_BENEFIT_VALUES = (0.10, 0.30, 0.45, 0.60)
 MUTATION_SD_VALUES = (0.05, 0.07, 0.09, 0.11)
 TRANSPOSITION_MUTATION_CORRELATION_VALUES = (0.0, 0.3, 0.6, 0.9)
 
