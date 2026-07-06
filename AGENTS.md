@@ -123,7 +123,11 @@ git as the single source of truth for results:
   of the argument; confirm important textual changes before editing.
 - The writing in the paper should focus on the final version of the model and experimental setup. There should be no references to previous versions or superseded results.
 - The paper should use present tense, unless there is a good reason not to.
-- Follow instructions inside the paper marked with the string `% AGENTS:`.
+### Data and visualizations
+- For the display of quantitative data (when it's useful to show spread), prefer figures to tables
+- Use clean, uncluttered design for figures. Explanatory text should be in the caption, not figure title or embedded in the figure. Labels for key elements in a figure and legends are OK. 
+- If there is text in a figure, it should be in a large and readable font.
+
 
 ## Token-Conservative Workflow
 
