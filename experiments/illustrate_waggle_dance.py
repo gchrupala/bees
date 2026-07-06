@@ -147,16 +147,16 @@ def draw_comb_texture(ax, clip_patch, bbox: tuple[float, float, float, float], r
         row += 1
 
 
-def draw_waggle(ax, center: tuple[float, float], angle_deg: float, length: float) -> None:
-    """Draw a schematic figure-eight dance with a straight waggle run."""
+def draw_dance_loops(ax, center: tuple[float, float], angle_deg: float, length: float) -> None:
+    """Draw the two figure-eight loops of the dance, centred on the bee.
+
+    The loops bulge to either side of the run (perpendicular to it) and meet at a
+    single waist at the centre, which the bee then covers.
+    """
     angle = radians(angle_deg)
-    ux, uy = cos(angle), sin(angle)
     px, py = -sin(angle), cos(angle)
     cx, cy = center
 
-    # Two return loops bulge to either side of the run (perpendicular to it) and
-    # meet at a single waist at the centre, hidden by the bee: the classic
-    # figure-eight, with the straight waggle run threading through toward the food.
     loop_offset = 0.36 * length
     for sign in (-1.0, 1.0):
         loop = Ellipse(
@@ -172,23 +172,26 @@ def draw_waggle(ax, center: tuple[float, float], angle_deg: float, length: float
         )
         ax.add_patch(loop)
 
-    # The straight waggle run itself, as a bold arrow.
-    base = (cx - 0.5 * length * ux, cy - 0.5 * length * uy)
-    tip = (cx + 0.62 * length * ux, cy + 0.62 * length * uy)
+
+def draw_run_arrow(ax, origin, angle_deg: float, base_r: float, tip_r: float) -> None:
+    """Draw the straight waggle run as a bold arrow out from the reference vertex."""
+    ox, oy = origin
+    angle = radians(angle_deg)
     ax.annotate(
         "",
-        xy=tip,
-        xytext=base,
+        xy=(ox + tip_r * cos(angle), oy + tip_r * sin(angle)),
+        xytext=(ox + base_r * cos(angle), oy + base_r * sin(angle)),
         arrowprops=dict(arrowstyle="-|>", color=RUN_COLOR, lw=3.0, mutation_scale=24),
         zorder=5,
     )
 
 
-def draw_ray(ax, angle_deg: float, length: float, color: str, style: str, lw: float = 1.6) -> None:
+def draw_ray(ax, origin, angle_deg: float, length: float, color: str, style: str, lw: float = 1.6) -> None:
+    ox, oy = origin
     angle = radians(angle_deg)
     ax.plot(
-        [0.0, length * cos(angle)],
-        [0.0, length * sin(angle)],
+        [ox, ox + length * cos(angle)],
+        [oy, oy + length * sin(angle)],
         color=color,
         linestyle=style,
         linewidth=lw,
@@ -225,46 +228,53 @@ def draw_horizontal_panel(ax) -> None:
     ax.axis("off")
     draw_panel_frame(ax, HEAD_H, "Horizontal comb")
 
+    R = 1.08
     comb = Circle(
-        (0, 0), 1.0, facecolor=COMB_FILL, edgecolor=COMB_EDGE, linewidth=1.6, zorder=0
+        (0, 0), R, facecolor=COMB_FILL, edgecolor=COMB_EDGE, linewidth=1.6, zorder=0
     )
     ax.add_patch(comb)
-    draw_comb_texture(ax, comb, (-1.0, 1.0, -1.0, 1.0), radius=0.16)
+    draw_comb_texture(ax, comb, (-R, R, -R, R), radius=0.16)
 
-    # Guide rays toward the sun and the food, in the bee's own (world) frame.
-    draw_ray(ax, SUN_AZIMUTH_DEG, 1.5, SUN_COLOR, (0, (4, 3)), lw=1.4)
-    draw_ray(ax, FOOD_AZIMUTH_DEG, 1.35, RUN_COLOR, (0, (1, 2)), lw=1.4)
+    # The reference vertex sits in the lower-left of the comb; the sun reference
+    # and the run toward the food start there, with theta marked at the vertex,
+    # while the bee dances near the comb centre -- so the angle and the
+    # figure-eight are spatially separated.
+    u = radians(FOOD_AZIMUTH_DEG)
+    vertex = (-0.72 * cos(u), -0.72 * sin(u))
 
-    draw_waggle(ax, (0.0, 0.0), FOOD_AZIMUTH_DEG, length=1.0)
-    place_emoji(ax, 0, 0, "🐝", 48)
-    place_emoji(
-        ax,
-        1.5 * cos(radians(FOOD_AZIMUTH_DEG)),
-        1.5 * sin(radians(FOOD_AZIMUTH_DEG)),
-        "🌼",
-        48,
-    )
-    place_emoji(
-        ax,
-        1.62 * cos(radians(SUN_AZIMUTH_DEG)),
-        1.62 * sin(radians(SUN_AZIMUTH_DEG)),
-        "☀️",
-        46,
-    )
+    draw_ray(ax, vertex, SUN_AZIMUTH_DEG, 1.78, SUN_COLOR, (0, (4, 3)), lw=1.4)
+    draw_run_arrow(ax, vertex, FOOD_AZIMUTH_DEG, 0.0, 1.5)
 
-    # Angle between the food and sun directions (the food–sun angle theta) --
-    # the same angle the vertical comb reproduces against gravity.
     ax.add_patch(
         Arc(
-            (0, 0), 1.3, 1.3, angle=0.0,
+            vertex, 0.8, 0.8, angle=0.0,
             theta1=FOOD_AZIMUTH_DEG, theta2=SUN_AZIMUTH_DEG,
             color=THETA_COLOR, linewidth=2.0,
         )
     )
     mid = radians((SUN_AZIMUTH_DEG + FOOD_AZIMUTH_DEG) / 2.0)
     ax.text(
-        0.82 * cos(mid), 0.82 * sin(mid), "θ",
+        vertex[0] + 0.52 * cos(mid), vertex[1] + 0.52 * sin(mid), "θ",
         fontsize=22, color=THETA_COLOR, ha="center", va="center", fontweight="bold",
+    )
+
+    bee = (vertex[0] + 0.88 * cos(u), vertex[1] + 0.88 * sin(u))
+    draw_dance_loops(ax, bee, FOOD_AZIMUTH_DEG, length=0.72)
+    place_emoji(ax, bee[0], bee[1], "🐝", 46)
+
+    place_emoji(
+        ax,
+        vertex[0] + 1.95 * cos(u),
+        vertex[1] + 1.95 * sin(u),
+        "🌼",
+        46,
+    )
+    place_emoji(
+        ax,
+        vertex[0] + 1.78 * cos(radians(SUN_AZIMUTH_DEG)),
+        vertex[1] + 1.78 * sin(radians(SUN_AZIMUTH_DEG)),
+        "☀️",
+        46,
     )
 
 
@@ -275,64 +285,71 @@ def draw_vertical_panel(ax) -> None:
     ax.axis("off")
     draw_panel_frame(ax, HEAD_V, "Vertical comb")
 
+    H = 1.08
     comb = Rectangle(
-        (-1.0, -1.0),
-        2.0,
-        2.0,
+        (-H, -H),
+        2 * H,
+        2 * H,
         facecolor=COMB_FILL,
         edgecolor=COMB_EDGE,
         linewidth=1.6,
         zorder=0,
     )
     ax.add_patch(comb)
-    draw_comb_texture(ax, comb, (-1.0, 1.0, -1.0, 1.0), radius=0.16)
+    draw_comb_texture(ax, comb, (-H, H, -H, H), radius=0.16)
 
-    # "Up" on the comb represents the direction of the sun.
+    # The reference vertex sits in the lower-left of the comb; the "up" (sun)
+    # reference and the run both start there, with theta marked at the vertex,
+    # while the bee dances near the comb centre.
+    run_angle = 90.0 - THETA_DEG
+    u = radians(run_angle)
+    vertex = (-0.72 * cos(u), -0.72 * sin(u))
+
     ax.annotate(
         "",
-        xy=(0.0, 1.5),
-        xytext=(0.0, 0.0),
+        xy=(vertex[0], vertex[1] + 2.05),
+        xytext=vertex,
         arrowprops=dict(arrowstyle="-|>", color=SUN_COLOR, lw=2.2, mutation_scale=22),
         zorder=3,
     )
     ax.text(
-        0.14, 1.18, "up = toward sun",
+        vertex[0] + 0.14, vertex[1] + 1.72, "up = toward sun",
         color=SUN_COLOR, fontsize=LABEL_SIZE, va="center", ha="left",
         fontweight="bold",
     )
 
-    # Gravity reference.
+    draw_run_arrow(ax, vertex, run_angle, 0.0, 1.5)
+
+    # Gravity reference (a world direction), to the left of the comb.
     ax.annotate(
         "",
-        xy=(-1.28, -0.6),
-        xytext=(-1.28, 0.6),
+        xy=(-1.34, -0.6),
+        xytext=(-1.34, 0.6),
         arrowprops=dict(arrowstyle="-|>", color=REF_COLOR, lw=2.4, mutation_scale=20),
         zorder=3,
     )
     ax.text(
-        -1.44, 0.0, "gravity",
+        -1.5, 0.0, "gravity",
         color=REF_COLOR, fontsize=LABEL_SIZE, rotation=90, va="center", ha="center",
         fontweight="bold",
     )
 
-    # Waggle run is THETA_DEG clockwise of straight up (90 deg from +x axis).
-    run_angle = 90.0 - THETA_DEG
-    draw_waggle(ax, (0.0, 0.0), run_angle, length=1.0)
-    place_emoji(ax, 0, 0, "🐝", 48)
-
-    # Angle arc between "up" and the waggle run.
     ax.add_patch(
         Arc(
-            (0, 0), 0.98, 0.98, angle=0.0,
+            vertex, 0.8, 0.8, angle=0.0,
             theta1=run_angle, theta2=90.0,
             color=THETA_COLOR, linewidth=2.0,
         )
     )
     mid = radians((90.0 + run_angle) / 2.0)
     ax.text(
-        0.74 * cos(mid), 0.74 * sin(mid), "θ",
+        vertex[0] + 0.52 * cos(mid), vertex[1] + 0.52 * sin(mid), "θ",
         fontsize=22, color=THETA_COLOR, ha="center", va="center", fontweight="bold",
     )
+
+    bee = (vertex[0] + 0.88 * cos(u), vertex[1] + 0.88 * sin(u))
+    draw_dance_loops(ax, bee, run_angle, length=0.72)
+    place_emoji(ax, bee[0], bee[1], "🐝", 46)
 
 
 def main() -> None:
@@ -343,10 +360,7 @@ def main() -> None:
     draw_horizontal_panel(left)
     draw_vertical_panel(right)
 
-    fig.suptitle(
-        "The honeybee waggle dance", fontsize=20, fontweight="bold", y=0.98
-    )
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.tight_layout()
     fig.savefig(args.output, dpi=180)
     print(f"saved {args.output}")
 
