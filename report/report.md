@@ -347,22 +347,37 @@ food-site count than flatten.
 
 Holding each validated ecology fixed, we cross vertical-comb benefit, mutation
 scale, and sender-receiver correlation on a grid re-centred on the disk stable
-region (benefit 0.30/0.44/0.56, mutation 0.05-0.11, correlation 0.0-0.9; 100
-seeds per cell). The transition persists at the lower benefits tested, and
-unproject is again slightly more robust than flatten:
+region (benefit 0.10/0.30/0.45/0.60, mutation 0.05-0.11, correlation 0.0-0.9; 100
+seeds per cell, no collapse events under either decode). The vertical-comb benefit
+is the dominant lever, and unproject is again slightly more robust than flatten:
 
 | Vertical-comb benefit $\alpha$ | Flatten mean / best | Unproject mean / best |
 |-------------------------------:|:--------------------|:----------------------|
+| 0.10 | 3 / 6 | 5 / 10 |
 | 0.30 | 32 / 56 | 40 / 67 |
-| 0.44 | 54 / 83 | 64 / 83 |
-| 0.56 | 70 / 92 | 74 / 95 |
+| 0.45 | 58 / 85 | 64 / 86 |
+| 0.60 | 70 / 93 | 78 / 93 |
 
 Mean and best are stable seeds of 100 across the sixteen mutation-by-correlation
-cells at each benefit. Stable rate rises with benefit under both decodes, the
-best cells pair a high mutation scale (0.09-0.11) with moderate-to-high
-correlation, and at every benefit level unproject clears a broader swath of the
-grid than flatten -- consistent with its cleaner selective pressure for the
-gravity code.
+cells at each benefit. Stable rate rises steeply with benefit under both decodes:
+at the lowest benefit ($\alpha = 0.10$) the transition all but vanishes (best cell
+6/100 flatten, 10/100 unproject), while from $\alpha = 0.30$ upward it recovers and
+by $\alpha = 0.60$ the best cells reach 93/100 under both decodes. Within each
+benefit the best cells pair a high mutation scale (0.07-0.11) with high correlation
+(0.6-0.9), and at every benefit level unproject clears a broader swath of the grid
+than flatten -- consistent with its cleaner selective pressure for the gravity code.
+
+<figure id="fig:interaction-heatmap-report" class="figure">
+<img src="figures/food_transition_disk_interaction_heatmap.png" alt="Stable-transition rate across the vertical-comb benefit, mutation scale, and sender-receiver correlation grid for both decodes." />
+<figcaption>
+Stable-transition rate across the evolutionary-interaction grid, 100 held-out
+seeds per cell. Tiles show percent stable over sender-receiver correlation (x)
+against mutation scale (y), faceted by vertical-comb benefit (columns) and decode
+(rows: flatten above, unproject below). Stable rate climbs with benefit and, within
+each benefit, with mutation scale and correlation; unproject clears a broader region
+than flatten at every benefit.
+</figcaption>
+</figure>
 
 # Conclusion
 
@@ -402,6 +417,13 @@ The food-distribution grid figure in this report was regenerated from tracked CS
 
 ```sh
 python -u experiments/plot_food_distribution_disk_grid.py
+```
+
+The evolutionary-interaction heatmap was regenerated from the tracked interaction
+summaries with:
+
+```sh
+python -u experiments/plot_food_transition_disk_interaction_heatmap.py
 ```
 
 The flat-comb food-distribution experiment is produced on Snellius with:

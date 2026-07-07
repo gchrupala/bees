@@ -846,10 +846,10 @@ markedly more robust to food-site count than flatten.
 <h3 id="evolutionary-interaction">Evolutionary Interaction</h3>
 <p>Holding each validated ecology fixed, we cross vertical-comb benefit,
 mutation scale, and sender-receiver correlation on a grid re-centred on
-the disk stable region (benefit 0.30/0.44/0.56, mutation 0.05-0.11,
-correlation 0.0-0.9; 100 seeds per cell). The transition persists at the
-lower benefits tested, and unproject is again slightly more robust than
-flatten:</p>
+the disk stable region (benefit 0.10/0.30/0.45/0.60, mutation 0.05-0.11,
+correlation 0.0-0.9; 100 seeds per cell, no collapse events under either
+decode). The vertical-comb benefit is the dominant lever, and unproject
+is again slightly more robust than flatten:</p>
 <table>
 <colgroup>
 <col style="width: 42%" />
@@ -866,28 +866,53 @@ flatten:</p>
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: right;">0.10</td>
+<td style="text-align: left;">3 / 6</td>
+<td style="text-align: left;">5 / 10</td>
+</tr>
+<tr class="even">
 <td style="text-align: right;">0.30</td>
 <td style="text-align: left;">32 / 56</td>
 <td style="text-align: left;">40 / 67</td>
 </tr>
-<tr class="even">
-<td style="text-align: right;">0.44</td>
-<td style="text-align: left;">54 / 83</td>
-<td style="text-align: left;">64 / 83</td>
-</tr>
 <tr class="odd">
-<td style="text-align: right;">0.56</td>
-<td style="text-align: left;">70 / 92</td>
-<td style="text-align: left;">74 / 95</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: left;">58 / 85</td>
+<td style="text-align: left;">64 / 86</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.60</td>
+<td style="text-align: left;">70 / 93</td>
+<td style="text-align: left;">78 / 93</td>
 </tr>
 </tbody>
 </table>
 <p>Mean and best are stable seeds of 100 across the sixteen
-mutation-by-correlation cells at each benefit. Stable rate rises with
-benefit under both decodes, the best cells pair a high mutation scale
-(0.09-0.11) with moderate-to-high correlation, and at every benefit
-level unproject clears a broader swath of the grid than flatten –
-consistent with its cleaner selective pressure for the gravity code.</p>
+mutation-by-correlation cells at each benefit. Stable rate rises steeply
+with benefit under both decodes: at the lowest benefit
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.10</mn></mrow><annotation encoding="application/x-tex">\alpha = 0.10</annotation></semantics></math>)
+the transition all but vanishes (best cell 6/100 flatten, 10/100
+unproject), while from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.30</mn></mrow><annotation encoding="application/x-tex">\alpha = 0.30</annotation></semantics></math>
+upward it recovers and by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0.60</mn></mrow><annotation encoding="application/x-tex">\alpha = 0.60</annotation></semantics></math>
+the best cells reach 93/100 under both decodes. Within each benefit the
+best cells pair a high mutation scale (0.07-0.11) with high correlation
+(0.6-0.9), and at every benefit level unproject clears a broader swath
+of the grid than flatten – consistent with its cleaner selective
+pressure for the gravity code.</p>
+<figure id="fig:interaction-heatmap-report" class="figure">
+<img src="figures/food_transition_disk_interaction_heatmap.png" alt="Stable-transition rate across the vertical-comb benefit, mutation scale, and sender-receiver correlation grid for both decodes." />
+<figcaption>
+Stable-transition rate across the evolutionary-interaction grid, 100
+held-out seeds per cell. Tiles show percent stable over sender-receiver
+correlation (x) against mutation scale (y), faceted by vertical-comb
+benefit (columns) and decode (rows: flatten above, unproject below).
+Stable rate climbs with benefit and, within each benefit, with mutation
+scale and correlation; unproject clears a broader region than flatten at
+every benefit.
+</figcaption>
+</figure>
 <h1 id="conclusion">Conclusion</h1>
 <p>In the current disk-geometry model, horizontal-start colonies can
 reliably evolve a vertical comb and a gravity-referenced sender-receiver
@@ -921,12 +946,15 @@ with:</p>
 <p>The food-distribution grid figure in this report was regenerated from
 tracked CSVs with:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-u</span> experiments/plot_food_distribution_disk_grid.py</span></code></pre></div>
+<p>The evolutionary-interaction heatmap was regenerated from the tracked
+interaction summaries with:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-u</span> experiments/plot_food_transition_disk_interaction_heatmap.py</span></code></pre></div>
 <p>The flat-comb food-distribution experiment is produced on Snellius
 with:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> experiments/submit_food_distribution_disk_snellius.sh</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> experiments/submit_food_distribution_disk_snellius.sh</span></code></pre></div>
 <p>The vertical-transition pipeline under both direct-decode variants
 (flatten and unproject) is run on Snellius with:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> experiments/submit_food_transition_disk_pipeline_snellius.sh</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> experiments/submit_food_transition_disk_pipeline_snellius.sh</span></code></pre></div>
 <p>Results are kept in sync between the local and Snellius checkouts
 through git (commit and push run outputs rather than copying result CSVs
 between machines).</p>
