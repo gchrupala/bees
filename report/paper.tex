@@ -8,6 +8,9 @@
 \usepackage{geometry}
 \usepackage{cleveref}
 \usepackage{todonotes}
+% Sets off a model parameter or heritable trait name at its point of
+% definition. Restyle here (e.g. \textsc) to change every occurrence at once.
+\newcommand{\param}[1]{\textit{#1}}
 \title{The emergence and evolution of a referential code in
   populations of bee-like agents}
 \author{Grzegorz Chrupała}
@@ -341,19 +344,50 @@ the direction of a food site: our agents do not indicate distance.
 
 \subsection{Colonies, workers, and traits}
 \label{sec:traits}
-A colony is described by a small set of heritable, real-valued traits. We
-introduce here only the traits needed for the basic horizontal-comb model
-(\Cref{sec:horizontal}); the additional traits and geometry required for tilted
-combs are deferred to \Cref{sec:vertical}.
+A colony is described by a small set of heritable, real-valued traits, listed in
+full in \Cref{tab:traits}. The prose here introduces the traits needed for the
+basic horizontal-comb model (\Cref{sec:horizontal}); the additional traits and
+geometry required for tilted combs are developed in \Cref{sec:vertical}.
 
-Four traits govern the behavior of a colony's workers. The \emph{directional
-bias} $b$ controls how precisely a dance points; the \emph{receiver attention}
+\begin{table}
+  \centering
+  \small
+  \begin{tabular}{@{}cll p{0.42\textwidth}@{}}
+    \toprule
+    Symbol & Name & Range & Role \\
+    \midrule
+    \multicolumn{4}{@{}l}{\emph{Behavioral (horizontal-comb model, \Cref{sec:horizontal})}}\\
+    $b$      & \param{directional bias}    & $[0,1]$ & sharpness of a scout's dance about the food direction \\
+    $a$      & \param{receiver attention}  & $[0,1]$ & probability of following a dance rather than searching at random \\
+    $p$      & \param{dance propensity}    & $[0,1]$ & readiness to recruit others after a successful forage \\
+    $\ell$   & \param{foray distance}      & $[0,D]$ & mean outbound distance of a foraging trip \\
+    \addlinespace
+    \multicolumn{4}{@{}l}{\emph{Nest and code choice (vertical transition, \Cref{sec:vertical})}}\\
+    $\gamma$ & \param{comb tilt}              & $[0,1]$ & comb inclination, $0$ horizontal to $1$ vertical \\
+    $\phi$   & \param{comb orientation}       & $[0,P)$ & compass heading the comb faces (period $P$) \\
+    $t_s$    & \param{sender transposition}   & $[0,1]$ & weight on the gravity code when producing a dance \\
+    $t_r$    & \param{receiver transposition} & $[0,1]$ & weight on the gravity code when interpreting a dance \\
+    \bottomrule
+  \end{tabular}
+  \caption{The heritable, colony-level traits of the model. The first group
+    governs behavior on a horizontal comb (\Cref{sec:traits,sec:horizontal}); the
+    second adds the nest geometry and code-choice traits used in the vertical
+    transition (\Cref{sec:vertical}). Workers express $b$, $a$, $p$, $t_s$, and
+    $t_r$ with individual variation (\Cref{sec:traits}); $\ell$ varies instead
+    through the per-foray draw (\Cref{sec:environment}), and the nest traits
+    $\gamma$ and $\phi$ are shared by all of a colony's workers. Here $D$ is the
+    maximum search distance and $P$ the orientation period.}
+  \label{tab:traits}
+\end{table}
+
+Four traits govern the behavior of a colony's workers. The \param{directional
+bias} $b$ controls how precisely a dance points; the \param{receiver attention}
 $a$ is the propensity to attend to a dance rather than to search at random; the
-\emph{dance propensity} $p$ controls how readily a successful scout recruits
-others to the patch it just found (\Cref{sec:foraging}); and the \emph{foray
+\param{dance propensity} $p$ controls how readily a successful scout recruits
+others to the patch it just found (\Cref{sec:foraging}); and the \param{foray
 distance} $\ell$ sets the mean outbound distance a worker travels on a foraging
 trip. The first three are bounded to $[0,1]$ and the foray distance to $[0,D]$,
-where $D$ is the maximum search distance, a fixed model parameter (set to
+where $D$ is the \param{maximum search distance}, a fixed model parameter (set to
 $D = 6000$ in all our experiments) expressed in meters.
 
 Workers express the colony traits with non-heritable individual variation. A
@@ -362,7 +396,7 @@ worker $i$ realizes each trait $x \in \{b, a, p\}$ as
   x_i = \mathrm{clip}\bigl(x + \varepsilon_i\bigr), \qquad
   \varepsilon_i \sim \mathcal{N}(0, \eta^2),
 \end{equation}
-where $\eta$ is a fixed worker-variation scale and $\mathrm{clip}$ returns the
+where $\eta$ is a fixed \param{worker-variation scale} and $\mathrm{clip}$ returns the
 value to its admissible range. The foray distance $\ell$ carries no separate
 worker jitter: within-colony variation in how far workers travel arises instead
 from the per-foray draw described in \Cref{sec:environment}. A colony thus
@@ -459,8 +493,8 @@ capacity and lie within the foray length; if no patch is reached the forage fail
 Payoff accrues per episode. A successful forage yields the patch's value $v$, minus
 a travel cost proportional to the patch's distance, and may prompt the worker to
 perform a dance advertising the patch to later foragers. Recruitment is itself an
-evolved decision: a successful scout dances with probability $1 - (1 - p_i)^{c}$,
-where $p_i$ is its dance propensity and $c$ is the patch's remaining capacity
+evolved decision: a successful scout dances with probability $1 - (1 - p_i)^{C}$,
+where $p_i$ is its dance propensity and $C$ is the patch's remaining capacity
 after the visit, so an exhausted patch never seeds a dance and a scarcely
 provisioned one rarely does. A dance, when performed, costs
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$, growing with the precision of the
@@ -499,7 +533,7 @@ A selected colony's traits are copied subject to
 mutation. Each trait is perturbed by an independent Gaussian step of standard
 deviation $\sigma_m$ (scaled by $D$ for the foray distance) and then clipped to
 its range. The workers of each offspring colony are then regenerated from its traits
-as in \Cref{sec:traits}. The mutation rate $\sigma_m$ thus sets the pace of
+as in \Cref{sec:traits}. The \param{mutation rate} $\sigma_m$ thus sets the pace of
 evolutionary change.
 
 \subsection{Horizontal comb}
@@ -515,9 +549,9 @@ rarely attend to one another.
 \label{sec:vertical}
 The second version of the model adds the machinery needed for tilted combs and
 the gravity-referenced code. It introduces two further
-colony-level traits describing the nest: the \emph{comb tilt} $\gamma \in [0,1]$,
+colony-level traits describing the nest: the \param{comb tilt} $\gamma \in [0,1]$,
 where $\gamma = 0$ is a horizontal comb and $\gamma = 1$ a vertical one, and the
-\emph{comb orientation} $\phi$, the compass heading the comb faces. Like the
+\param{comb orientation} $\phi$, the compass heading the comb faces. Like the
 behavioral traits these are heritable and mutate by an independent Gaussian step
 each generation, but they are
 properties of the nest and so are shared by all of a colony's workers rather than
@@ -575,14 +609,15 @@ it onto the comb surface, reading off the resulting in-plane angle
 Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
 surface and $M$ the $2\times 2$ matrix whose rows are their horizontal
 (east--north) parts, the projection of $\mathbf{f}$ onto the comb has surface
-coordinates $(a,b)^\top = M(\cos d,\sin d)^\top$, i.e.\ the in-surface vector
-$\mathbf{p} = a\,\mathbf{e}_1 + b\,\mathbf{e}_2$, and the encoded signal is its
-angle $\delta_{\mathrm{dir}} = \operatorname{atan2}(b,a)$; the
+coordinates $(p_1,p_2)^\top = M(\cos d,\sin d)^\top$, i.e.\ the in-surface vector
+$\mathbf{p} = p_1\,\mathbf{e}_1 + p_2\,\mathbf{e}_2$, and the encoded signal is its
+angle $\delta_{\mathrm{dir}} = \operatorname{atan2}(p_2,p_1)$; the
 determinant $\det M = \cos\theta$ vanishes only at full vertical tilt, where $M$
 becomes singular along the direction the comb faces.
 How well this
 works depends on how much of the food direction survives the projection, which we
-measure by the length of the projected vector $\mathbf{p}$,
+call the direct code's \param{strength} and measure by the length of the
+projected vector $\mathbf{p}$,
 \begin{equation}
   s_{\mathrm{dir}} = \sqrt{1 - \sin^2\theta\,\cos^2(d-\phi)}.
 \end{equation}
@@ -596,7 +631,7 @@ worker instead projects the vertical (gravity) direction
 $\mathbf{g} = (0,0,1)$, likewise a world-space vector,
 onto the comb surface to obtain a reference direction, and encodes the food's
 azimuth measured relative to the sun's azimuth as an angle from that reference.
-The analogous reliability is
+The analogous strength is
 \begin{equation}
   s_{\mathrm{grav}} = \sin\theta = \sin(\gamma\,\pi/2),
 \end{equation}
@@ -635,7 +670,7 @@ the sun-relative food azimuth is read back directly.
 
 \paragraph{Transposition and blending the codes.}
 Which code a worker uses is governed by two further heritable behavioral traits,
-the \emph{sender transposition} $t_s$ and \emph{receiver transposition} $t_r$
+the \param{sender transposition} $t_s$ and \param{receiver transposition} $t_r$
 (both in $[0,1]$ and expressed with individual variation as in
 \Cref{sec:traits}). These set how much weight a worker places on the
 gravity-referenced code rather than the direct code when, respectively, producing
@@ -673,7 +708,8 @@ receiver who also decodes it that way.
 \paragraph{Coupling of sender and receiver.}
 Because a working code must change on both sides at once, we allow the mutations
 of $t_s$ and $t_r$ to be correlated. Their mutational steps are drawn as a
-correlated Gaussian pair with correlation coefficient $\rho$,
+correlated Gaussian pair whose \param{sender--receiver coupling} is the
+correlation coefficient $\rho$,
 \begin{equation}
   \Delta t_s = z_1, \qquad
   \Delta t_r = \rho\,z_1 + \sqrt{1-\rho^2}\;z_2, \qquad
@@ -692,7 +728,7 @@ is scaled by a factor
 \begin{equation}
   1 + B\,\gamma,
 \end{equation}
-where $B \ge 0$ is the magnitude of the vertical-comb benefit, so that taller
+where $B \ge 0$ is the magnitude of the \param{vertical-comb benefit}, so that taller
 combs earn proportionally more. As $\gamma$ increases under this pressure the
 direct channel degrades while the gravity channel becomes available, so
 maintaining communicative success requires the population to migrate from the
