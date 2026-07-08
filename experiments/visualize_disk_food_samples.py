@@ -209,21 +209,12 @@ def main() -> None:
         sites = generate_food_sites(settings, rng)
         sun_azimuth = sample_sun_azimuth(settings, rng)
         draw_sample(ax, sites, settings, sun_azimuth)
-        ax.set_title(f"Sample {sample_index + 1} ({len(sites)} sites)")
 
     for cell in range(args.samples + 1, 2 * columns + 1):
         blank = fig.add_subplot(2, columns, cell)
         blank.axis("off")
 
-    fig.suptitle(
-        "Disk-geometry food-site samples "
-        f"(n={settings.food_site_count}, median radius="
-        f"{settings.food_site_radius:.0f} m, log-sd="
-        f"{settings.food_site_radius_log_sd:.2f}, max distance="
-        f"{settings.food_site_max_distance:.0f} m, capacity="
-        f"{settings.food_site_capacity}); flower size scales with patch radius"
-    )
-    plt.tight_layout(rect=(0, 0, 1, 0.96))
+    plt.tight_layout()
     fig.savefig(args.output, dpi=180)
     print(f"saved {args.output}")
 
