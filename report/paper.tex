@@ -285,22 +285,26 @@ structure.
   \small
   \begin{tabular}{@{}llll@{}}
     \toprule
-    Approach & Code adapts by & Unit & Question \\
+    Approach & Code adapts by & Level & Question \\
     \midrule
-    Signaling games and RL  & learning / evolution  & population       & emergence \\
-    Iterated learning       & cultural transmission & generations      & emergence \\
+    \multicolumn{4}{@{}l}{\emph{Communication in agent societies}}\\
+    Signaling games and RL  & payoff dynamics       & population       & emergence \\
+    Iterated learning       & transmission          & chain            & emergence \\
     Deep multi-agent RL     & learning              & pair             & emergence \\
+    \addlinespace
+    \multicolumn{4}{@{}l}{\emph{Models of the waggle dance}}\\
     Foraging simulations    & (fixed)               & colony           & payoff \\
     Evolved controllers     & evolution             & pair             & emergence \\
-    Learned representations  & learning              & individual/pair  & learnability \\
+    Learned representations & learning              & individual/pair  & learnability \\
     \midrule
     \textbf{This work}      & evolution             & colony           & transition \\
     \bottomrule
   \end{tabular}
   \caption{Computational approaches to how a communicative code arises or
     changes, and where the present model sits among them. The columns give how
-    the code adapts (if at all), the unit it applies to, and the question each
-    line of work asks. Each row is discussed and cited in the text.}
+    the code adapts (if at all), the level it applies to, and the question each
+    line of work asks. Rows are grouped into general models of communication and
+    models specific to the waggle dance; each row is discussed and cited in the text.}
   \label{tab:routes}
 \end{table}
 
