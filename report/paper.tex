@@ -146,32 +146,28 @@ proceed without a breakdown of communication.
 
 Our starting point is colonies with horizontal combs, which show some
 heritable variation in traits controlling the inclination to direct
-signaling and attending to signals. Here we show that communication via
-direct pointing evolves readily when food is moderately hard to find by random
-search alone: it appears across a band spanning few large patches through many
-small ones, and fails only when food is too sparse to seed dances or so abundant
-that it is found without help. The colony-level benefit of the dance, by contrast,
-is largest for few, large patches.
+signaling and attending to signals. Here we show that:
+communication via
+direct pointing \emph{evolves readily when food is moderately hard to find by random
+search alone}: i.e.\ when food sites are few in number but large, as well as when there 
+are many small ones. It fails when food is too sparse to spark dances,
+ or so abundant that it is found without signaling. 
+
 
 In the second stage we introduce extrinsic evolutionary pressure for
 vertical combs, which partially degrades the direct-pointing code while
 making the gravity reference available. We show that in this scenario the
-transition towards the gravity-referenced code is driven mainly by the first
-two of the following factors, with the third playing a weaker, secondary role:
-\begin{itemize}
-    \item the magnitude of the benefit of vertical combs
-    \item the mutation rate
-    \item the strength of the coupling between the signaling behavior
-      between senders and receivers
-\end{itemize}
-Because it is uncertain whether a receiver fully corrects for the comb's tilt
-when decoding a direct-pointing dance, we run the entire transition analysis
-under two such decoding assumptions and report both.
+transition towards the gravity-referenced code is driven mainly by the \emph{
+mutation rate} and the \emph{magnitude of the exogenous benefit of the vertical comb.}
+Additionally the \emph{strength of the coupling between the signaling behavior
+between senders and receivers} also plays a role, especially in the low-mutation-rate 
+regime.
+
 
 The pattern of results from these simulations indicates that a basic
 referential code based on iconic, direct pointing signal evolves
 readily given favorable ecological conditions. On the other hand, the
-transition from this basic ancestral system to the more abstract code
+transition from this basic ancestral system to the abstract code
 based on gravity-referenced pointing requires the confluence of several key
 favorable ecological and evolutionary factors; once these hold, however, the
 transition proceeds reliably and without a breakdown of communication.
@@ -688,16 +684,15 @@ everywhere.
 \begin{figure}
   \centering
   \includegraphics[width=0.9\textwidth]{figures/food_distribution_disk_grid.png}
-  \caption{Recruitment advantage (left) and evolved directional bias (right) on a
+  \caption{Evolved directional bias (left) and recruitment advantage (right) on a
     flat comb across the grid of Poisson mean site count against median patch
-    radius, $50$ seeds per cell. Both quantities trace a diagonal band: the bias
-    threshold falls as patches grow more numerous, and the recruitment advantage
-    peaks for few large patches, eroding toward both small and abundant food.}
+    radius, $50$ seeds per cell. Recruitment advantage is the follower--searcher
+    success difference, and shading is normalized within each panel. The bias
+    traces a diagonal band whose patch-size threshold falls as patches grow more
+    numerous, whereas the recruitment advantage instead peaks for few, large
+    patches and erodes toward both small and abundant food.}
   \label{fig:food-grid}
 \end{figure}
-\todo{GC: Swap the order of the panels in the fig:food-grid and adjust the caption and text accordingly.}
-\todo{GC: Make font sizes larger in this figure, and subsequent figures, such that they readable are not dramatically 
-smaller than fonts in the main text.}
 \subsection{Evolution of the gravity code}
 \label{sec:results-transition}
 
@@ -839,7 +834,8 @@ correlation only partly compensate for weaker architectural benefit.
     $B{=}0.60$). Tiles cross the sender--receiver mutation correlation $\rho$
     against the mutation scale $\sigma_m$, faceted by decode (rows) and
     vertical-comb benefit $B$ (columns); each cell summarizes $100$ held-out
-    seeds. Stable rate rises with benefit, mutation scale, and correlation, and
+    seeds, and its label is the percentage of seeds with a stable transition.
+    Stable rate rises with benefit, mutation scale, and correlation, and
     unproject clears a broader region than flatten at every benefit.}
   \label{fig:interaction}
 \end{figure}
