@@ -174,8 +174,16 @@ transition proceeds reliably and without a breakdown of communication.
 
 \section{Related work}
 \label{sec:related}
+The current study builds on several distinct strands of work. Firstly, it 
+draws on research into the emergence and evolution of communication in 
+artificial multi-agent systems, viewed as an abstract computational problem.
+ Secondly, because our work is inspired by and grounded in real honeybee 
+ societies, it also builds extensively on models and simulations of bee 
+ communication. These studies are methodologically diverse, employing 
+ agent-based models, neural models, evolutionary computation, or combinations
+ thereof.
 
-\subsection{Communication in agent societies}
+ \subsection{Communication in agent societies}
 A long line of computational work has studied how communication
 systems can emerge and stabilize in populations of interacting agents.
 The signaling game introduced by \citet{lewis1969convention} provides
@@ -184,36 +192,58 @@ meaning as a solution to a recurring coordination problem between a
 sender and a receiver. \citet{skyrms2010signals} shows how such
 signaling conventions can arise without prior agreement through
 evolutionary and reinforcement-learning dynamics. Agent-based models
-in this tradition have demonstrated that populations playing repeated
+in this tradition have aimed to demonstrate that populations playing repeated
 language games can self-organize shared, grounded vocabularies and
-categories \citep{steels2011modeling}. Laboratory experiments on
-iterated learning further show that languages transmitted repeatedly
-across learners become progressively more learnable and structured
-\citep{kirby2008cumulative}. More recently, deep multi-agent
+categories \citep{steels2011modeling}. More recently, deep multi-agent
 reinforcement learning has been used to show that discrete
 communication protocols can emerge when agents are trained on
 cooperative referential tasks \citep{lazaridou2017multi}.
-\todo[inline]{Consider adding further anchors to this sketch: Nowak \&
+\todo{GC: A couple more of prominent works in this vein? Maybe one of Arianna Bisazza's paper?}
+\todo{GC: Consider adding further anchors to this sketch: Nowak \&
   Krakauer (1999, PNAS) on the mathematical evolution of language;
   Cangelosi \& Parisi (2002) \emph{Simulating the Evolution of
   Language}; and the Wagner et al. (2003, Adaptive Behavior) survey of
   emergent-communication simulations.}
 
 \subsection{Computational models of the waggle dance}
-Two recent studies model the waggle dance with neural-network agents, and
-each places a different mechanism at the center of its analysis.
+A venerable research tradition asks an ecological question: given that the dance
+exists, \emph{when does it pay off}? The main tool here is the 
+agent-based foraging simulation. A colony of many simple forager agents
+follows fixed behavioral rules. Dance recruitment is present as a switch, with
+recruits either guided by a successful forager's spatial information or left to
+search on their own, while the ecology (the density, quality, spread,
+and persistence of food patches, and sometimes colony size) is varied across
+runs. The outcome of interest is colony-level foraging performance: typically the net
+energy or nectar collected. Importantly, these models represent neither
+evolution nor within-lifetime learning: the communication strategy is fixed and
+the agents do not adapt. What they model is the ecological cost-benefit
+accounting of a given strategy: how a fixed colony fares, with recruitment
+versus without, in one environment or another. Using such a model,
+\citet{dornhaus2006benefits} find that recruitment benefits a colony mainly when
+resources are patchy, variable, and hard to find, with the advantage depending
+on colony size, and \citet{schurch2014dancing} show that the dance's long-term
+benefits can outweigh its short-term costs. \citet{bailis2010positional} pose a
+more abstract version of the same question, analyzing when positional
+communication beats reliance on private information.  This body of
+work is the closest in spirit to our own benefit parameter, but it holds the
+communication system constant and measures its payoff in a fixed environment; it
+does not model the code itself as an evolving trait.\todo{GC: clarify the reference to the benefit parameter.}
+
+More recently, the emergence itself of the bee communicative code has been also been
+investigated computationally.
 \citet{10.1371/journal.pcbi.1010487} treat displaced communication as an
 evolutionary phenomenon: pairs of foraging agents, each controlled by a
 continuous-time recurrent neural network, undergo experimental evolution over
-tens of thousands of generations in a one-dimensional arena where a receiver
-must reach whichever of several sites a sender has seen to hold food. Their
-central finding concerns the raw material from which a displaced signal
-arises. Although senders could in principle modulate a dedicated signal
+tens of thousands of generations in a one-dimensional circular arena where a 
+receiver must reach one of several sites a sender has peeceived as hold food. 
+Their central finding concerns how a displaced signal
+arises. Although senders could in principle modulate  signal
 amplitude, communication instead evolved from incidental, movement-derived
 cues (the onset delay and duration of a sender's presence in the shared
-communication zone), which were subsequently ritualized into signals; the more
+communication zone), which were subsequently ritualized into signals.
+The more
 efficient amplitude-based scheme evolved only when the cheaper cue was
-experimentally suppressed, because it took far longer to appear. This model
+experimentally suppressed. This model
 shares our evolutionary framing but selects at the level of individual
 sender--receiver pairs rather than colonies, and it abstracts away the geometry
 of the dance: the object of study is how any displaced signal bootstraps from
@@ -224,11 +254,11 @@ channel properties allow a compositional, waggle-dance-like code to be
 \emph{learned}. A single sender--receiver pair, implemented as graph neural
 networks operating over map-like graphs of routes between the nest and
 candidate sites, is trained by gradient descent on a referential game to
-transmit two real-valued tokens identifying the food node. Their questions
-concern the emergent semantics of that code: whether the two tokens factor into
+transmit two real-valued tokens identifying the food node. They ask whether the two tokens factor into
 independent direction and distance components (compositionality), how this
 depends on the overlap between the sender's and receiver's mental maps, and
 whether constraining the channel to the kinematic range of a real dance helps.
+\todo{GC: Reprhase kinamtic range in simpler language.}
 They find that direction is readily encoded whereas direct distance is not,
 that representational overlap is the main driver of compositionality, and that
 channel constraints have only a small effect. This is a within-lifetime study
@@ -237,43 +267,18 @@ In a similar vein, \citet{portegys2020morphognostic} has an individual agent
 learn to both produce and follow dance-like movements that encode a nectar
 location, again treating the dance as a code to be acquired within an
 individual's lifetime rather than shaped by selection.
+\todo{GC:What's the main difference between these two latter works?}
 
-A separate and older tradition asks a different question: given that the dance
-exists, \emph{when does it pay off}? The main tool here is the individual-based
-(agent-based) foraging simulation. A colony of many simple forager agents
-follows fixed behavioral rules; dance recruitment is present as a switch, with
-recruits either guided by a successful forager's spatial information or left to
-search on their own, while the ecology (the density, quality, spread,
-and persistence of food patches, and sometimes colony size) is varied across
-runs. The readout is colony-level foraging performance, typically the net
-energy or nectar collected. Importantly, these models represent neither
-evolution nor within-lifetime learning: the communication strategy is fixed and
-the agents do not adapt. What they model is the ecological cost--benefit
-accounting of a given strategy: how a fixed colony fares, with recruitment
-versus without, in one environment or another. Using such a model,
-\citet{dornhaus2006benefits} find that recruitment benefits a colony mainly when
-resources are patchy, variable, and hard to find, with the advantage depending
-on colony size, and \citet{schurch2014dancing} show that the dance's long-term
-benefits can outweigh its short-term costs. \citet{bailis2010positional} pose a
-more abstract version of the same question, analyzing when positional
-communication beats reliance on private information. The empirical counterpart
-to this modeling is \citet{iansonprice2019honeybees}, who disrupted the spatial
-component of the dance in real colonies and found that in some human-modified
-landscapes these colonies actually foraged \emph{more} successfully: direct
-evidence that spatial signaling is not universally advantageous. This body of
-work is the closest in spirit to our own benefit parameter, but it holds the
-communication system constant and measures its payoff in a fixed environment; it
-does not model the code itself as an evolving trait.
 
-Our study occupies a different point in this space. We model the emergence and,
-in particular, the evolutionary \emph{transition} between two forms of a
-directional code at the level of colonies, using a small set of interpretable,
-heritable traits rather than opaque neural controllers and no gradient-based
-learning. This lets us treat costs, benefits, and comb geometry as explicit
+Our study occupies a different point in this space. We model the emergence 
+and in particular the evolutionary \emph{transition} between two forms of a
+referential code at the level of colonies, using a small set of interpretable,
+heritable traits rather than opaque neural controllers. This lets us treat costs, benefits, 
+and comb geometry as explicit
 parameters and ask which ecological and evolutionary conditions drive the shift
 from iconic direct pointing to an abstract gravity-referenced code: a question
 about the conditions and dynamics of a communicative transition that none of
-this prior work addresses.
+the prior work addresses. 
 
 \section{Method}
 \label{sec:method}
@@ -840,18 +845,18 @@ correlation only partly compensate for weaker architectural benefit.
   \label{fig:interaction}
 \end{figure}
 
-\section{Discussion}
+\section{Discussion and Conclusion}
 \label{sec:discussion}
 
 Our finding that the transition to the gravity-referenced code can proceed without
 a breakdown of communication, under suitable ecological and evolutionary
 conditions, complements the mechanistic proposal of \citet{10.1242/jeb.142778}: if
-the underlying heading representation is indifferent to the spatial reference
-frame, then the principal barrier to changing the code is not the neural machinery
-but the ecological and coordination conditions that our model isolates.
+the underlying heading representation is indifferent to the spatial referencees.
 
-\section{Conclusion}
-\label{sec:conclusion}
+frame, then the principal barrier to changing the code is not the neural machinery
+but the ecological and coordination conditions that our model isolat
+\section{Limitations}
+\label{sec:limitations}
 
 \bibliographystyle{apalike}
 \bibliography{biblio}
