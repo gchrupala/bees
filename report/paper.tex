@@ -62,10 +62,10 @@ genus, combs are vertical and in some species also hidden in cavities. Such
 combs make direct pointing impossible, and these species use gravity as a
 reference point, and map the azimuth of the food patch relative to the sun onto
 the angle of the waggle dance with respect to the vertical. \Cref{fig:waggle}
-illustrates these two versions of the waggle dance.\footnote{ This a somewhat
+illustrates these two versions of the waggle dance.\footnote{This is a somewhat
 simplified overview: in individual species there may be considerable behavioral
 flexibility in how the dance is performed: e.g.\ in \textit{Apis mellifera}, sometimes
-bees dance on a horizontal platform at the entrance to the beehive and this case
+bees dance on a horizontal platform at the entrance to the beehive and in this case
 they use direct pointing, even though this species generally employs the gravity
 code \citep{Esch2012}.} 
 
@@ -97,8 +97,8 @@ The figure-of-eight loops and the central waggle run are schematic and not to sc
 
   
 The distribution of comb orientation and waggle dance code throughout the \emph{Apis}
-phylogeny (\Cref{fig:phylo}) suggest that the horizontal comb and direct
-pointing are the ancestral state, extant in stem \emph{Micrapis} subgenus.
+phylogeny (\Cref{fig:phylo}) suggests that the horizontal comb and direct
+pointing are the ancestral state, extant in the stem \emph{Micrapis} subgenus.
 Vertical
 combs and the gravity-referenced code are derived traits, present in the other
 two \emph{Apis} subgenera. Additionally, species within the \emph{Apis} sensu stricto
@@ -160,7 +160,7 @@ making the gravity reference available. We show that in this scenario the
 transition towards the gravity-referenced code is driven mainly by the \emph{
 mutation rate} and the \emph{magnitude of the exogenous benefit of the vertical comb.}
 Additionally the \emph{strength of the coupling between the signaling behavior
-between senders and receivers} also plays a role, especially in the low-mutation-rate 
+of senders and receivers} also plays a role, especially in the low-mutation-rate
 regime.
 
 
@@ -191,19 +191,22 @@ the formal foundation for much of this work, framing a convention of
 meaning as a solution to a recurring coordination problem between a
 sender and a receiver. \citet{skyrms2010signals} shows how such
 signaling conventions can arise without prior agreement through
-evolutionary and reinforcement-learning dynamics. Agent-based models
+evolutionary and reinforcement-learning dynamics. Related formal work models
+how a protolanguage itself evolves under selection, showing for instance how
+combining a small set of signals into words overcomes the error limit that caps
+a simple signal repertoire \citep{nowak1999evolution}. Agent-based models
 in this tradition have aimed to demonstrate that populations playing repeated
 language games can self-organize shared, grounded vocabularies and
-categories \citep{steels2011modeling}. More recently, deep multi-agent
+categories, a simulation tradition surveyed by \citet{wagner2003progress}.
+More recently, deep multi-agent
 reinforcement learning has been used to show that discrete
 communication protocols can emerge when agents are trained on
-cooperative referential tasks \citep{lazaridou2017multi}.
-\todo{GC: A couple more of prominent works in this vein? Maybe one of Arianna Bisazza's paper?}
-\todo{GC: Consider adding further anchors to this sketch: Nowak \&
-  Krakauer (1999, PNAS) on the mathematical evolution of language;
-  Cangelosi \& Parisi (2002) \emph{Simulating the Evolution of
-  Language}; and the Wagner et al. (2003, Adaptive Behavior) survey of
-  emergent-communication simulations.}
+cooperative referential tasks \citep{lazaridou2017multi}. Subsequent work has
+examined when such emergent codes become compositional and generalize to novel
+meanings \citep{chaabouni2020compositionality}, and how communicative pressure
+can drive neural agents towards attested language universals
+\citep{lian2023communication}; see \citet{lazaridou2020emergent} for a review of
+this line of research.
 
 \subsection{Computational models of the waggle dance}
 A venerable research tradition asks an ecological question: given that the dance
@@ -225,17 +228,17 @@ on colony size, and \citet{schurch2014dancing} show that the dance's long-term
 benefits can outweigh its short-term costs. \citet{bailis2010positional} pose a
 more abstract version of the same question, analyzing when positional
 communication beats reliance on private information.  This body of
-work is the closest in spirit to our own benefit parameter, but it holds the
+work is the closest in spirit to our own foraging payoff, but it holds the
 communication system constant and measures its payoff in a fixed environment; it
-does not model the code itself as an evolving trait.\todo{GC: clarify the reference to the benefit parameter.}
+does not model the code itself as an evolving trait.
 
-More recently, the emergence itself of the bee communicative code has been also been
+More recently, the emergence itself of the bee communicative code has also been
 investigated computationally.
 \citet{10.1371/journal.pcbi.1010487} treat displaced communication as an
 evolutionary phenomenon: pairs of foraging agents, each controlled by a
 continuous-time recurrent neural network, undergo experimental evolution over
 tens of thousands of generations in a one-dimensional circular arena where a 
-receiver must reach one of several sites a sender has peeceived as hold food. 
+receiver must reach one of several sites a sender has perceived as holding food.
 Their central finding concerns how a displaced signal
 arises. Although senders could in principle modulate  signal
 amplitude, communication instead evolved from incidental, movement-derived
@@ -258,7 +261,6 @@ transmit two real-valued tokens identifying the food node. They ask whether the 
 independent direction and distance components (compositionality), how this
 depends on the overlap between the sender's and receiver's mental maps, and
 whether constraining the channel to the kinematic range of a real dance helps.
-\todo{GC: Reprhase kinamtic range in simpler language.}
 They find that direction is readily encoded whereas direct distance is not,
 that representational overlap is the main driver of compositionality, and that
 channel constraints have only a small effect. This is a within-lifetime study
@@ -266,8 +268,12 @@ of representation and structure, with no population dynamics or selection.
 In a similar vein, \citet{portegys2020morphognostic} has an individual agent
 learn to both produce and follow dance-like movements that encode a nectar
 location, again treating the dance as a code to be acquired within an
-individual's lifetime rather than shaped by selection.
-\todo{GC:What's the main difference between these two latter works?}
+individual's lifetime rather than shaped by selection. The two differ in what is
+left open: \citet{siregar2026emergent} let the code emerge from a referential
+game and ask what structure results, whereas \citet{portegys2020morphognostic}
+fixes the dance in advance and has a single agent learn to reproduce and respond
+to it, studying acquisition of a known code rather than the emergence of its
+structure.
 
 
 Our study occupies a different point in this space. We model the emergence 
