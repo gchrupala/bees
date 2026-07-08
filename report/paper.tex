@@ -191,7 +191,11 @@ the formal foundation for much of this work, framing a convention of
 meaning as a solution to a recurring coordination problem between a
 sender and a receiver. \citet{skyrms2010signals} shows how such
 signaling conventions can arise without prior agreement through
-evolutionary and reinforcement-learning dynamics. Related formal work models
+evolutionary and reinforcement-learning dynamics. A distinct route
+emphasizes cultural transmission: in the iterated-learning framework,
+linguistic structure emerges as a code is repeatedly learned and reproduced
+across successive generations of agents, without being built in
+\citep{smith2003iterated}. Related formal work models
 how a protolanguage itself evolves under selection, showing for instance how
 combining a small set of signals into words overcomes the error limit that caps
 a simple signal repertoire \citep{nowak1999evolution}. Agent-based models
@@ -276,7 +280,31 @@ to it, studying acquisition of a known code rather than the emergence of its
 structure.
 
 
-Our study occupies a different point in this space. We model the emergence 
+\begin{table}
+  \centering
+  \small
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    Approach & Code adapts by & Unit & Question \\
+    \midrule
+    Signaling games and RL  & learning / evolution  & population       & emergence \\
+    Iterated learning       & cultural transmission & generations      & emergence \\
+    Deep multi-agent RL     & learning              & pair             & emergence \\
+    Foraging simulations    & (fixed)               & colony           & payoff \\
+    Evolved controllers     & evolution             & pair             & emergence \\
+    Learned representations  & learning              & individual/pair  & learnability \\
+    \midrule
+    \textbf{This work}      & evolution             & colony           & transition \\
+    \bottomrule
+  \end{tabular}
+  \caption{Computational approaches to how a communicative code arises or
+    changes, and where the present model sits among them. The columns give how
+    the code adapts (if at all), the unit it applies to, and the question each
+    line of work asks. Each row is discussed and cited in the text.}
+  \label{tab:routes}
+\end{table}
+
+Our study occupies a different point in this space (\Cref{tab:routes}). We model the emergence
 and in particular the evolutionary \emph{transition} between two forms of a
 referential code at the level of colonies, using a small set of interpretable,
 heritable traits rather than opaque neural controllers. This lets us treat costs, benefits, 
@@ -296,8 +324,12 @@ to ground the modeling in the real world and ensuring that it evolutionarily
 plausible.
 
 We model evolution at the level of colonies, and behavior at the level of
-individual bee-like agents. There is no sexual reproduction: colonies reproduce
-without genetic input from other colonies. Colonies have a number of heritable
+individual bee-like agents. Because a colony's workers are highly related and
+largely sterile, selection acts effectively on heritable colony-level traits
+rather than on individual workers; this is the standard kin-selection rationale
+for treating the honeybee colony as a superorganism
+\citep{hamilton1964genetical,seeley1989superorganism}. There is no sexual
+reproduction: colonies reproduce without genetic input from other colonies. Colonies have a number of heritable
 traits which are transmitted to offspring colonies subject to mutation, and
 individual agents express these traits with some non-heritable individual
 variation. For simplicity and focus, we model the waggle dance as only signaling 
