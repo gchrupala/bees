@@ -1,5 +1,21 @@
 \documentclass[border=6pt]{standalone}
 \usepackage[edges]{forest}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\newcommand{\combbraces}{%
+  \coordinate (bx) at ($(apiB.east)+(16pt,0)$);
+  \draw[decorate,decoration={brace,amplitude=5pt}]
+    (bx|-micA.north) -- (bx|-micB.south)
+    node[midway,right=7pt,align=left,font=\footnotesize]
+      {exposed\\horizontal comb};
+  \draw[decorate,decoration={brace,amplitude=5pt}]
+    (bx|-megA.north) -- (bx|-megB.south)
+    node[midway,right=7pt,align=left,font=\footnotesize]
+      {exposed\\vertical comb};
+  \draw[decorate,decoration={brace,amplitude=5pt}]
+    (bx|-apiA.north) -- (bx|-apiB.south)
+    node[midway,right=7pt,align=left,font=\footnotesize]
+      {vertical comb\\in a cavity};
+}
 \begin{document}
 \begin{forest}
   for tree={
@@ -17,24 +33,25 @@
     s sep=3pt,
     font=\small,
   }
-  [\textit{Apis}, font=\itshape\bfseries
+  [\textit{Apis}, font=\itshape\bfseries, tikz=\combbraces
     [Micrapis
-      [\textit{A.\ andreniformis}]
-      [\textit{A.\ florea}]
+      [\textit{A.\ andreniformis}, name=micA]
+      [\textit{A.\ florea}, name=micB]
     ]
-    [.,
-      [Megapis 
+    [, inner sep=0pt, minimum size=0pt
+      [Megapis
+        [\textit{A.\ breviligula}, name=megA]
         [\textit{A.\ laboriosa}]
-        [\textit{A.\ dorsata}  ]
+        [\textit{A.\ dorsata}, name=megB]
       ]
       [\textit{Apis} s.s.
-        [\textit{A.\ mellifera}]
-        [Asian clade
+        [\textit{A.\ mellifera}, name=apiA]
+        [, inner sep=0pt, minimum size=0pt
           [\textit{A.\ koschevnikovi}]
           [\textit{A.\ cerana}]
           [\textit{A.\ indica}]
           [\textit{A.\ nuluensis}]
-          [\textit{A.\ nigrocincta}]
+          [\textit{A.\ nigrocincta}, name=apiB]
         ]
       ]
     ]
