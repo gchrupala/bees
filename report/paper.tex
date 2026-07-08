@@ -98,8 +98,7 @@ The figure-of-eight loops and the central waggle run are schematic and not to sc
   
 The distribution of comb orientation and waggle dance code throughout the \emph{Apis}
 phylogeny (\Cref{fig:phylo}) suggest that the horizontal comb and direct
-pointing are the ancestral state (extant in stem \emph{Micrapis} subgenus), a
-mapping of dance form onto this phylogeny also drawn by \citet{10.1242/jeb.142778}.
+pointing are the ancestral state, extant in stem \emph{Micrapis} subgenus.
 Vertical
 combs and the gravity-referenced code are derived traits, present in the other
 two \emph{Apis} subgenera. Additionally, species within the \emph{Apis} sensu stricto
@@ -117,12 +116,13 @@ problem: a change adopted by senders but not matched by the receivers'
 interpretation, or the reverse, disrupts communication, so that intermediate
 stages risk a loss of communicative success. A mechanistic account of this
 transition has been proposed at the neural level: the central-complex circuitry
-that represents heading is not tied to any particular spatial reference frame, so
+that represents the bee's directional heading (its own compass orientation) is not
+tied to any particular spatial reference frame, so
 a gravity reference could in principle substitute for the celestial one without a
 dedicated switching mechanism \citep{10.1242/jeb.142778}. Such an account
-addresses how an individual brain could support either version of the code, but
+addresses how an individual brain can support either version of the code, but
 not how a population of senders and receivers stays coordinated while the shared
-code itself changes, which is the question we address.
+code itself evolves, which is the question we address.
 
 \begin{figure}
     \centering
@@ -136,19 +136,22 @@ code itself changes, which is the question we address.
 The present study investigates this transition by means of a
 computational model of evolving populations of bee-like agents. We
 model selection at the level of colonies, and individual behavior at
-the level of worker bees as colony members. We address two questions:
-under what ecological conditions a direct-pointing referential code
-emerges and stabilizes, and what conditions permit a gradual
+the level of worker bees as colony members. We address two principal questions:
+(i) under what ecological conditions a direct-pointing referential code
+emerges and stabilizes, and (ii) which factors lead to a gradual
 transition from this code to its gravity-referenced variant. Our aim is
 not to reconstruct the precise historical sequence of these changes,
-but to delineate the conditions under which such a transition can
+but to delineate the circumstances under which such a transition can
 proceed without a breakdown of communication.
 
 Our starting point is colonies with horizontal combs, which show some
 heritable variation in traits controlling the inclination to direct
 signaling and attending to signals. Here we show that communication via
-direct pointing evolves readily when the food distribution makes food
-moderately hard to find via random search alone.
+direct pointing evolves readily when food is moderately hard to find by random
+search alone: it appears across a band spanning few large patches through many
+small ones, and fails only when food is too sparse to seed dances or so abundant
+that it is found without help. The colony-level benefit of the dance, by contrast,
+is largest for few, large patches.
 
 In the second stage we introduce extrinsic evolutionary pressure for
 vertical combs, which partially degrades the direct-pointing code while
@@ -692,7 +695,9 @@ everywhere.
     peaks for few large patches, eroding toward both small and abundant food.}
   \label{fig:food-grid}
 \end{figure}
-
+\todo{GC: Swap the order of the panels in the fig:food-grid and adjust the caption and text accordingly.}
+\todo{GC: Make font sizes larger in this figure, and subsequent figures, such that they readable are not dramatically 
+smaller than fonts in the main text.}
 \subsection{Evolution of the gravity code}
 \label{sec:results-transition}
 
