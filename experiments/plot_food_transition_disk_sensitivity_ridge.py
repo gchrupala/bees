@@ -165,22 +165,19 @@ def write_figure(
         )
         + labs(
             title=f"Per-parameter sensitivity: {decode} decode",
-            subtitle=(
-                "Density over swept values; dots = per-value rates; dashed = baseline."
-            ),
             x="",
             y="Stable vertical gravity-code outcomes (%)",
         )
-        + theme_minimal(base_size=10)
+        + theme_minimal(base_size=13)
         + theme(
             figure_size=(6.6, 4.2),
             legend_position="top",
             panel_grid_major_y=element_blank(),
             panel_grid_minor=element_blank(),
-            axis_text_y=element_text(size=9),
-            axis_title_x=element_text(margin={"t": 8}),
-            plot_title=element_text(weight="bold", size=12),
-            plot_subtitle=element_text(size=8.5),
+            axis_text_y=element_text(size=12),
+            axis_title_x=element_text(size=13, margin={"t": 8}),
+            plot_title=element_text(weight="bold", size=13),
+            legend_text=element_text(size=12),
         )
     )
     png_path = Path(f"{output_stem}_{decode}.png")

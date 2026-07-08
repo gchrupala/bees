@@ -73,7 +73,7 @@ def load_grid(path: Path, decode: str) -> pd.DataFrame:
 
 def add_labels(grid: pd.DataFrame) -> pd.DataFrame:
     grid = grid.copy()
-    grid["percent_label"] = grid["stable_percent"].round(0).astype(int).astype(str) + "%"
+    grid["percent_label"] = grid["stable_percent"].round(0).astype(int).astype(str)
     grid["text_color"] = grid["stable_percent"].map(
         lambda value: "white" if value >= 58 else "#111827"
     )
@@ -114,7 +114,7 @@ def write_figure(frame: pd.DataFrame, output_prefix: Path) -> None:
         + geom_tile(color="white", size=0.8)
         + geom_text(
             aes(label="percent_label", color="text_color"),
-            size=7.5,
+            size=8.5,
             fontweight="bold",
             show_legend=False,
         )
@@ -132,23 +132,23 @@ def write_figure(frame: pd.DataFrame, output_prefix: Path) -> None:
         + coord_fixed()
         + labs(
             title="Stable transition rate across evolutionary-parameter interactions",
-            subtitle="Each cell summarizes 100 held-out seeds; labels show percent stable.",
             x="Sender-receiver mutation correlation",
             y="Mutation scale",
         )
-        + theme_minimal(base_size=10)
+        + theme_minimal(base_size=15)
         + theme(
             figure_size=(width, height),
             legend_position="right",
             panel_grid=element_blank(),
             panel_spacing=0.08,
-            strip_text=element_text(weight="bold", size=9),
-            axis_text_x=element_text(size=8),
-            axis_text_y=element_text(size=8),
-            axis_title_x=element_text(margin={"t": 8}),
-            axis_title_y=element_text(margin={"r": 8}),
-            plot_title=element_text(weight="bold", size=12),
-            plot_subtitle=element_text(size=9),
+            strip_text=element_text(weight="bold", size=14),
+            axis_text_x=element_text(size=12),
+            axis_text_y=element_text(size=12),
+            axis_title_x=element_text(size=15, margin={"t": 8}),
+            axis_title_y=element_text(size=15, margin={"r": 8}),
+            plot_title=element_text(weight="bold", size=17),
+            legend_title=element_text(size=13),
+            legend_text=element_text(size=12),
         )
     )
 

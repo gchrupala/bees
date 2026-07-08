@@ -45,8 +45,8 @@ DEFAULT_OUTPUT = ROOT / "report" / "figures" / "food_distribution_disk_grid.png"
 BLUES = ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"]
 
 METRICS = {
-    "mean_tail_recruitment_advantage": "Recruitment advantage",
     "mean_final_directional_bias": "Evolved directional bias",
+    "mean_tail_recruitment_advantage": "Recruitment advantage",
 }
 
 
@@ -88,14 +88,14 @@ def main() -> None:
     )
     long["text_color"] = ["white" if x >= 0.5 else "#111827" for x in long["fill_norm"]]
 
-    width = 11.0
+    width = 9.5
     height = 7.0
     plot = (
         ggplot(long, aes("radius_label", "count_label", fill="fill_norm"))
         + geom_tile(color="white", size=0.8)
         + geom_text(
             aes(label="label", color="text_color"),
-            size=7.5,
+            size=14,
             fontweight="bold",
             show_legend=False,
         )
@@ -109,24 +109,19 @@ def main() -> None:
             x="median patch radius (m)",
             y="mean site count",
             title="Disk-geometry food-distribution matrix",
-            subtitle=(
-                "Flat comb, 50 seeds/cell. Recruitment advantage is the "
-                "follower−searcher success difference; shading normalized per panel."
-            ),
         )
-        + theme_minimal(base_size=10)
+        + theme_minimal(base_size=15)
         + theme(
             figure_size=(width, height),
             legend_position="none",
             panel_grid=element_blank(),
             panel_spacing=0.08,
-            strip_text=element_text(weight="bold", size=10),
-            axis_text_x=element_text(size=8),
-            axis_text_y=element_text(size=8),
-            axis_title_x=element_text(margin={"t": 8}),
-            axis_title_y=element_text(margin={"r": 8}),
-            plot_title=element_text(weight="bold", size=12),
-            plot_subtitle=element_text(size=9),
+            strip_text=element_text(weight="bold", size=16),
+            axis_text_x=element_text(size=13),
+            axis_text_y=element_text(size=13),
+            axis_title_x=element_text(size=15, margin={"t": 8}),
+            axis_title_y=element_text(size=15, margin={"r": 8}),
+            plot_title=element_text(weight="bold", size=18),
         )
     )
     output.parent.mkdir(parents=True, exist_ok=True)
