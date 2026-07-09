@@ -322,21 +322,22 @@ addresses.
 Our  model is inspired by bee colonies and their waggle dance, but it is
 simplified in many important ways, as our goal was not to model bee biology in
 detail but rather investigate scenarios for the emergence and evolution of
-referential communicative codes, adopting the case of the waggle dance as a way
+referential communicative codes, while adopting the case of the waggle dance as a way
 to ground the modeling in the real world and ensuring that it evolutionarily
 plausible.
 
 We model evolution at the level of colonies, and behavior at the level of
-individual bee-like agents. Because a colony's workers are highly related and
-largely sterile, selection acts effectively on heritable colony-level traits
-rather than on individual workers; this is the standard kin-selection rationale
+individual bee-like agents. This treatment is motivated by the reproductive and social
+organization of real bee colonies, where workers are highly related and
+sterile, and thus selection acts effectively on heritable colony-level traits
+rather than on individual workers---this is the standard kin-selection rationale
 for treating the honeybee colony as a superorganism
-\citep{hamilton1964genetical,seeley1989superorganism}. There is no sexual
-reproduction: colonies reproduce without genetic input from other colonies. 
+\citep{hamilton1964genetical,seeley1989superorganism}. We do not model sexual
+reproduction: agent colonies reproduce without genetic input from other colonies. 
 Colonies have a number of heritable
 traits which are transmitted to offspring colonies subject to mutation, and
 individual agents express these traits with some non-heritable individual
-variation. For simplicity and focus, we model the waggle dance as only signaling 
+variation. In the interest of simplicity and focus, we model the waggle dance as only signaling 
 the direction of a food site: our agents do not indicate distance.
 
 \subsection{Colonies, workers, and traits}
