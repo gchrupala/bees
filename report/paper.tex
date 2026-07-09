@@ -360,23 +360,23 @@ geometry required for tilted combs are developed in \Cref{sec:vertical}.
     Symbol & Name & Range & Role \\
     \midrule
     \multicolumn{4}{@{}l}{\emph{Behavioral (horizontal-comb model, \Cref{sec:horizontal})}}\\
-    $b$      & \trait{directional bias}    & $[0,1]$ & sharpness of a scout's dance about the food direction \\
+    $b$      & \trait{directional bias}    & $[0,1]$ & sharpness of a dance about the food direction \\
     $a$      & \trait{receiver attention}  & $[0,1]$ & probability of following a dance rather than searching at random \\
     $p$      & \trait{dance propensity}    & $[0,1]$ & readiness to recruit others after a successful foraging attempt \\
     $\ell$   & \trait{foray distance}      & $[0,D]$ & mean outbound distance of a foray \\
     \addlinespace
     \multicolumn{4}{@{}l}{\emph{Nest and code choice (vertical transition, \Cref{sec:vertical})}}\\
     $\gamma$ & \trait{comb tilt}              & $[0,1]$ & comb inclination, $0$ horizontal to $1$ vertical \\
-    $\phi$   & \trait{comb orientation}       & $[0,P)$ & compass heading the comb faces (period $P$) \\
-    $t_s$    & \trait{sender transposition}   & $[0,1]$ & weight on the gravity code when producing a dance \\
-    $t_r$    & \trait{receiver transposition} & $[0,1]$ & weight on the gravity code when interpreting a dance \\
+    $\phi$   & \trait{comb orientation}       & $[0,P)$ & compass heading the comb faces \\
+    $t_s$    & \trait{sender transposition}   & $[0,1]$ & weight for the gravity code when producing a dance \\
+    $t_r$    & \trait{receiver transposition} & $[0,1]$ & weight for the gravity code when interpreting a dance \\
     \bottomrule
   \end{tabular}
   \caption{The heritable, colony-level traits of the model. The first group
     governs behavior on a horizontal comb (\Cref{sec:traits,sec:horizontal}); the
     second adds the nest geometry and code-choice traits used in the vertical
     transition (\Cref{sec:vertical}). Workers express $b$, $a$, $p$, $t_s$, and
-    $t_r$ with individual variation (\Cref{sec:traits}); $\ell$ varies instead
+    $t_r$ with individual variation (\Cref{sec:traits}); $\ell$ varies 
     through the per-foray draw (\Cref{sec:environment}), and the nest traits
     $\gamma$ and $\phi$ are shared by all of a colony's workers. Here $D$ is the
     maximum search distance and $P$ the orientation period.}
@@ -411,10 +411,10 @@ direct-pointing code. A worker that has just foraged successfully at azimuth $\a
 produces a dance whose intended direction is $\alpha$ itself. The emitted signal is
 drawn from a von Mises distribution centered on $\alpha$ with concentration
 $\kappa = b_i\,\kappa_{\max}$, plus a small wrapped Gaussian dance noise. The von
-Mises distribution is the circular analogue of a Gaussian: a signal $\theta$
+Mises distribution is the circular analogue of a Gaussian: a signal $\psi$
 centered on $\mu$ with concentration $\kappa$ has density
 \begin{equation}
-  f(\theta;\mu,\kappa) = \frac{\exp\bigl(\kappa\cos(\theta-\mu)\bigr)}{2\pi I_0(\kappa)},
+  f(\psi;\mu,\kappa) = \frac{\exp\bigl(\kappa\cos(\psi-\mu)\bigr)}{2\pi I_0(\kappa)},
 \end{equation}
 where $I_0$ is the modified Bessel function of order zero and $\kappa$ plays the
 role of an inverse variance; here $\mu = \alpha$ and $\kappa = b_i\,\kappa_{\max}$.
@@ -469,16 +469,16 @@ encoding and decoding with opposite sign and cancels, and communication is
 therefore unaffected by where the sun happens to fall. 
 \begin{figure}
   \centering
-    \includegraphics[width=0.7\textwidth]{figures/disk_food_samples.png}
-    \caption{Six samples of the disk-geometry foraging environment. Each panel
+    \includegraphics[width=0.8\textwidth]{figures/disk_food_samples.png}
+    \caption{Six samples of the foraging environment. Each panel
       shows the colony (bee) at the centre, the food patches (flowers) at their
       drawn azimuths and distances, and the sun, which marks the external
       reference for the gravity-based code. Each patch is a physical disk, and
-      the flower size scales with the patch's sampled radius; radial rings mark
+      the flower size scales with the sampled radius of the patch; radial rings mark
       distance from the colony in kilometers. Here the number of patches per episode
       is Poisson with mean $6$, so panels differ in how many patches they
-      contain, with median radius $150$ m (lognormal, log-sd $0.6$) and capacity
-      $6$ at that radius, drawn out to a maximum distance of $6$ km.}
+      contain, with median radius $150$ m (lognormal, log-sd $0.6$), drawn out
+      to a maximum distance of $6$ km.}
     \label{fig:environment}
 \end{figure}
 
