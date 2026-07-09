@@ -786,7 +786,7 @@ pointing.
 
 \begin{table}
   \centering
-  \begin{tabular}{lll}
+  \begin{tabular}{lrl}
     \toprule
     Symbol / name & Value & Meaning \\
     \midrule
@@ -799,9 +799,9 @@ pointing.
     $\kappa_{\max}$ & $14$ & maximum dance concentration \\
     dance noise & $0.18$ & production noise (wrapped Gaussian) \\
     interpretation noise & $0.12$ & receiver decoding noise \\
-    $D$ & $6$ km & maximum search distance \\
-    $d_{\min}$ & $0.75$ km & minimum food distance \\
-    $\rho_r$ & $150$ m & median patch radius (lognormal) \\
+    $D$ & $6$ & maximum search distance (km) \\
+    $d_{\min}$ & $0.75$ & minimum food distance (km) \\
+    $\rho_r$ & $150$ & median patch radius (m, lognormal) \\
     $\sigma_r$ & $0.6$ & patch-radius log-scale spread \\
     foray shape & $2$ & Gamma shape of per-foray distance \\
     $c_{\mathrm{base}},\,c_{\mathrm{cue}}$ & $0,\ 0.02$ & dance cost terms \\
@@ -826,15 +826,15 @@ sections below.
 
 \begin{table}
   \centering
-  \begin{tabular}{lll}
+  \begin{tabular}{lrl}
     \toprule
     Symbol / name & Range explored & Meaning \\
     \midrule
     \multicolumn{3}{l}{\emph{Ecological}} \\
     food-site count       & $1$--$8$          & Poisson mean number of patches per episode \\
-    patch radius          & $60$--$360$ m     & median disk radius (lognormal) \\
+    patch radius          & $60$--$360$ & median disk radius (m, lognormal) \\
     capacity              & $2$--$12$         & base loads a patch supplies at the median radius \\
-    $d_{\max}$            & $3$--$7.5$ km  & maximum patch distance \\
+    $d_{\max}$            & $3$--$7.5$ & maximum patch distance (km) \\
     travel cost (per km)  & $0.010$--$0.060$ & cost charged per km of foray distance \\
     \midrule
     \multicolumn{3}{l}{\emph{Evolutionary}} \\
