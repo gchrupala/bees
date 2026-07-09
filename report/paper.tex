@@ -438,11 +438,9 @@ and some contain none. Each site is placed at an azimuth drawn uniformly around
 the colony and at a distance drawn uniformly from $[d_{\min}, d_{\max}]$, and is
 a physical circular patch (a disk) whose radius is drawn independently from a
 lognormal distribution with median $\rho_r$ and log-scale spread $\sigma_r$. A
-forager captures the patch when its straight outbound path crosses the disk, so
-a patch's effective angular tolerance is approximately
-$\arcsin(\mathrm{radius}/\mathrm{distance})$, with radius and distance in the
-same units, and shrinks with distance: a fixed patch subtends a smaller angle
-when farther from the nest. Each patch has value $v$ per visit and a finite
+forager finds the patch when its straight outbound path crosses the disk, so a
+fixed patch subtends a smaller angle when farther from the nest, and distant
+food demands more accurate dances. Each patch has value $v$ per visit and a finite
 capacity limiting how many foragers it can supply before being exhausted;
 capacity scales with the patch's area, growing with the square of its radius
 relative to a reference radius $\rho_r$, so that larger patches hold
@@ -494,7 +492,7 @@ foray whose length is drawn as in \Cref{sec:environment} and enters the first
 food patch its straight path crosses, among patches that still have remaining
 capacity and lie within the foray length; if no patch is reached the attempt fails.
 
-Payoff accrues per episode. A successful attempt yields the patch's value $v$, minus
+Payoff accrues per episode. A successful foraging attempt yields the patch's value $v$, minus
 a travel cost proportional to the patch's distance, and may prompt the worker to
 perform a dance advertising the patch to later foragers. Recruitment is itself an
 evolved decision: a successful scout dances with probability $1 - (1 - p_i)^{C}$,
