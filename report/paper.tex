@@ -393,7 +393,7 @@ $a$ is the propensity to attend to a dance rather than to search at random; the
 \trait{dance propensity} $p$ controls how readily a successful scout recruits
 others to the patch it just found (\Cref{sec:foraging}); and the \trait{foray
 distance} $\ell$ sets the mean outbound distance a worker travels on a foraging
-trip. The first three are bounded to $[0,1]$ and the foray distance to $[0,D]$,
+trip. The first three are bounded to $[0,1]$ and the \trait{foray distance} to $[0,D]$,
 where $D$ is the maximum search distance, a fixed model parameter (set to
 $D = 6000$ in all our experiments) expressed in meters.
 
@@ -404,7 +404,7 @@ worker $i$ realizes each trait $x \in \{b, a, p\}$ as
   \varepsilon_i \sim \mathcal{N}(0, \eta^2),
 \end{equation}
 where $\eta$ is a fixed worker-variation scale and $\mathrm{clip}$ returns the
-value to its admissible range. The foray distance $\ell$ carries no separate
+value to its admissible range. The \trait{foray distance} $\ell$ carries no separate
 worker jitter: within-colony variation in how far workers travel arises instead
 from the per-foray draw described in \Cref{sec:environment}. A colony thus
 behaves as a noisy ensemble of workers sharing the same underlying genotype.
@@ -423,7 +423,7 @@ centered on $\mu$ with concentration $\kappa$ has density
 \end{equation}
 where $I_0$ is the modified Bessel function of order zero and $\kappa$ plays the
 role of an inverse variance; here $\mu = \alpha$ and $\kappa = b_i\,\kappa_{\max}$.
-The directional bias $b$ therefore
+The \trait{directional bias} $b$ therefore
 controls the sharpness of the dance: a low bias leads to a near-uniform,
 uninformative signal, while a high bias gives rise to a tightly concentrated one that
 reliably indicates $\alpha$.
@@ -454,7 +454,7 @@ fixed. In our experiments $v = 1$, the median radius is $\rho_r = 150$ with
 log-scale spread $\sigma_r = 0.6$, a patch at the median radius has capacity $6$,
 and sites lie between $d_{\min} = 750$ and $d_{\max} = 6000$.
 
-The foray distance trait $\ell$ (\Cref{sec:traits}) sets how far a worker travels,
+The \trait{foray distance} trait $\ell$ (\Cref{sec:traits}) sets how far a worker travels,
 but each individual foray draws its own outbound length from a Gamma distribution
 with mean $\ell$ and a fixed shape, capped at the maximum search distance $D$. The
 per-foray draw is the source of within-colony variation in travel distance and
@@ -501,7 +501,7 @@ Payoff accrues per episode. A successful forage yields the patch's value $v$, mi
 a travel cost proportional to the patch's distance, and may prompt the worker to
 perform a dance advertising the patch to later foragers. Recruitment is itself an
 evolved decision: a successful scout dances with probability $1 - (1 - p_i)^{C}$,
-where $p_i$ is its dance propensity and $C$ is the patch's remaining capacity
+where $p_i$ is its \trait{dance propensity} and $C$ is the patch's remaining capacity
 after the visit, so an exhausted patch never seeds a dance and a scarcely
 provisioned one rarely does. A dance, when performed, costs
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$, growing with the precision of the
@@ -520,7 +520,7 @@ and $n_a$ dance-following attempts yields raw payoff
 where the dance-cost sum runs over $S_d$ because a success produces a dance only
 when the recruitment decision fires.
 The scaled episode payoff is $\pi = (1 + B\gamma)\,\pi_{\mathrm{raw}}$, where
-$\gamma$ is the comb tilt and $B \ge 0$ the vertical-comb benefit
+$\gamma$ is the \trait{comb tilt} and $B \ge 0$ the vertical-comb benefit
 (\Cref{sec:vertical}); in the horizontal model $\gamma = 0$, so the scaling is
 inert. A colony's fitness is its mean episode payoff (floored at a
 small positive value).
@@ -538,7 +538,7 @@ evaluated, and the next generation is produced by repeated
 selection of parent colonies with a probability proportional to fitness. 
 A selected colony's traits are copied subject to
 mutation. Each trait is perturbed by an independent Gaussian step of standard
-deviation $\sigma_m$ (scaled by $D$ for the foray distance) and then clipped to
+deviation $\sigma_m$ (scaled by $D$ for the \trait{foray distance}) and then clipped to
 its range. The workers of each offspring colony are then regenerated from its traits
 as in \Cref{sec:traits}. The mutation rate $\sigma_m$ thus sets the pace of
 evolutionary change.
@@ -549,7 +549,7 @@ The first version of the model is exactly the one described above: the comb is
 horizontal and the only code available is direct pointing. We use it to
 investigate the conditions under which a referential code emerges and stabilizes,
 starting from an initial population with little communicative ability (low
-directional bias and low attention), so that early foragers signal weakly and
+\trait{directional bias} and low attention), so that early foragers signal weakly and
 rarely attend to one another.
 
 \subsection{Evolution of vertical combs}
@@ -691,7 +691,7 @@ are summed, and $\delta$ is the heading of the resultant,
     \sum_k w_k \cos\delta_k\Bigr), \qquad k \in \{\mathrm{dir}, \mathrm{grav}\}.
 \end{equation}
 The weights combine the
-worker's transposition with each channel's geometric strength,
+worker's \trait{transposition} with each channel's geometric strength,
 \begin{equation}
   w_{\mathrm{dir}} = (1 - t_{s,i})\,s_{\mathrm{dir}}, \qquad
   w_{\mathrm{grav}} = t_{s,i}\,s_{\mathrm{grav}}.
@@ -726,7 +726,7 @@ which leaves the marginal mutation scale of each trait unchanged while tuning ho
 tightly the two co-vary. When $\rho$ is high, a mutation that pushes senders
 toward the gravity code tends to push receivers by the same amount, so the two
 sides of the code can shift in a coordinated fashion rather than drifting apart;
-when $\rho = 0$ they evolve independently. The comb tilt $\gamma$, held fixed at
+when $\rho = 0$ they evolve independently. The \trait{comb tilt} $\gamma$, held fixed at
 $0$ in the horizontal model, is free to mutate in this version.
 \paragraph{Selection for vertical combs.}
 Finally, this version adds an extrinsic ecological pressure favoring vertical
@@ -759,7 +759,7 @@ vertical transition under both decode variants (\Cref{sec:setup-transition}).
 \label{sec:results-horizontal}
 On a comb held flat, communication is favored along a diagonal band of the
 food grid rather than along a single axis (\Cref{fig:food-grid}). Evolved
-directional bias lifts off its ${\sim}0.38$ drift floor only above a patch-size
+\trait{directional bias} lifts off its ${\sim}0.38$ drift floor only above a patch-size
 threshold that falls as patches become more numerous: a single patch must reach
 ${\sim}600$ m radius before a precise dance evolves (bias $0.81$), whereas at
 eight patches $75$ m already suffices ($0.84$); below a few tens of meters the
@@ -768,13 +768,13 @@ few, large patches (up to $0.31$ at a single $600$ m patch) and erodes toward bo
 small patches (successful foragers too rare to seed dances) and many large patches
 (independent discovery already succeeds; the advantage falls to $0.04$ at
 twenty-four $600$ m patches even as foraging success reaches $0.88$). The evolvable
-dance propensity shows little structure across the grid, settling near $0.6$
+\trait{dance propensity} shows little structure across the grid, settling near $0.6$
 everywhere.
 
 \begin{figure}
   \centering
   \includegraphics[width=0.9\textwidth]{figures/food_distribution_disk_grid.png}
-  \caption{Evolved directional bias (left) and recruitment advantage (right) on a
+  \caption{Evolved \trait{directional bias} (left) and recruitment advantage (right) on a
     flat comb across the grid of Poisson mean site count against median patch
     radius, $50$ seeds per cell. Recruitment advantage is the follower--searcher
     success difference, and shading is normalized within each panel. The bias
@@ -861,7 +861,7 @@ distances, low travel cost, high benefit.
     \bottomrule
   \end{tabular}
   \caption{Strongest validated candidate per decode over $100$ held-out seeds;
-    $t_f$ is final mean comb tilt. Both reach foraging success ${\approx}0.35$,
+    $t_f$ is final mean \trait{comb tilt}. Both reach foraging success ${\approx}0.35$,
     higher than the $0.27$ mean across all strongly stable search trials, as
     expected for the single strongest candidate of each decode.}
   \label{tab:validation}

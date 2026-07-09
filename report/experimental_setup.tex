@@ -10,7 +10,7 @@ We study the model of \Cref{sec:method} in two stages that mirror the two
 questions of \Cref{sec:intro}. The first stage keeps the comb horizontal and asks
 under what ecological conditions the direct-pointing code is worth maintaining
 (\Cref{sec:setup-horizontal}). The second stage releases the comb and the
-transposition traits and asks under what conditions a population can migrate from
+\trait{transposition} traits and asks under what conditions a population can migrate from
 the direct to the gravity-referenced code as an extrinsic pressure tilts the comb
 (\Cref{sec:setup-transition}). All experiments are run from configuration files
 and fixed random seeds so that every reported run is reproducible.
@@ -35,11 +35,11 @@ evolved mean. Foraging carries a per-distance travel cost, a dance cost
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$ with $c_{\mathrm{base}} = 0$ and
 $c_{\mathrm{cue}} = 0.02$, and an attention cost $c_{\mathrm{att}} = 0.01$
 (\Cref{sec:foraging}). The sun is drawn from an arc of width $\pi$ centered on
-$\pi/2$, and the comb orientation is treated as axially symmetric (period $\pi$).
-Colonies start with little communicative ability: the initial directional bias is
-drawn from $\mathcal{U}(0,0.15)$, receiver attention from $\mathcal{U}(0,0.25)$,
-the foray distance from $\mathcal{U}(0.15D, 0.45D)$, the dance propensity from
-$\mathcal{U}(0.8,1.0)$, and both transposition traits start at $0$, so early
+$\pi/2$, and the \trait{comb orientation} is treated as axially symmetric (period $\pi$).
+Colonies start with little communicative ability: the initial \trait{directional bias} is
+drawn from $\mathcal{U}(0,0.15)$, \trait{receiver attention} from $\mathcal{U}(0,0.25)$,
+the \trait{foray distance} from $\mathcal{U}(0.15D, 0.45D)$, the \trait{dance propensity} from
+$\mathcal{U}(0.8,1.0)$, and both \trait{transposition} traits start at $0$, so early
 foragers signal weakly, rarely attend to one another, and use only direct
 pointing.
 
@@ -131,7 +131,7 @@ transition occurs.
 \label{sec:setup-horizontal}
 The first stage uses the horizontal-comb model of \Cref{sec:horizontal}: comb
 tilt is fixed at $0$ and not allowed to evolve, so the gravity reference has zero
-strength and the transposition traits are inert, leaving only the direct-pointing
+strength and the \trait{transposition} traits are inert, leaving only the direct-pointing
 code in play. Colonies evolve for $60$ generations under mutation rate
 $\sigma_m = 0.07$, and we vary only the food distribution across $50$ replicate
 seeds ($400$--$449$). The conditions form a full grid crossing the Poisson mean
@@ -142,17 +142,17 @@ search). All other ecological parameters are held at their fixed values
 (\Cref{tab:fixed-params}).
 
 The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}).
-Because the follow decision is a randomized coin flip on receiver attention within
+Because the follow decision is a randomized coin flip on \trait{receiver attention} within
 the same episodes, it is a near-randomized, contemporaneous estimate of what the
 dance actually buys, and it distinguishes functioning communication from a
 directional-bias trait that has merely drifted upward. We report it as a mean over
-the final generations, alongside final-generation mean directional bias, foraging
+the final generations, alongside final-generation mean \trait{directional bias}, foraging
 success, and payoff.
 
 \subsection{Evolution of the gravity code (vertical transition)}
 \label{sec:setup-transition}
-The second stage uses the full model of \Cref{sec:vertical}: comb tilt $\gamma$
-and orientation $\phi$ are free to evolve, the transposition traits $t_s, t_r$ are
+The second stage uses the full model of \Cref{sec:vertical}: \trait{comb tilt} $\gamma$
+and orientation $\phi$ are free to evolve, the \trait{transposition} traits $t_s, t_r$ are
 active, and the raw payoff is scaled by the vertical-comb benefit
 $1 + B\gamma$. Populations always start horizontal, so a successful run must
 evolve both a vertical comb \emph{and} a matched sender--receiver gravity code.
@@ -175,8 +175,8 @@ scored by
 \begin{equation}
   \text{stable seed count} + \overline{\text{progress}} - \text{collapse count},
 \end{equation}
-where a seed is \emph{stable} if it ends with mean comb tilt $\ge 0.80$ and both
-mean transposition traits $\ge 0.50$, \emph{collapsed} if its minimum
+where a seed is \emph{stable} if it ends with mean \trait{comb tilt} $\ge 0.80$ and both
+mean \trait{transposition} traits $\ge 0.50$, \emph{collapsed} if its minimum
 success rate over the run falls to $\le 0.02$, and \emph{progress} is a bounded
 $[0,1]$ score measuring how close a non-stable seed came to the stable thresholds.
 The stable-count term dominates while the progress term ranks near misses.
@@ -186,8 +186,8 @@ The strongest search trials are re-run on a disjoint confirmation panel of $40$
 seeds ($110$--$149$), and the best candidates are then validated on $100$
 held-out seeds ($200$--$299$) that were used in neither search nor confirmation.
 Validation reports, per candidate, the fraction of stable seeds, the collapse
-count, and final-generation means of foraging success, comb tilt, and the lower of
-the two transposition traits.
+count, and final-generation means of foraging success, \trait{comb tilt}, and the lower of
+the two \trait{transposition} traits.
 
 \paragraph{One-parameter sensitivity.}
 Around the strongest validated candidate we perturb each parameter in turn,
@@ -206,7 +206,7 @@ $100$ held-out seeds ($200$--$299$).
 \paragraph{Outcome measures.}
 Across the transition experiments we summarize runs by the same thresholds used in
 the search objective: the \emph{stable} fraction (vertical comb with a coordinated
-gravity code), the \emph{gravity-reached} fraction (both transposition traits
+gravity code), the \emph{gravity-reached} fraction (both \trait{transposition} traits
 crossing $0.50$ at any generation, whether or not verticality is retained), and
 the \emph{collapse} fraction (foraging success falling to $\le 0.02$), alongside
 final-generation trait and success means. Seed-bootstrap intervals over the
