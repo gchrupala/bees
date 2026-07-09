@@ -59,15 +59,15 @@ REF_COLOR = "#34495e"
 HEAD_H = "#1f5fa8"
 HEAD_V = "#2e7d32"
 LABEL_SIZE = 15
-# Light grey for the angle theta, so it does not clash with the orange sun
+# Light grey for the azimuth angle alpha, so it does not clash with the orange sun
 # reference or the red waggle run.
-THETA_COLOR = "#8a8a8a"
+AZIMUTH_COLOR = "#8a8a8a"
 
 # Shared field geometry, measured counter-clockwise from east (the +x axis).
 # The food patch sits 40 degrees clockwise of (i.e. to the right of) the sun.
 SUN_AZIMUTH_DEG = 75.0
 FOOD_AZIMUTH_DEG = 35.0
-THETA_DEG = SUN_AZIMUTH_DEG - FOOD_AZIMUTH_DEG
+AZIMUTH_DEG = SUN_AZIMUTH_DEG - FOOD_AZIMUTH_DEG
 
 
 def parse_args() -> argparse.Namespace:
@@ -236,7 +236,7 @@ def draw_horizontal_panel(ax) -> None:
     draw_comb_texture(ax, comb, (-R, R, -R, R), radius=0.16)
 
     # The reference vertex sits in the lower-left of the comb; the sun reference
-    # and the run toward the food start there, with theta marked at the vertex,
+    # and the run toward the food start there, with the azimuth angle alpha marked at the vertex,
     # while the bee dances near the comb centre -- so the angle and the
     # figure-eight are spatially separated.
     u = radians(FOOD_AZIMUTH_DEG)
@@ -249,13 +249,13 @@ def draw_horizontal_panel(ax) -> None:
         Arc(
             vertex, 0.8, 0.8, angle=0.0,
             theta1=FOOD_AZIMUTH_DEG, theta2=SUN_AZIMUTH_DEG,
-            color=THETA_COLOR, linewidth=2.0,
+            color=AZIMUTH_COLOR, linewidth=2.0,
         )
     )
     mid = radians((SUN_AZIMUTH_DEG + FOOD_AZIMUTH_DEG) / 2.0)
     ax.text(
-        vertex[0] + 0.52 * cos(mid), vertex[1] + 0.52 * sin(mid), "θ",
-        fontsize=22, color=THETA_COLOR, ha="center", va="center", fontweight="bold",
+        vertex[0] + 0.52 * cos(mid), vertex[1] + 0.52 * sin(mid), "α",
+        fontsize=22, color=AZIMUTH_COLOR, ha="center", va="center", fontweight="bold",
     )
 
     bee = (vertex[0] + 0.88 * cos(u), vertex[1] + 0.88 * sin(u))
@@ -299,9 +299,9 @@ def draw_vertical_panel(ax) -> None:
     draw_comb_texture(ax, comb, (-H, H, -H, H), radius=0.16)
 
     # The reference vertex sits in the lower-left of the comb; the "up" (sun)
-    # reference and the run both start there, with theta marked at the vertex,
+    # reference and the run both start there, with the azimuth angle alpha marked at the vertex,
     # while the bee dances near the comb centre.
-    run_angle = 90.0 - THETA_DEG
+    run_angle = 90.0 - AZIMUTH_DEG
     u = radians(run_angle)
     vertex = (-0.72 * cos(u), -0.72 * sin(u))
 
@@ -338,13 +338,13 @@ def draw_vertical_panel(ax) -> None:
         Arc(
             vertex, 0.8, 0.8, angle=0.0,
             theta1=run_angle, theta2=90.0,
-            color=THETA_COLOR, linewidth=2.0,
+            color=AZIMUTH_COLOR, linewidth=2.0,
         )
     )
     mid = radians((90.0 + run_angle) / 2.0)
     ax.text(
-        vertex[0] + 0.52 * cos(mid), vertex[1] + 0.52 * sin(mid), "θ",
-        fontsize=22, color=THETA_COLOR, ha="center", va="center", fontweight="bold",
+        vertex[0] + 0.52 * cos(mid), vertex[1] + 0.52 * sin(mid), "α",
+        fontsize=22, color=AZIMUTH_COLOR, ha="center", va="center", fontweight="bold",
     )
 
     bee = (vertex[0] + 0.88 * cos(u), vertex[1] + 0.88 * sin(u))

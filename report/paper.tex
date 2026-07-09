@@ -93,7 +93,7 @@ On a vertical comb (right) the
 bee cannot directly point at the food. Instead, it uses gravity as a reference: 
 it maps the direction \textit{up} to the position of the sun, 
 and it rotates the dance axis away from vertical by an
-angle $\theta$ equal to the food site's azimuth relative to the sun. 
+angle $\alpha$ equal to the food site's azimuth relative to the sun.
 The figure-of-eight loops and the central waggle run are schematic and not to scale.}
 \label{fig:waggle}  
 \end{figure}
@@ -405,9 +405,9 @@ behaves as a noisy ensemble of workers sharing the same underlying genotype.
 \subsection{Producing and interpreting signals}
 \label{sec:signals}
 On a horizontal comb the dance points directly at the food: this is the iconic,
-direct-pointing code. A worker that has just foraged successfully at azimuth $d$
-produces a dance whose intended direction is $d$ itself. The emitted signal is
-drawn from a von Mises distribution centered on $d$ with concentration
+direct-pointing code. A worker that has just foraged successfully at azimuth $\alpha$
+produces a dance whose intended direction is $\alpha$ itself. The emitted signal is
+drawn from a von Mises distribution centered on $\alpha$ with concentration
 $\kappa = b_i\,\kappa_{\max}$, plus a small wrapped Gaussian dance noise. The von
 Mises distribution is the circular analogue of a Gaussian: a signal $\theta$
 centered on $\mu$ with concentration $\kappa$ has density
@@ -415,11 +415,11 @@ centered on $\mu$ with concentration $\kappa$ has density
   f(\theta;\mu,\kappa) = \frac{\exp\bigl(\kappa\cos(\theta-\mu)\bigr)}{2\pi I_0(\kappa)},
 \end{equation}
 where $I_0$ is the modified Bessel function of order zero and $\kappa$ plays the
-role of an inverse variance; here $\mu = d$ and $\kappa = b_i\,\kappa_{\max}$.
+role of an inverse variance; here $\mu = \alpha$ and $\kappa = b_i\,\kappa_{\max}$.
 The directional bias $b$ therefore
 controls the sharpness of the dance: a low bias leads to a near-uniform,
 uninformative signal, while a high bias gives rise to a tightly concentrated one that
-reliably indicates $d$.
+reliably indicates $\alpha$.
 
 A worker that follows a dance reads its direction as a search direction, subject
 to a small added interpretation noise. Communication is successful when this
@@ -584,7 +584,7 @@ reference direction, lying in that surface, against which the angle is read.
 \paragraph{The two codes.}
 In the \emph{direct} (iconic) code the worker takes the world-space direction of
 the food as a three-dimensional unit vector,
-$\mathbf{f} = (\cos d, \sin d, 0)$ for food azimuth $d$ (the vertical component
+$\mathbf{f} = (\cos \alpha, \sin \alpha, 0)$ for food azimuth $\alpha$ (the vertical component
 is zero because food lies in the horizontal plane), and projects
 it onto the comb surface, reading off the resulting in-plane angle
 (\Cref{fig:direct-decode}).
@@ -609,7 +609,7 @@ it onto the comb surface, reading off the resulting in-plane angle
 Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
 surface and $M$ the $2\times 2$ matrix whose rows are their horizontal
 (east--north) parts, the projection of $\mathbf{f}$ onto the comb has surface
-coordinates $(p_1,p_2)^\top = M(\cos d,\sin d)^\top$, i.e.\ the in-surface vector
+coordinates $(p_1,p_2)^\top = M(\cos \alpha,\sin \alpha)^\top$, i.e.\ the in-surface vector
 $\mathbf{p} = p_1\,\mathbf{e}_1 + p_2\,\mathbf{e}_2$, and the encoded signal is its
 angle $\delta_{\mathrm{dir}} = \operatorname{atan2}(p_2,p_1)$; the
 determinant $\det M = \cos\theta$ vanishes only at full vertical tilt, where $M$
@@ -619,12 +619,12 @@ works depends on how much of the food direction survives the projection, which w
 call the direct code's \param{strength} and measure by the length of the
 projected vector $\mathbf{p}$,
 \begin{equation}
-  s_{\mathrm{dir}} = \sqrt{1 - \sin^2\theta\,\cos^2(d-\phi)}.
+  s_{\mathrm{dir}} = \sqrt{1 - \sin^2\theta\,\cos^2(\alpha-\phi)}.
 \end{equation}
 On a horizontal comb $s_{\mathrm{dir}} = 1$: the food direction lies entirely
 within the surface and is represented faithfully. On a tilted comb it shrinks,
 reaching a minimum of $\cos\theta$ for food lying in the direction the comb
-faces ($d = \phi$); only on a fully vertical comb does this minimum reach zero,
+faces ($\alpha = \phi$); only on a fully vertical comb does this minimum reach zero,
 so the horizontal heading is lost only for that one food direction, and only at
 full vertical tilt. In the \emph{gravity-referenced} code the
 worker instead projects the vertical (gravity) direction
