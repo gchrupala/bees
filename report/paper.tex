@@ -395,7 +395,7 @@ others to the patch it just found (\Cref{sec:foraging}); and the \trait{foray
 distance} $\ell$ sets the mean outbound distance a worker travels on a foraging
 trip. The first three are bounded to $[0,1]$ and the \trait{foray distance} to $[0,D]$,
 where $D$ is the maximum search distance, a fixed model parameter (set to
-$D = 6000$ in all our experiments) expressed in meters.
+$D = 6$ km in all our experiments).
 
 Workers express the colony traits with non-heritable individual variation. A
 worker $i$ realizes each trait $x \in \{b, a, p\}$ as
@@ -436,7 +436,7 @@ recovered direction is close enough to a food site to lead the follower to it.
 \label{sec:environment}
 A colony is evaluated over a fixed number of independent foraging episodes, and
 its fitness is averaged over them (\Cref{sec:foraging}). Each episode draws a
-fresh environment (\Cref{fig:environment}), with all lengths measured in meters.
+fresh environment (\Cref{fig:environment}), with patch radii in meters and distances from the nest in kilometers.
 The number of food sites is drawn from a Poisson distribution with mean $n$, so
 episodes vary in how much food they offer and some contain none. Each site is
 placed at an azimuth drawn uniformly around the colony and at a distance drawn
@@ -450,9 +450,9 @@ patch has value $v$ per visit and a finite capacity limiting how many foragers i
 can supply before being exhausted; capacity scales with the patch's area, growing
 with the square of its radius relative to a reference radius $\rho_r$, so that
 larger patches hold proportionally more forage while the per-visit value stays
-fixed. In our experiments $v = 1$, the median radius is $\rho_r = 150$ with
+fixed. In our experiments $v = 1$, the median radius is $\rho_r = 150$ m with
 log-scale spread $\sigma_r = 0.6$, a patch at the median radius has capacity $6$,
-and sites lie between $d_{\min} = 750$ and $d_{\max} = 6000$.
+and sites lie between $d_{\min} = 0.75$ km and $d_{\max} = 6$ km.
 
 The \trait{foray distance} trait $\ell$ (\Cref{sec:traits}) sets how far a worker travels,
 but each individual foray draws its own outbound length from a Gamma distribution
@@ -478,10 +478,10 @@ therefore unaffected by where the sun happens to fall.
       drawn azimuths and distances, and the sun, which marks the external
       reference for the gravity-based code. Each patch is a physical disk, and
       the flower size scales with the patch's sampled radius; radial rings mark
-      distance from the colony in meters. Here the number of patches per episode
+      distance from the colony in kilometers. Here the number of patches per episode
       is Poisson with mean $6$, so panels differ in how many patches they
       contain, with median radius $150$ m (lognormal, log-sd $0.6$) and capacity
-      $6$ at that radius, drawn out to a maximum distance of $6000$ m.}
+      $6$ at that radius, drawn out to a maximum distance of $6$ km.}
     \label{fig:environment}
 \end{figure}
 
@@ -765,8 +765,8 @@ $50$ independent foraging episodes of $12$ foraging attempts. Workers express
 colony traits with variation scale $\eta = 0.08$ (\Cref{sec:traits}); dances are
 emitted with maximum concentration $\kappa_{\max} = 14$ and production noise
 $0.18$, and read with interpretation noise $0.12$ (\Cref{sec:signals}). All
-lengths are in meters: the maximum search distance is $D = 6000$ m and food
-patches lie at distances in $[750, d_{\max}]$ m. Food patches are physical disks
+lengths follow a fixed convention (distances in kilometers, patch radii in meters): the maximum search distance is $D = 6$ km and food
+patches lie at distances in $[0.75, d_{\max}]$ km. Food patches are physical disks
 whose radius is drawn from a lognormal of median $150$ m and log-scale spread
 $0.6$; capacity scales with patch area from a base of $6$ loads at the median
 radius, and the number of patches per episode is Poisson (\Cref{sec:environment}).
@@ -798,8 +798,8 @@ pointing.
     $\kappa_{\max}$ & $14$ & maximum dance concentration \\
     dance noise & $0.18$ & production noise (wrapped Gaussian) \\
     interpretation noise & $0.12$ & receiver decoding noise \\
-    $D$ & $6000$ m & maximum search distance \\
-    $d_{\min}$ & $750$ m & minimum food distance \\
+    $D$ & $6$ km & maximum search distance \\
+    $d_{\min}$ & $0.75$ km & minimum food distance \\
     $\rho_r$ & $150$ m & median patch radius (lognormal) \\
     $\sigma_r$ & $0.6$ & patch-radius log-scale spread \\
     foray shape & $2$ & Gamma shape of per-foray distance \\
@@ -833,7 +833,7 @@ sections below.
     food-site count       & $1$--$8$          & Poisson mean number of patches per episode \\
     patch radius          & $60$--$360$ m     & median disk radius (lognormal) \\
     capacity              & $2$--$12$         & base loads a patch supplies at the median radius \\
-    $d_{\max}$            & $3000$--$7500$ m  & maximum patch distance \\
+    $d_{\max}$            & $3$--$7.5$ km  & maximum patch distance \\
     travel cost (per km)  & $0.010$--$0.060$ & cost charged per km of foray distance \\
     \midrule
     \multicolumn{3}{l}{\emph{Evolutionary}} \\
@@ -852,7 +852,7 @@ sections below.
     uses the discrete values $B \in \{0.10, 0.30, 0.45, 0.60\}$,
     $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
     $\rho \in \{0.0, 0.3, 0.6, 0.9\}$. Outside the search, capacity is $6$ at the
-    median radius, $d_{\max} = 6000$ m, and the horizontal runs use
+    median radius, $d_{\max} = 6$ km, and the horizontal runs use
     $\sigma_m = 0.07$.}
   \label{tab:varied-params}
 \end{table}
@@ -996,7 +996,7 @@ slightly broader (\Cref{tab:optuna-stability}). Both searches concentrate their
 strongly stable trials in much the same region: abundant, large, reachable food
 paired with a strong tilt incentive and a high mutation scale
 (\Cref{tab:optuna-region}). The main difference is that unproject tolerates
-food at longer range (median maximum distance $5250$ against flatten's $3250$ m).
+food at longer range (median maximum distance $5.25$ km against flatten's $3.25$ km).
 The sender--receiver correlation $\rho$ is not
 decisive, its stable range spanning almost the whole $[0,1]$ axis under both
 decodes, and mean foraging success across the strongly stable trials is only $0.27$
@@ -1034,7 +1034,7 @@ abundant one.
     Patch radius (m)               & $210$  & $165$--$345$ & $225$  & $150$--$360$ \\
     Patch capacity                 & $7$    & $2$--$8$   & $7$    & $3$--$9$ \\
     Vertical-comb benefit $B$      & $0.56$ & $0.50$--$0.56$ & $0.56$ & $0.50$--$0.56$ \\
-    Max food distance (m)          & $3250$ & $3250$--$5250$ & $5250$ & $3500$--$5250$ \\
+    Max food distance (km)         & $3.25$ & $3.25$--$5.25$ & $5.25$ & $3.5$--$5.25$ \\
     Travel cost per km             & $0.025$ & $0.010$--$0.025$ & $0.018$ & $0.010$--$0.022$ \\
     Mutation scale $\sigma_m$      & $0.110$ & $0.090$--$0.110$ & $0.110$ & $0.110$--$0.130$ \\
     Correlation $\rho$             & $0.4$   & $0.0$--$0.9$ & $0.4$   & $0.0$--$1.0$ \\
@@ -1058,10 +1058,10 @@ distances, low travel cost, high benefit.
   \small
   \begin{tabular}{llrrrrrrrrr}
     \toprule
-    Decode & Cand. & Sites & Rad. (m) & Cap. & $B$ & Dist. (m) & Travel/km & $\sigma_m$ & Stable & $t_f$ \\
+    Decode & Cand. & Sites & Rad. (m) & Cap. & $B$ & Dist. (km) & Travel/km & $\sigma_m$ & Stable & $t_f$ \\
     \midrule
-    flatten   & 729 & $5$ & $315$ & $4$  & $0.56$ & $3250$ & $0.017$ & $0.070$ & $91/100$ & $0.845$ \\
-    unproject & 541 & $7$ & $315$ & $12$ & $0.60$ & $4750$ & $0.010$ & $0.090$ & $92/100$ & $0.848$ \\
+    flatten   & 729 & $5$ & $315$ & $4$  & $0.56$ & $3.25$ & $0.017$ & $0.070$ & $91/100$ & $0.845$ \\
+    unproject & 541 & $7$ & $315$ & $12$ & $0.60$ & $4.75$ & $0.010$ & $0.090$ & $92/100$ & $0.848$ \\
     \bottomrule
   \end{tabular}
   \caption{Strongest validated candidate per decode over $100$ held-out seeds;
