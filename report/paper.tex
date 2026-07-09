@@ -444,8 +444,9 @@ uniformly from $[d_{\min}, d_{\max}]$, and is a physical circular patch (a disk)
 whose radius is drawn independently from a lognormal distribution with median
 $\rho_r$ and log-scale spread $\sigma_r$. A forager captures the patch when its
 straight outbound path crosses the disk, so a patch's effective angular tolerance
-is approximately $\arcsin(\mathrm{radius}/\mathrm{distance})$ and shrinks with
-distance: a fixed patch subtends a smaller angle when farther from the nest. Each
+is approximately $\arcsin(\mathrm{radius}/\mathrm{distance})$, with radius and
+distance in the same units, and shrinks with distance: a fixed patch subtends a
+smaller angle when farther from the nest. Each
 patch has value $v$ per visit and a finite capacity limiting how many foragers it
 can supply before being exhausted; capacity scales with the patch's area, growing
 with the square of its radius relative to a reference radius $\rho_r$, so that
