@@ -362,8 +362,8 @@ geometry required for tilted combs are developed in \Cref{sec:vertical}.
     \multicolumn{4}{@{}l}{\emph{Behavioral (horizontal-comb model, \Cref{sec:horizontal})}}\\
     $b$      & \trait{directional bias}    & $[0,1]$ & sharpness of a scout's dance about the food direction \\
     $a$      & \trait{receiver attention}  & $[0,1]$ & probability of following a dance rather than searching at random \\
-    $p$      & \trait{dance propensity}    & $[0,1]$ & readiness to recruit others after a successful forage \\
-    $\ell$   & \trait{foray distance}      & $[0,D]$ & mean outbound distance of a foraging trip \\
+    $p$      & \trait{dance propensity}    & $[0,1]$ & readiness to recruit others after a successful foraging attempt \\
+    $\ell$   & \trait{foray distance}      & $[0,D]$ & mean outbound distance of a foray \\
     \addlinespace
     \multicolumn{4}{@{}l}{\emph{Nest and code choice (vertical transition, \Cref{sec:vertical})}}\\
     $\gamma$ & \trait{comb tilt}              & $[0,1]$ & comb inclination, $0$ horizontal to $1$ vertical \\
@@ -388,8 +388,7 @@ bias} $b$ controls how precisely a dance points; the \trait{receiver attention}
 $a$ is the propensity to attend to a dance rather than to search at random; the
 \trait{dance propensity} $p$ controls how readily a successful scout recruits
 others to the patch it just found (\Cref{sec:foraging}); and the \trait{foray
-distance} $\ell$ sets the mean outbound distance a worker travels on a foraging
-trip. The first three are bounded to $[0,1]$ and the \trait{foray distance} to $[0,D]$,
+distance} $\ell$ sets the mean outbound distance a worker travels on a foray. The first three are bounded to $[0,1]$ and the \trait{foray distance} to $[0,D]$,
 where $D$ is the maximum search distance, a fixed model parameter (set to
 $D = 6$ km in all our experiments).
 
@@ -447,7 +446,7 @@ when farther from the nest. Each patch has value $v$ per visit and a finite
 capacity limiting how many foragers it can supply before being exhausted;
 capacity scales with the patch's area, growing with the square of its radius
 relative to a reference radius $\rho_r$, so that larger patches hold
-proportionally more forage while the per-visit value stays fixed. In our
+proportionally more food while the per-visit value stays fixed. In our
 experiments $v = 1$, the median radius is $\rho_r = 150$ m with log-scale spread
 $\sigma_r = 0.6$, a patch at the median radius has capacity $6$, and sites lie
 between $d_{\min} = 0.75$ km and $d_{\max} = 6$ km.
@@ -456,7 +455,7 @@ The \trait{foray distance} trait $\ell$ (\Cref{sec:traits}) sets how far a worke
 but each individual foray draws its own outbound length from a Gamma distribution
 with mean $\ell$ and a fixed shape, capped at the maximum search distance $D$. The
 per-foray draw is the source of within-colony variation in travel distance and
-gives forays a realistic spread of short and long trips around the colony mean.
+gives a realistic spread of short and long forays around the colony mean.
 
 Each episode also fixes the position of the sun, which serves as the external
 reference for the gravity-based code introduced in \Cref{sec:vertical}. The
@@ -493,9 +492,9 @@ attention $a_i$, decoding it into a search direction, and otherwise searches in 
 uniformly random direction. The worker then sets out along that direction on a
 foray whose length is drawn as in \Cref{sec:environment} and enters the first
 food patch its straight path crosses, among patches that still have remaining
-capacity and lie within the foray length; if no patch is reached the forage fails.
+capacity and lie within the foray length; if no patch is reached the attempt fails.
 
-Payoff accrues per episode. A successful forage yields the patch's value $v$, minus
+Payoff accrues per episode. A successful attempt yields the patch's value $v$, minus
 a travel cost proportional to the patch's distance, and may prompt the worker to
 perform a dance advertising the patch to later foragers. Recruitment is itself an
 evolved decision: a successful scout dances with probability $1 - (1 - p_i)^{C}$,
@@ -503,7 +502,7 @@ where $p_i$ is its \trait{dance propensity} and $C$ is the patch's remaining cap
 after the visit, so an exhausted patch never seeds a dance and a scarcely
 provisioned one rarely does. A dance, when performed, costs
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$, growing with the precision of the
-signal. A failed forage costs travel proportional to the foray length it
+signal. A failed attempt costs travel proportional to the foray length it
 travelled, and each act of attending to a dance incurs an attention cost.
 Collecting these terms, an episode with successful attempts $S$ (each at distance
 $r_k$), the subset $S_d \subseteq S$ of successes that produced a dance (each by a
