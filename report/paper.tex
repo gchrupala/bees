@@ -189,27 +189,24 @@ artificial multi-agent systems, viewed as an abstract computational problem.
  thereof.
 
  \subsection{Communication in agent societies}
-A long line of computational work has studied how communication
-systems can emerge and stabilize in populations of interacting agents.
-The signaling game introduced by \citet{lewis1969convention} provides
-the formal foundation for much of this work, framing a convention of
-meaning as a solution to a recurring coordination problem between a
-sender and a receiver. \citet{skyrms2010signals} shows how such
-signaling conventions can arise without prior agreement through
-evolutionary and reinforcement-learning dynamics. A distinct route
-emphasizes cultural transmission: in the iterated-learning framework,
-linguistic structure emerges as a code is repeatedly learned and reproduced
-across successive generations of agents, without being built in
-\citep{smith2003iterated}. Related formal work models
-how a protolanguage itself evolves under selection, showing for instance how
-combining a small set of signals into words overcomes the error limit that caps
-a simple signal repertoire \citep{nowak1999evolution}. Agent-based models
-in this tradition have aimed to demonstrate that populations playing repeated
-language games can self-organize shared, grounded vocabularies and
-categories, a simulation tradition surveyed by \citet{wagner2003progress}.
-More recently, deep multi-agent
-reinforcement learning has been used to show that discrete
-communication protocols can emerge when agents are trained on
+A long line of computational work has studied how communication systems can
+emerge and stabilize in populations of interacting agents. The signaling game
+introduced by \citet{lewis1969convention} provides the formal foundation for
+much of this work, framing a convention of meaning as a solution to a recurring
+coordination problem between a sender and a receiver. \citet{skyrms2010signals}
+shows how such signaling conventions can arise without prior agreement through
+evolutionary and reinforcement-learning dynamics. A distinct route emphasizes
+cultural transmission: in the iterated-learning framework, linguistic structure
+emerges as a code is repeatedly learned and reproduced across successive
+generations of agents, without being built in \citep{smith2003iterated}. Related
+formal work models how a protolanguage itself evolves under selection, showing
+for instance how combining a small set of signals into words overcomes the error
+limit that caps a simple signal repertoire \citep{nowak1999evolution}.
+Agent-based models in this tradition have aimed to demonstrate that populations
+playing repeated language games can self-organize shared, grounded vocabularies
+and categories, a simulation tradition surveyed by \citet{wagner2003progress}.
+More recently, deep multi-agent reinforcement learning has been used to show
+that discrete communication protocols can emerge when agents are trained on
 cooperative referential tasks \citep{lazaridou2017multi}. Subsequent work has
 examined when such emergent codes become compositional and generalize to novel
 meanings \citep{chaabouni2020compositionality}, and how communicative pressure
@@ -219,61 +216,58 @@ this line of research.
 
 \subsection{Computational models of the waggle dance}
 A venerable research tradition asks an ecological question: given that the dance
-exists, \emph{when does it pay off}? The main tool here is the 
-agent-based foraging simulation. A colony of many simple forager agents
-follows fixed behavioral rules. Dance recruitment is present as a switch, with
-recruits either guided by a successful forager's spatial information or left to
-search on their own, while the ecology (the density, quality, spread,
-and persistence of food patches, and sometimes colony size) is varied across
-runs. The outcome of interest is colony-level foraging performance: typically the net
-energy or nectar collected. Importantly, these models represent neither
-evolution nor within-lifetime learning: the communication strategy is fixed and
-the agents do not adapt. What they model is the ecological cost-benefit
-accounting of a given strategy: how a fixed colony fares, with recruitment
-versus without, in one environment or another. Using such a model,
-\citet{dornhaus2006benefits} find that recruitment benefits a colony mainly when
-resources are patchy, variable, and hard to find, with the advantage depending
-on colony size, and \citet{schurch2014dancing} show that the dance's long-term
-benefits can outweigh its short-term costs. \citet{bailis2010positional} pose a
-more abstract version of the same question, analyzing when positional
-communication beats reliance on private information.  This body of
-work is the closest in spirit to our own foraging payoff, but it holds the
-communication system constant and measures its payoff in a fixed environment; it
-does not model the code itself as an evolving trait.
+exists, \emph{when does it pay off}? The main tool here is the agent-based
+foraging simulation. A colony of many simple forager agents follows fixed
+behavioral rules. Dance recruitment is present as a switch, with recruits either
+guided by a successful forager's spatial information or left to search on their
+own, while the ecology (the density, quality, spread, and persistence of food
+patches, and sometimes colony size) is varied across runs. The outcome of
+interest is colony-level foraging performance: typically the net energy or
+nectar collected. Importantly, these models represent neither evolution nor
+within-lifetime learning: the communication strategy is fixed and the agents do
+not adapt. What they model is the ecological cost-benefit accounting of a given
+strategy: how a fixed colony fares, with recruitment versus without, in one
+environment or another. Using such a model, \citet{dornhaus2006benefits} find
+that recruitment benefits a colony mainly when resources are patchy, variable,
+and hard to find, with the advantage depending on colony size, and
+\citet{schurch2014dancing} show that the dance's long-term benefits can outweigh
+its short-term costs. \citet{bailis2010positional} pose a more abstract version
+of the same question, analyzing when positional communication beats reliance on
+private information.  This body of work is the closest in spirit to our own
+foraging payoff, but it holds the communication system constant and measures its
+payoff in a fixed environment; it does not model the code itself as an evolving
+trait.
 
 More recently, the emergence itself of the bee communicative code has also been
-investigated computationally.
-\citet{10.1371/journal.pcbi.1010487} treat displaced communication as an
-evolutionary phenomenon: pairs of foraging agents, each controlled by a
-continuous-time recurrent neural network, undergo experimental evolution over
-tens of thousands of generations in a one-dimensional circular arena where a 
-receiver must reach one of several sites a sender has perceived as holding food.
-Their central finding concerns how a displaced signal
-arises. Although senders could in principle modulate  signal
-amplitude, communication instead evolved from incidental, movement-derived
-cues (the onset delay and duration of a sender's presence in the shared
-communication zone), which were subsequently ritualized into signals.
-The more
-efficient amplitude-based scheme evolved only when the cheaper cue was
-experimentally suppressed. This model
-shares our evolutionary framing but selects at the level of individual
-sender--receiver pairs rather than colonies, and it abstracts away the geometry
-of the dance: the object of study is how any displaced signal bootstraps from
-behavior, not how a specific directional code is structured.
+investigated computationally. \citet{10.1371/journal.pcbi.1010487} treat
+displaced communication as an evolutionary phenomenon: pairs of foraging agents,
+each controlled by a continuous-time recurrent neural network, undergo
+experimental evolution over tens of thousands of generations in a
+one-dimensional circular arena where a receiver must reach one of several sites
+a sender has perceived as holding food. Their central finding concerns how a
+displaced signal arises. Although senders could in principle modulate  signal
+amplitude, communication instead evolved from incidental, movement-derived cues
+(the onset delay and duration of a sender's presence in the shared communication
+zone), which were subsequently ritualized into signals. The more efficient
+amplitude-based scheme evolved only when the cheaper cue was experimentally
+suppressed. This model shares our evolutionary framing but selects at the level
+of individual sender--receiver pairs rather than colonies, and it abstracts away
+the geometry of the dance: the object of study is how any displaced signal
+bootstraps from behavior, not how a specific directional code is structured.
 
 \citet{siregar2026emergent} instead ask what internal representations and
 channel properties allow a compositional, waggle-dance-like code to be
 \emph{learned}. A single sender--receiver pair, implemented as graph neural
-networks operating over map-like graphs of routes between the nest and
-candidate sites, is trained by gradient descent on a referential game to
-transmit two real-valued tokens identifying the food node. They ask whether the two tokens factor into
-independent direction and distance components (compositionality), how this
-depends on the overlap between the sender's and receiver's mental maps, and
-whether constraining the channel to the kinematic range of a real dance helps.
-They find that direction is readily encoded whereas direct distance is not,
-that representational overlap is the main driver of compositionality, and that
-channel constraints have only a small effect. This is a within-lifetime study
-of representation and structure, with no population dynamics or selection.
+networks operating over map-like graphs of routes between the nest and candidate
+sites, is trained by gradient descent on a referential game to transmit two
+real-valued tokens identifying the food node. They ask whether the two tokens
+factor into independent direction and distance components (compositionality),
+how this depends on the overlap between the sender's and receiver's mental maps,
+and whether constraining the channel to the kinematic range of a real dance
+helps. They find that direction is readily encoded whereas direct distance is
+not, that representational overlap is the main driver of compositionality, and
+that channel constraints have only a small effect. This is a within-lifetime
+study of representation and structure, with no population dynamics or selection.
 In a similar vein, \citet{portegys2020morphognostic} has an individual agent
 learn to both produce and follow dance-like movements that encode a nectar
 location, again treating the dance as a code to be acquired within an
@@ -313,15 +307,15 @@ structure.
   \label{tab:routes}
 \end{table}
 
-Our study occupies a different point in this space (\Cref{tab:routes}). We model the emergence
-and in particular the evolutionary \emph{transition} between two forms of a
-referential code at the level of colonies, using a small set of interpretable,
-heritable traits rather than opaque neural controllers. This lets us treat costs, benefits, 
-and comb geometry as explicit
-parameters and ask which ecological and evolutionary conditions drive the shift
-from iconic direct pointing to an abstract gravity-referenced code: a question
-about the conditions and dynamics of a communicative transition that none of
-the prior work addresses. 
+Our study occupies a different point in this space (\Cref{tab:routes}). We model
+the emergence and in particular the evolutionary \emph{transition} between two
+forms of a referential code at the level of colonies, using a small set of
+interpretable, heritable traits rather than opaque neural controllers. This lets
+us treat costs, benefits, and comb geometry as explicit parameters and ask which
+ecological and evolutionary conditions drive the shift from iconic direct
+pointing to an abstract gravity-referenced code: a question about the conditions
+and dynamics of a communicative transition that none of the prior work
+addresses. 
 
 \section{Method}
 \label{sec:method}
@@ -338,7 +332,8 @@ largely sterile, selection acts effectively on heritable colony-level traits
 rather than on individual workers; this is the standard kin-selection rationale
 for treating the honeybee colony as a superorganism
 \citep{hamilton1964genetical,seeley1989superorganism}. There is no sexual
-reproduction: colonies reproduce without genetic input from other colonies. Colonies have a number of heritable
+reproduction: colonies reproduce without genetic input from other colonies. 
+Colonies have a number of heritable
 traits which are transmitted to offspring colonies subject to mutation, and
 individual agents express these traits with some non-heritable individual
 variation. For simplicity and focus, we model the waggle dance as only signaling 
@@ -350,11 +345,11 @@ We keep two kinds of quantity visually distinct throughout: a colony's heritable
 traits, which evolve under mutation and selection and whose names we set in
 \trait{small capitals}, and the model's fixed or swept simulation parameters,
 which are chosen by the experimenter, referred to by their mathematical symbols,
-and listed in \Cref{tab:fixed-params,tab:varied-params}. A colony is described by a small set of heritable, real-valued traits,
-listed in full in \Cref{tab:traits}. The prose here introduces the traits needed
-for the basic horizontal-comb model (\Cref{sec:horizontal}); the additional
-traits and geometry required for tilted combs are developed in
-\Cref{sec:vertical}.
+and listed in \Cref{tab:fixed-params,tab:varied-params}. A colony is described
+by a small set of heritable, real-valued traits, listed in full in
+\Cref{tab:traits}. The prose here introduces the traits needed for the basic
+horizontal-comb model (\Cref{sec:horizontal}); the additional traits and
+geometry required for tilted combs are developed in \Cref{sec:vertical}.
 
 \begin{table}
   \centering
@@ -436,24 +431,25 @@ recovered direction is close enough to a food site to lead the follower to it.
 \label{sec:environment}
 A colony is evaluated over a fixed number of independent foraging episodes, and
 its fitness is averaged over them (\Cref{sec:foraging}). Each episode draws a
-fresh environment (\Cref{fig:environment}), with patch radii in meters and distances from the nest in kilometers.
-The number of food sites is drawn from a Poisson distribution with mean $n$, so
-episodes vary in how much food they offer and some contain none. Each site is
-placed at an azimuth drawn uniformly around the colony and at a distance drawn
-uniformly from $[d_{\min}, d_{\max}]$, and is a physical circular patch (a disk)
-whose radius is drawn independently from a lognormal distribution with median
-$\rho_r$ and log-scale spread $\sigma_r$. A forager captures the patch when its
-straight outbound path crosses the disk, so a patch's effective angular tolerance
-is approximately $\arcsin(\mathrm{radius}/\mathrm{distance})$, with radius and
-distance in the same units, and shrinks with distance: a fixed patch subtends a
-smaller angle when farther from the nest. Each
-patch has value $v$ per visit and a finite capacity limiting how many foragers it
-can supply before being exhausted; capacity scales with the patch's area, growing
-with the square of its radius relative to a reference radius $\rho_r$, so that
-larger patches hold proportionally more forage while the per-visit value stays
-fixed. In our experiments $v = 1$, the median radius is $\rho_r = 150$ m with
-log-scale spread $\sigma_r = 0.6$, a patch at the median radius has capacity $6$,
-and sites lie between $d_{\min} = 0.75$ km and $d_{\max} = 6$ km.
+fresh environment (\Cref{fig:environment}), with patch radii in meters and
+distances from the nest in kilometers. The number of food sites is drawn from a
+Poisson distribution with mean $n$, so episodes vary in how much food they offer
+and some contain none. Each site is placed at an azimuth drawn uniformly around
+the colony and at a distance drawn uniformly from $[d_{\min}, d_{\max}]$, and is
+a physical circular patch (a disk) whose radius is drawn independently from a
+lognormal distribution with median $\rho_r$ and log-scale spread $\sigma_r$. A
+forager captures the patch when its straight outbound path crosses the disk, so
+a patch's effective angular tolerance is approximately
+$\arcsin(\mathrm{radius}/\mathrm{distance})$, with radius and distance in the
+same units, and shrinks with distance: a fixed patch subtends a smaller angle
+when farther from the nest. Each patch has value $v$ per visit and a finite
+capacity limiting how many foragers it can supply before being exhausted;
+capacity scales with the patch's area, growing with the square of its radius
+relative to a reference radius $\rho_r$, so that larger patches hold
+proportionally more forage while the per-visit value stays fixed. In our
+experiments $v = 1$, the median radius is $\rho_r = 150$ m with log-scale spread
+$\sigma_r = 0.6$, a patch at the median radius has capacity $6$, and sites lie
+between $d_{\min} = 0.75$ km and $d_{\max} = 6$ km.
 
 The \trait{foray distance} trait $\ell$ (\Cref{sec:traits}) sets how far a worker travels,
 but each individual foray draws its own outbound length from a Gamma distribution
