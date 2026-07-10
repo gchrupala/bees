@@ -266,7 +266,7 @@ def draw_horizontal_panel(ax) -> None:
         ax,
         vertex[0] + 1.95 * cos(u),
         vertex[1] + 1.95 * sin(u),
-        "🌼",
+        "🌸",
         46,
     )
     place_emoji(

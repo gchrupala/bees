@@ -63,9 +63,9 @@ HEX_RADIUS = 0.16
 # "unoccluded" and drawn solid on top of comb tiles that are actually there.
 COMB_OCCLUSION_HALF_SIZE = COMB_HALF_SIZE + 2 * HEX_RADIUS
 
-# Food-site marker: a purple flower, rendered as a NotoColorEmoji bitmap since
+# Food-site marker: a flower, rendered as a NotoColorEmoji bitmap since
 # matplotlib text cannot draw colour emoji.
-FLOWER_MARKER = "\U0001FABB"  # hyacinth
+FLOWER_MARKER = "\U0001F338"  # cherry blossom
 FLOWER_MARKER_SIZE = 30
 FLOWER_EDGE_MARGIN = 0.95  # how close to the ground square's edge to place it
 FLOWER_OCCLUDED_ZORDER = 0.5  # below the comb (zorder 1), so it shows through
