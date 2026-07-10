@@ -460,13 +460,8 @@ reference for the gravity-based code introduced in \Cref{sec:vertical}. The
 sun's azimuth is drawn uniformly from an arc of width $\Delta_{\mathrm{sun}}$
 centered on a fixed heading $\mu_{\mathrm{sun}}$ (in our experiments
 $\mu_{\mathrm{sun}} = \pi/2$ and $\Delta_{\mathrm{sun}} = \pi$), so it is constant
-within an episode but varies between episodes. Within an episode the sun is
-shared by every worker, so when a dancer and follower both use the
-gravity-referenced code the sun azimuth enters encoding and decoding with
-opposite sign and cancels, and where it falls does not matter. Because it
-varies across episodes, however, a colony cannot treat it as a fixed offset: a
-strategy that does not fully commit to the gravity code leaves an uncancelled
-sun term, so the shifting reference selects for genuine transposition.
+within an episode but varies between episodes. We explain the role of this
+variable sun azimuth in \Cref{sec:vertical}.
 \begin{figure}
   \centering
     \includegraphics[width=0.8\textwidth]{figures/disk_food_samples.png}
@@ -708,6 +703,15 @@ $(1 - t_{r,i})\,s_{\mathrm{dir}}$ and $t_{r,i}\,s_{\mathrm{grav}}$. Successful
 communication therefore requires senders and receivers to use compatible codes: a
 dance produced under the gravity reference is understood correctly only by a
 receiver who also decodes it that way.
+
+The per-episode sun azimuth (\Cref{sec:environment}) matters through this
+blending. Within an episode the sun is shared by every worker, so when a dancer
+and follower both use the gravity code it enters encoding and decoding with
+opposite sign and cancels, and where it falls does not matter. Because it varies
+across episodes, however, a colony cannot treat it as a fixed offset: a strategy
+that only partially commits to the gravity code leaves an uncancelled sun term,
+so the shifting reference selects for genuine transposition rather than a stable
+blend of the two codes.
 
 \paragraph{Coupling of sender and receiver.}
 Because a working code must change on both sides at once, we allow the mutations
