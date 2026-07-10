@@ -510,7 +510,7 @@ and $n_a$ dance-following attempts yields raw payoff
     - c_{\mathrm{att}}\,n_a,
 \end{equation}
 where the dance-cost sum runs over $S_d$ because a success produces a dance only
-when the recruitment decision fires.
+when the recruitment decision is positive.
 The scaled episode payoff is $\pi = (1 + B\gamma)\,\pi_{\mathrm{raw}}$, where
 $\gamma$ is the \trait{comb tilt} and $B \ge 0$ the vertical-comb benefit
 (\Cref{sec:vertical}); in the horizontal model $\gamma = 0$, so the scaling is
@@ -529,9 +529,10 @@ colonies; there is no sexual reproduction. In each generation every colony is
 evaluated, and the next generation is produced by repeated 
 selection of parent colonies with a probability proportional to fitness. 
 A selected colony's traits are copied subject to
-mutation. Each trait is perturbed by an independent Gaussian step of standard
-deviation $\sigma_m$ (scaled by $D$ for the \trait{foray distance}) and then clipped to
-its range. The workers of each offspring colony are then regenerated from its traits
+mutation. Each trait is perturbed by an independent Gaussian step and then clipped to its
+range. The step's standard deviation is a fixed fraction $\sigma_m$ of that
+range: $\sigma_m$ for the traits on the unit interval, and $\sigma_m D$ for the
+\trait{foray distance}, whose range is $[0,D]$. The workers of each offspring colony are then regenerated from its traits
 as in \Cref{sec:traits}. The mutation rate $\sigma_m$ thus sets the pace of
 evolutionary change.
 
