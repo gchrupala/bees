@@ -595,7 +595,7 @@ along the resulting in-surface vector $\mathbf{p}$ (\Cref{fig:direct-decode}).
     in the world plane; its orthogonal projection onto the comb, $\mathbf{p}$
     (red), found by carrying its start and end points along the comb's
     normal $\mathbf{n}$ (black) until they meet the surface, shown by the
-    dashed rays, has in-plane angle $\delta_\mathrm{dir}$, the encoded
+    dashed rays, has in-surface angle $\delta_\mathrm{dir}$, the encoded
     signal. Decoding that signal back to a world heading, the flatten variant
     recovers $\mathbf{r}$ (orange), which drifts off the true direction by a
     systematic angle on any tilted comb, whereas the unproject variant would
@@ -667,7 +667,7 @@ the \trait{sender transposition} $t_s$ and \trait{receiver transposition} $t_r$
 \Cref{sec:traits}). These set how much weight a worker places on the
 gravity-referenced code rather than the direct code when, respectively, producing
 and interpreting a dance. Let $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$
-be the in-plane angles the two codes assign to the food just visited. The
+be the in-surface angles the two codes assign to the food just visited. The
 intended dance direction $\delta$ is a weighted circular mean of the two:
 each angle is turned into a unit vector, scaled by its weight, the two vectors
 are summed, and $\delta$ is the heading of the resultant,
