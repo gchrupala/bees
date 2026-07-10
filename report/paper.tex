@@ -579,12 +579,12 @@ At $\theta = 0$ this reduces to $(0,0,1)$, pointing straight up, and at
 $\theta = \pi/2$ it lies in the horizontal plane pointing along $\phi$.
 
 \paragraph{The two codes.}
-In the \emph{direct} (iconic) code the worker takes the world-space direction of
-the food as a three-dimensional unit vector,
-$\mathbf{f} = (\cos \alpha, \sin \alpha, 0)$ for food azimuth $\alpha$ (the vertical component
-is zero because food lies in the horizontal plane), and projects
-it onto the comb surface, reading off the resulting in-plane angle
-(\Cref{fig:direct-decode}).
+Both codes express the food direction as an angle in the comb surface; they
+differ in the reference the angle is measured from and in how much of the
+direction the surface can carry. In the \emph{direct} (iconic) code the worker
+projects the food's world direction $\mathbf{f} = (\cos\alpha, \sin\alpha, 0)$, a
+horizontal unit vector at azimuth $\alpha$, orthogonally onto the comb and dances
+along the resulting in-surface vector $\mathbf{p}$ (\Cref{fig:direct-decode}).
 
 \begin{figure}
   \centering
@@ -603,67 +603,62 @@ it onto the comb surface, reading off the resulting in-plane angle
   \label{fig:direct-decode}
 \end{figure}
 
-Letting $\mathbf{e}_1, \mathbf{e}_2$ be the orthonormal axes spanning the comb
-surface and $M$ the $2\times 2$ matrix whose rows are their horizontal
-(east--north) parts, the projection of $\mathbf{f}$ onto the comb has surface
-coordinates $(p_1,p_2)^\top = M(\cos \alpha,\sin \alpha)^\top$, i.e.\ the in-surface vector
-$\mathbf{p} = p_1\,\mathbf{e}_1 + p_2\,\mathbf{e}_2$, and the encoded signal is its
-angle $\delta_{\mathrm{dir}} = \operatorname{atan2}(p_2,p_1)$; the
-determinant $\det M = \cos\theta$ vanishes only at full vertical tilt, where $M$
-becomes singular along the direction the comb faces.
-How well this
-works depends on how much of the food direction survives the projection, which we
-call the direct code's strength and measure by the length of the
-projected vector $\mathbf{p}$,
+In the comb's orthonormal surface axes $\mathbf{e}_1, \mathbf{e}_2$, this
+projection has coordinates $p_i = \mathbf{e}_i\cdot\mathbf{f}$, and the encoded
+signal is its angle $\delta_{\mathrm{dir}} = \operatorname{atan2}(p_2,p_1)$. The
+code's \emph{strength} is how much of the unit direction survives the projection,
+$s_{\mathrm{dir}} = \lVert\mathbf{p}\rVert$. What the projection discards is the
+part of $\mathbf{f}$ along the comb normal, $\mathbf{f}\cdot\mathbf{n} =
+\sin\theta\cos(\alpha-\phi)$, leaving
 \begin{equation}
   s_{\mathrm{dir}} = \sqrt{1 - \sin^2\theta\,\cos^2(\alpha-\phi)}.
 \end{equation}
-On a horizontal comb $s_{\mathrm{dir}} = 1$: the food direction lies entirely
-within the surface and is represented faithfully. On a tilted comb it shrinks,
-reaching a minimum of $\cos\theta$ for food lying in the direction the comb
-faces ($\alpha = \phi$); only on a fully vertical comb does this minimum reach zero,
-so the horizontal heading is lost only for that one food direction, and only at
-full vertical tilt. In the \emph{gravity-referenced} code the
-worker instead projects the vertical (gravity) direction
-$\mathbf{g} = (0,0,1)$, likewise a world-space vector,
-onto the comb surface to obtain a reference direction, and encodes the food's
-azimuth measured relative to the sun's azimuth as an angle from that reference.
-The analogous strength is
+On a horizontal comb $s_{\mathrm{dir}} = 1$: the direction lies entirely within
+the surface and is represented faithfully. As the comb tilts $s_{\mathrm{dir}}$
+shrinks, reaching its minimum $\cos\theta$ for food in the direction the comb
+faces ($\alpha = \phi$). Only on a fully vertical comb does this minimum fall to
+zero: the facing direction then projects to nothing and its heading cannot be
+recovered, while every other direction stays informative.
+
+In the \emph{gravity-referenced} code the worker instead projects the vertical
+direction $\mathbf{g} = (0,0,1)$ onto the comb to obtain an in-surface reference,
+and encodes the food azimuth, measured relative to the sun, as an angle from that
+reference. Its strength depends only on tilt, not on the food's bearing,
 \begin{equation}
   s_{\mathrm{grav}} = \sin\theta = \sin(\gamma\,\pi/2),
 \end{equation}
-unlike $s_{\mathrm{dir}}$, this depends only on the comb's tilt and not on the
-food's bearing: it is zero on a horizontal comb, where gravity is perpendicular
-to the surface and provides no in-plane reference, and grows to $1$ as the comb
-becomes vertical, trading off against the direct code's decline as the comb
-tilts. A horizontal comb thus supports only direct pointing, whereas a vertical
-comb makes the gravity reference fully available for every food direction, even
-though direct pointing itself remains informative, away from the comb's facing
-direction, up to full vertical tilt. When a channel's
-strength falls below $1$, the direction it recovers is correspondingly degraded,
-modeled as a circular interpolation between the true angle and a uniformly random
-one, with weight equal to the strength.
+behaving oppositely to $s_{\mathrm{dir}}$: it is zero on a horizontal comb, where
+gravity is perpendicular to the surface and gives no in-surface reference, and
+grows to $1$ as the comb becomes vertical. The two trade off: a horizontal comb
+supports only direct pointing, a vertical comb makes the gravity reference
+available for every food direction, and at intermediate tilts both carry
+information.
+
+When a code's strength is below $1$, the direction it recovers is correspondingly
+degraded, modeled as a circular interpolation between the true angle and a
+uniformly random one with weight equal to the strength.
 
 \paragraph{Decoding the direct code.}
-Recovering a world heading from an observed direct-code signal means inverting
-the projection used to encode it, and two variants are modelled, bracketing
-uncertainty over whether a receiver performs this geometric correction in full
-(\Cref{fig:direct-decode}).
+The direct encoding is linear in the horizontal food vector:
+$(p_1,p_2)^\top = M(\cos\alpha,\sin\alpha)^\top$, where $M$ is the $2\times 2$
+matrix whose rows are the east--north parts of $\mathbf{e}_1,\mathbf{e}_2$, with
+$\det M = \cos\theta$. Decoding recovers a world heading by inverting this map,
+and we model two receivers, bracketing whether the geometric correction is done
+in full (\Cref{fig:direct-decode}).
 \begin{description}
-  \item[Flatten] The receiver lifts the signal $\delta$ back to a unit
-    in-surface vector $\cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$ and
-    reads its horizontal heading, the recovered direction $\mathbf{r}$; this
-    applies $M^\top$ to the unit signal vector
-    $(\cos\delta,\sin\delta)^\top$ and introduces a systematic angular bias
-    on any tilted comb, since $M^\top \ne M^{-1}$ there.
-  \item[Unproject] The receiver instead applies $M^{-1}$, which exactly
-    inverts the encoding; since $\det M = \cos\theta > 0$ for
-    $\theta < \pi/2$, the heading is recovered without bias.
+  \item[Flatten] The receiver lifts the signal $\delta$ to the unit in-surface
+    vector $\cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$ and reads its
+    horizontal heading $\mathbf{r}$, which applies $M^\top$ rather than
+    $M^{-1}$. Because $M^\top \ne M^{-1}$ on a tilted comb, $\mathbf{r}$ is
+    systematically biased there.
+  \item[Unproject] The receiver instead applies $M^{-1}$, exactly inverting the
+    encoding; since $\det M = \cos\theta > 0$ for $\theta < \pi/2$, the true
+    heading is recovered without bias.
 \end{description}
-On a flat comb both variants coincide because $M$ is then a rotation matrix.
-The gravity code, by contrast, is always decoded by exact inversion: the
-projected gravity direction is available to any receiver as a reference, so
-the sun-relative food azimuth is read back directly.
+On a flat comb $M$ is a rotation, so $M^\top = M^{-1}$ and the two variants
+coincide. The gravity code, by contrast, is always decoded by exact inversion:
+the projected gravity reference is available to any receiver, so the sun-relative
+food azimuth is read back directly.
 
 \paragraph{Transposition and blending the codes.}
 Which code a worker uses is governed by two further heritable behavioral traits,
