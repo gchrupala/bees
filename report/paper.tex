@@ -536,7 +536,33 @@ range: $\sigma_m$ for the traits on the unit interval, and $\sigma_m D$ for the
 as in \Cref{sec:traits}. The mutation rate $\sigma_m$ thus sets the pace of
 evolutionary change.
 
-\subsection{Horizontal comb}
+\subsection{Modeling code transition}
+\label{sec:transition}
+We ask how a colony can move from the direct-pointing code, available on a
+horizontal comb, to the gravity-referenced code used on a vertical one. We do not
+model why combs come to hang vertically; instead we impose an exogenous benefit
+for vertical building through the payoff scaling $(1 + B\gamma)$
+(\Cref{sec:foraging}), which rewards greater \trait{comb tilt} on its own, and ask
+whether communication can survive as the comb tilts under that pressure. Because
+\trait{comb tilt} is itself a trait that starts flat and evolves by small
+mutational steps, a lineage passes through intermediate, partly tilted combs
+rather than jumping from horizontal to vertical.
+
+Those intermediate tilts are what make the transition non-trivial. As the comb
+tilts, direct pointing degrades: projecting the food direction onto the sloping
+surface discards part of it, and a follower must read a dance performed on that
+tilted surface. How faithfully the heading is recovered depends on whether the
+receiver corrects for the tilt, and we model two idealized decoders
+(\Cref{sec:vertical}). The \emph{flatten} decoder applies no correction, reading
+off the horizontal heading of the danced gesture; it is the more biologically
+plausible of the two but leaves a systematic directional bias on any tilted comb.
+The \emph{unproject} decoder instead inverts the projection exactly using the
+comb's known tilt and orientation, removing the bias at the cost of assuming the
+receiver has access to the comb's geometry; we keep it as a bias-free reference
+against which to read the flatten results. At the same time the tilt makes the
+gravity-referenced code available, so a colony can in principle switch codes as
+direct pointing fails; whether it does is what these experiments test.
+\subsubsection{Horizontal comb}
 \label{sec:horizontal}
 The basic version of the model is exactly as described above: the comb is
 horizontal and the only code available is direct pointing. We use it to
@@ -545,7 +571,7 @@ starting from an initial population with little communicative ability (low
 \trait{directional bias} and low attention), so that early foragers signal weakly and
 rarely attend to one another.
 
-\subsection{Evolution of vertical combs}
+\subsubsection{Towards vertical combs}
 \label{sec:vertical}
 The second version of the model adds the machinery needed for tilted combs and
 the gravity-referenced code. It introduces two further
@@ -615,7 +641,7 @@ part of $\mathbf{f}$ along the comb normal, $\mathbf{f}\cdot\mathbf{n} =
 \end{equation}
 On a horizontal comb $s_{\mathrm{dir}} = 1$: the direction lies entirely within
 the surface and is represented faithfully. As the comb tilts $s_{\mathrm{dir}}$
-shrinks, reaching its minimum $\cos\theta$ for food in the direction the comb
+shrinks, reaching its minimum $\cos\theta$ for the food site in the direction the comb
 faces ($\alpha = \phi$). Only on a fully vertical comb does this minimum fall to
 zero: the facing direction then projects to nothing and its heading cannot be
 recovered, while every other direction stays informative.
@@ -623,7 +649,7 @@ recovered, while every other direction stays informative.
 In the \emph{gravity-referenced} code the worker instead projects the vertical
 direction $\mathbf{g} = (0,0,1)$ onto the comb to obtain an in-surface reference,
 and encodes the food azimuth, measured relative to the sun, as an angle from that
-reference. Its strength depends only on tilt, not on the food's bearing,
+reference. Its strength depends only on tilt, not on the bearing to the food site,
 \begin{equation}
   s_{\mathrm{grav}} = \sin\theta = \sin(\gamma\,\pi/2),
 \end{equation}
@@ -634,7 +660,7 @@ supports only direct pointing, a vertical comb makes the gravity reference
 available for every food direction, and at intermediate tilts both carry
 information.
 
-When a code's strength is below $1$, the direction it recovers is correspondingly
+When code strength is below $1$, the direction it recovers is correspondingly
 degraded, modeled as a circular interpolation between the true angle and a
 uniformly random one with weight equal to the strength.
 
