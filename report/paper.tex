@@ -536,6 +536,15 @@ range: $\sigma_m$ for the traits on the unit interval, and $\sigma_m D$ for the
 as in \Cref{sec:traits}. The mutation rate $\sigma_m$ thus sets the pace of
 evolutionary change.
 
+\subsection{Horizontal comb}
+\label{sec:horizontal}
+The horizontal-comb model is exactly as described above: the comb is flat
+and the only code available is direct pointing. We use it to
+investigate the conditions under which a referential code emerges and stabilizes,
+starting from an initial population with little communicative ability (low
+\trait{directional bias} and low attention), so that early foragers signal weakly and
+rarely attend to one another.
+
 \subsection{Modeling code transition}
 \label{sec:transition}
 We ask how a colony can move from the direct-pointing code, available on a
@@ -553,28 +562,20 @@ tilts, direct pointing degrades: projecting the food direction onto the sloping
 surface discards part of it, and a follower must read a dance performed on that
 tilted surface. How faithfully the heading is recovered depends on whether the
 receiver corrects for the tilt, and we model two idealized decoders
-(\Cref{sec:vertical}). The \emph{flatten} decoder applies no correction, reading
-off the horizontal heading of the danced gesture; it is the more biologically
-plausible of the two but leaves a systematic directional bias on any tilted comb.
-The \emph{unproject} decoder instead inverts the projection exactly using the
-comb's known tilt and orientation, removing the bias at the cost of assuming the
-receiver has access to the comb's geometry; we keep it as a bias-free reference
-against which to read the flatten results. At the same time the tilt makes the
-gravity-referenced code available, so a colony can in principle switch codes as
-direct pointing fails; whether it does is what these experiments test.
-\subsubsection{Horizontal comb}
-\label{sec:horizontal}
-The basic version of the model is exactly as described above: the comb is
-horizontal and the only code available is direct pointing. We use it to
-investigate the conditions under which a referential code emerges and stabilizes,
-starting from an initial population with little communicative ability (low
-\trait{directional bias} and low attention), so that early foragers signal weakly and
-rarely attend to one another.
+(\Cref{sec:vertical}): a biologically plausible \emph{flatten} decoder that
+applies no such correction and is therefore biased on a tilted comb, and an
+idealized \emph{unproject} decoder that corrects exactly and serves as a
+bias-free reference against which to read the flatten results.
 
-\subsubsection{Towards vertical combs}
+Meanwhile, the growing tilt makes the
+gravity-referenced code increasingly reliable, so a colony can in principle
+switch codes as direct pointing weakens. We again model this switch as gradual,
+through a blend of the two codes (\Cref{sec:vertical}).
+
+\subsection{Dancing on a tilted comb}
 \label{sec:vertical}
-The second version of the model adds the machinery needed for tilted combs and
-the gravity-referenced code. It introduces two further
+The tilted-comb model extends the horizontal one with the machinery for comb
+tilt and the gravity-referenced code. It introduces two further
 colony-level traits describing the nest: the \trait{comb tilt} $\gamma \in [0,1]$,
 where $\gamma = 0$ is a horizontal comb and $\gamma = 1$ a vertical one, and the
 \trait{comb orientation} $\phi$, the compass heading the comb faces. Like the
