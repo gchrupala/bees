@@ -483,22 +483,22 @@ Within each episode (\Cref{sec:environment}) the colony makes a sequence of
 foraging attempts. On each attempt a worker is drawn at random; if at least one
 dance has already been performed in the current episode,
 the worker follows a randomly chosen dance with probability equal to its
-attention $a_i$, decoding it into a search direction, and otherwise searches in a
+attention $a_i$, reading it out as a search direction, and otherwise searches in a
 uniformly random direction. The worker then sets out along that direction on a
 foray whose length is drawn as in \Cref{sec:environment} and enters the first
-food patch its straight path crosses, among patches that still have remaining
+food patch on its path, among patches that still have remaining
 capacity and lie within the foray length; if no patch is reached the attempt fails.
 
-Payoff accrues per episode. A successful foraging attempt yields the patch's value $v$, minus
-a travel cost proportional to the patch's distance, and may prompt the worker to
+Payoff accrues per episode. A successful foraging attempt yields the patch value $v$, minus
+a travel cost $c_{\mathrm{travel}}$ per unit of patch distance, and may prompt the worker to
 perform a dance advertising the patch to later foragers. Recruitment is itself an
 evolved decision: a successful scout dances with probability $1 - (1 - p_i)^{C}$,
 where $p_i$ is its \trait{dance propensity} and $C$ is the patch's remaining capacity
-after the visit, so an exhausted patch never seeds a dance and a scarcely
+after the visit, so an exhausted patch never leads to a dance and a scarcely
 provisioned one rarely does. A dance, when performed, costs
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$, growing with the precision of the
 signal. A failed attempt costs travel proportional to the foray length it
-travelled, and each act of attending to a dance incurs an attention cost.
+travelled, and each act of attending to a dance incurs an attention cost $c_{\mathrm{att}}$.
 Collecting these terms, an episode with successful attempts $S$ (each at distance
 $r_k$), the subset $S_d \subseteq S$ of successes that produced a dance (each by a
 worker with bias $b_k$), failed attempts $F$ (each with foray length $\ell_j$),
