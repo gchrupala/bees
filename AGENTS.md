@@ -123,9 +123,12 @@ git as the single source of truth for results:
   of the argument; confirm important textual changes before editing.
 - The writing in the paper should focus on the final version of the model and experimental setup. There should be no references to previous versions or superseded results.
 - The paper should use present tense, unless there is a good reason not to.
-- Do not use em-dashes (`---`) in the paper or report prose. Recast with
+- Avoid excessive em-dashes (`---`) in the paper or report prose. Recast with
   commas, colons, semicolons, or parentheses instead. (En-dashes, `--`, for
   ranges and compounds such as `$80$--$91$` or `sender--receiver` are fine.)
+- While writing, make sure that the paper writing style and personality matches the description in @style.md
+
+
 ### Data and visualizations
 - For the display of quantitative data (when it's useful to show spread), prefer figures to tables
 - Use clean, uncluttered design for figures. Explanatory text should be in the caption, not figure title or embedded in the figure. Labels for key elements in a figure and legends are OK. 
