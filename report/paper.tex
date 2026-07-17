@@ -979,7 +979,7 @@ trials concentrate where earlier ones succeeded; the first $64$ trials are drawn
 at random. We run $1024$ trials per decode variant.
 
 \paragraph{Scoring a trial.}
-Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). For seed $j$ we
+Each trial evaluates a panel of $J = 10$ seeds. For seed $j$ we
 write $\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$ for the final-generation
 population means of the \trait{comb tilt} and the two \trait{transposition}
 traits, and $m_j$ for the lowest foraging success (\Cref{sec:foraging}, averaged
@@ -1038,26 +1038,34 @@ transitions that complete, and uses progress only to rank panels that fail.
 \end{table}
 
 \paragraph{Confirmation and held-out validation.}
-The highest-scoring search trials are re-run on a disjoint confirmation panel of
-$40$ seeds ($110$--$149$), and the best candidates are then validated on $100$
-held-out seeds ($200$--$299$) that were used in neither search nor confirmation. Validation reports, per
+Because the optimization ranks trials by their score on only ten seeds, a top-ranked
+candidate may owe that score to a genuinely robust transition or to a lucky draw
+of those seeds, and re-scoring it on unseen seeds tells the two
+apart. The highest-scoring search trials are re-run on a disjoint confirmation panel of
+$40$ seeds, and the best candidates are then validated on $100$
+held-out seeds that were used in neither search nor confirmation. Validation reports, per
 candidate, the fraction of stable seeds, the non-viable count, and
 final-generation means of foraging success, \trait{comb tilt}, and the lower of
 the two \trait{transposition} traits.
 
 \paragraph{One-parameter sensitivity.}
-Around the strongest validated candidate we perturb each parameter in turn,
-holding the others at their validated values, over the same $100$ held-out seeds
-($200$--$299$), to identify which parameters the transition is most sensitive to.
+The search locates a viable setting but, its trials clustering around what
+already worked, does not say how wide the viable region around it is. Around the
+strongest validated candidate we therefore perturb each parameter in turn,
+holding the others at their validated values, over the same $100$ held-out seeds;
+sweeping one axis at a time on a regular grid measures how far
+each parameter can move before the transition degrades, and so which parameters
+it tolerates freely and which it depends on finely.
 
 \paragraph{Evolutionary-parameter interaction.}
 To ask whether mutation parameters can compensate for a weaker architectural
 benefit, we hold the validated ecology fixed and run a full-factorial grid over
-the three evolutionary parameters, sweeping the benefit across the full search
-range while re-centring the mutation parameters on the disk stable region,
+the three evolutionary parameters, sweeping the benefit across its full search
+range while centring the mutation-parameter grids on the values found stable
+above,
 $B \in \{0.10, 0.30, 0.45, 0.60\}$, $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
 $\rho \in \{0.0, 0.3, 0.6, 0.9\}$, evaluating each of the $64$ cells over the same
-$100$ held-out seeds ($200$--$299$).
+$100$ held-out seeds.
 
 \paragraph{Outcome measures.}
 Across the transition experiments we summarize runs by the same thresholds used in
