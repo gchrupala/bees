@@ -977,18 +977,24 @@ trials concentrate where earlier ones succeeded; the first $64$ trials are drawn
 at random. We run $1024$ trials per decode variant.
 
 \paragraph{Scoring a trial.}
-Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). For seed $j$ we write
-$\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$ for the final-generation
-population means of the \trait{comb tilt} and the two \trait{transposition}
-traits, and $m_j$ for the lowest foraging success the run reaches at any
-generation. A seed is \emph{stable} if $\bar\gamma_j \ge \gamma^\ast$ and
-$\min(\bar t_{s,j}, \bar t_{r,j}) \ge t^\ast$, and \emph{collapsed} if
-$m_j \le m^\ast$. The three thresholds mark what we are willing to call a
-completed transition: $\gamma^\ast = 0.80$ asks for a comb that is mostly
-vertical, $t^\ast = 0.50$ asks that both roles weight the gravity reference at
-least as heavily as direct pointing, so that the code has genuinely tipped over
-rather than merely drifted, and $m^\ast = 0.02$ marks a colony that has stopped
-finding food at all. A seed's \emph{progress} measures how near it came to the
+Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). A run's
+\emph{foraging success} at a generation is the fraction of that generation's
+foraging attempts that reach a food site (\Cref{sec:foraging}), averaged over the
+colonies. For seed $j$ we write $\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$
+for the final-generation population means of the \trait{comb tilt} and the two
+\trait{transposition} traits, and $m_j$ for the lowest foraging success reached at
+any generation of the run. A seed is \emph{stable} if $\bar\gamma_j \ge
+\gamma^\ast$ and $\min(\bar t_{s,j}, \bar t_{r,j}) \ge t^\ast$, and
+\emph{non-viable} if $m_j \le m^\ast$. The first two thresholds mark what we count
+as a completed transition: $\gamma^\ast = 0.80$ asks for a mostly vertical comb,
+and $t^\ast = 0.50$ asks that both roles weight the gravity reference at least as
+heavily as direct pointing, so that the code has genuinely tipped over rather than
+merely drifted. The threshold $m^\ast = 0.02$ is a viability floor:
+colonies begin with almost no communicative ability and forage by near-random
+search, so foraging success is lowest in the founding generation and climbs as
+the code evolves. The minimum $m_j$ is thus in effect the founders' success rate,
+and penalizing it steers the search away from settings in which foraging is never
+viable. A seed's \emph{progress} measures how near it came to the
 first two: each trait is expressed as a fraction of the threshold it must reach,
 and progress is the smallest of those fractions, capped at one,
 \begin{equation}
@@ -1000,12 +1006,11 @@ reaches one exactly when its trait reaches its threshold, so $g_j = 1$ holds
 exactly when seed $j$ is stable, and $g_j < 1$ grades the near misses. The trial
 score is then
 \begin{equation}
-  \sum_{j=1}^{J} \mathbf{1}\bigl[g_j = 1\bigr]
-  \;+\; \frac{1}{J}\sum_{j=1}^{J} g_j
-  \;-\; \sum_{j=1}^{J} \mathbf{1}\bigl[m_j \le m^\ast\bigr].
+  \underbrace{\sum_{j=1}^{J} \mathbf{1}\bigl[g_j = 1\bigr]}_{\text{stable count}}
+  \;+\; \underbrace{\frac{1}{J}\sum_{j=1}^{J} g_j}_{\text{mean progress}}
+  \;-\; \underbrace{\sum_{j=1}^{J} \mathbf{1}\bigl[m_j \le m^\ast\bigr]}_{\text{non-viable count}}.
 \end{equation}
-The three terms count the stable seeds, average the progress, and subtract the
-collapsed seeds. Because the progress term is an average of quantities bounded by
+Because the progress term is an average of quantities bounded by
 one, it can never contribute more than a single point, so one further stable seed
 outweighs any improvement in progress across the whole panel: the search pursues
 transitions that complete, and uses progress only to rank panels that fail.
@@ -1036,7 +1041,7 @@ transitions that complete, and uses progress only to rank panels that fail.
 The highest-scoring search trials are re-run on a disjoint confirmation panel of
 $40$ seeds ($110$--$149$), and the best candidates are then validated on $100$
 held-out seeds ($200$--$299$) that were used in neither search nor confirmation. Validation reports, per
-candidate, the fraction of stable seeds, the collapse count, and
+candidate, the fraction of stable seeds, the non-viable count, and
 final-generation means of foraging success, \trait{comb tilt}, and the lower of
 the two \trait{transposition} traits.
 
@@ -1059,7 +1064,8 @@ Across the transition experiments we summarize runs by the same thresholds used 
 the search objective: the \emph{stable} fraction (vertical comb with a coordinated
 gravity code), the \emph{gravity-reached} fraction (both \trait{transposition} traits
 crossing $0.50$ at any generation, whether or not verticality is retained), and
-the \emph{collapse} fraction (foraging success falling to $\le 0.02$), alongside
+the \emph{non-viable} fraction (foraging success $\le 0.02$ at its worst
+generation), alongside
 final-generation trait and success means. Seed-bootstrap intervals over the
 per-seed outcomes quantify sampling uncertainty in the reported fractions.
 
@@ -1158,7 +1164,7 @@ abundant one.
 
 \paragraph{Held-out validation.}
 The top five distinct candidates from each search, rerun on $100$ held-out seeds
-($200$--$299$), all produced frequent stable transitions and no collapse events;
+($200$--$299$), all produced frequent stable transitions and no non-viable seeds;
 stable rates ran $80$--$91$ of $100$ for flatten and $82$--$92$ for unproject. The
 strongest candidate of each decode (\Cref{tab:validation}) lands on very similar
 held-out rates and on overlapping ecologies: large patches, short-to-moderate
