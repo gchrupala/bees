@@ -906,16 +906,6 @@ are stated with the experiments themselves in
   \label{tab:varied-params}
 \end{table}
 
-\subsection{Decoding the direct code: two variants}
-\label{sec:setup-decode}
-The direct code can be decoded in two ways on a tilted comb
-(\Cref{sec:vertical}), and we run the whole transition pipeline under each. The
-\emph{flatten} decode applies $M^\top$, introducing a tilt-dependent directional
-bias; the \emph{unproject} decode applies $M^{-1}$, recovering the heading without
-bias. The two pipelines are identical in every other respect, so comparing them
-isolates the effect of the geometric decode assumption on whether and where the
-transition occurs.
-
 \subsection{Emergence of direct pointing (horizontal comb)}
 \label{sec:setup-horizontal}
 The first stage uses the horizontal-comb model of \Cref{sec:horizontal}: comb
@@ -953,6 +943,15 @@ space is large, we locate viable regions by optimization and then probe their
 robustness, in the sequence of sub-experiments below. Tuning and evaluation draw
 from disjoint seed blocks: the search uses seeds $100$--$109$ and confirmation
 $110$--$149$, while all held-out evaluation uses seeds $200$--$299$.
+
+\paragraph{Decode variants.}
+The direct code can be decoded in two ways on a tilted comb
+(\Cref{sec:vertical}), and we run the whole pipeline below under each. The
+\emph{flatten} decode applies $M^\top$, introducing a tilt-dependent directional
+bias; the \emph{unproject} decode applies $M^{-1}$, recovering the heading without
+bias. The two pipelines are identical in every other respect, so comparing them
+isolates the effect of the geometric decode assumption on whether and where the
+transition occurs.
 
 \paragraph{Parameter search.}
 We search eight parameters with the Tree-structured Parzen Estimator sampler of
