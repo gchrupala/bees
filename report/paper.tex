@@ -848,7 +848,6 @@ pointing.
     \midrule
     colonies & $60$ & population size \\
     workers per colony & $80$ & ensemble size per colony \\
-    generations & $120$ & evolutionary horizon (transition runs) \\
     episodes per colony & $50$ & foraging episodes averaged for fitness \\
     attempts per episode & $12$ & foraging attempts per episode \\
     $\eta$ & $0.08$ & worker-variation scale (trait sd; traits on $[0,1]$) \\
@@ -857,7 +856,6 @@ pointing.
     interpretation noise & $0.12$ & receiver decoding noise (rad; $\approx 7^\circ$) \\
     $D$ & $6$ & maximum search distance (km) \\
     $d_{\min}$ & $0.75$ & minimum food distance (km) \\
-    $\rho_r$ & $150$ & median patch radius (m, lognormal) \\
     $\sigma_r$ & $0.6$ & patch-radius log-scale spread ($80\%$ of radii in $70$--$325$ m) \\
     foray shape & $2$ & Gamma shape of per-foray distance (coefficient of variation $\approx 0.71$) \\
     $c_{\mathrm{base}},\,c_{\mathrm{cue}}$ & $0,\ 0.02$ & dance cost terms (in units of $v$) \\
@@ -866,51 +864,43 @@ pointing.
     $\mu_{\mathrm{sun}},\,\Delta_{\mathrm{sun}}$ & $\pi/2,\ \pi$ & sun arc center and width (rad; a $180^\circ$ arc) \\
     \bottomrule
   \end{tabular}
-  \caption{Parameters held fixed across all experiments. Ecological parameters
-    (food-site count, patch radius, capacity, maximum distance, travel cost) and
-    evolutionary parameters ($B$, $\sigma_m$, $\rho$) are varied as described in
-    the text.}
+  \caption{Parameters held fixed across all experiments. The parameters that some
+    experiment varies are listed separately in \Cref{tab:varied-params}.}
   \label{tab:fixed-params}
 \end{table}
 
-The parameters whose values we systematically explore are summarized in
+The parameters that are not fixed in this way are summarized in
 \Cref{tab:varied-params}: five ecological parameters (food-site count, patch
-radius, capacity, maximum food distance, and travel cost) and three evolutionary
-parameters ($B$, $\sigma_m$, $\rho$). The ranges given there are the union across
-sub-experiments; the specific sweeps and grids used in each are described in
+radius, capacity, maximum food distance, and travel cost) and four evolutionary
+parameters (the number of generations, $B$, $\sigma_m$, and $\rho$). That table
+gives only what each parameter means: the values they take, swept or held fixed,
+are stated with the experiments themselves in
 \Cref{sec:setup-horizontal,sec:setup-transition}.
 
 \begin{table}
   \centering
-  \begin{tabular}{lrl}
+  \begin{tabular}{ll}
     \toprule
-    Symbol / name & Range explored & Meaning \\
+    Symbol / name & Meaning \\
     \midrule
-    \multicolumn{3}{l}{\emph{Ecological}} \\
-    food-site count       & $1$--$8$          & Poisson mean number of patches per episode \\
-    patch radius          & $60$--$360$ & median disk radius (m, lognormal) \\
-    capacity              & $2$--$12$         & base loads a patch supplies at the median radius \\
-    $d_{\max}$            & $3$--$7.5$ & maximum patch distance (km) \\
-    travel cost (per km)  & $0.010$--$0.060$ & cost charged per km of foray distance \\
+    \multicolumn{2}{l}{\emph{Ecological}} \\
+    food-site count & Poisson mean number of patches per episode \\
+    $\rho_r$        & median patch radius (m, lognormal) \\
+    capacity        & base loads a patch supplies at the median radius \\
+    $d_{\max}$      & maximum patch distance (km) \\
+    travel cost     & cost per km of foray distance (in units of $v$) \\
     \midrule
-    \multicolumn{3}{l}{\emph{Evolutionary}} \\
-    $B$        & $0.10$--$0.60$ & vertical-comb benefit magnitude \\
-    $\sigma_m$ & $0.04$--$0.14$ & mutation step standard deviation \\
-    $\rho$     & $0.0$--$1.0$   & sender--receiver mutation correlation \\
+    \multicolumn{2}{l}{\emph{Evolutionary}} \\
+    generations & evolutionary horizon \\
+    $B$        & vertical-comb benefit magnitude \\
+    $\sigma_m$ & mutation step standard deviation \\
+    $\rho$     & sender--receiver mutation correlation \\
     \bottomrule
   \end{tabular}
-  \caption{Parameters varied across experiments. The \emph{Range explored} column
-    gives the interval each parameter is sampled over in the Optuna search; the
-    other sub-experiments use fixed grids that can extend beyond it. The ecological
-    parameters and $B,\sigma_m,\rho$ are sampled continuously in the Optuna search
-    over the intervals shown; the horizontal-comb experiment sweeps a grid of
-    food-site count $\{1,2,3,4,6,8,12,16,24\}$ against median patch radius
-    $\{15, 37.5, 75, 150, 300, 600\}$ m; and the evolutionary-interaction grid
-    uses the discrete values $B \in \{0.10, 0.30, 0.45, 0.60\}$,
-    $\sigma_m \in \{0.05, 0.07, 0.09, 0.11\}$, and
-    $\rho \in \{0.0, 0.3, 0.6, 0.9\}$. Outside the search, capacity is $6$ at the
-    median radius, $d_{\max} = 6$ km, and the horizontal runs use
-    $\sigma_m = 0.07$.}
+  \caption{Parameters that are not held fixed across all experiments, and what
+    each means. No single experiment varies all of them;
+    \Cref{sec:setup-horizontal,sec:setup-transition} give the values each takes
+    in each experiment, whether swept or held fixed.}
   \label{tab:varied-params}
 \end{table}
 
@@ -935,8 +925,9 @@ seeds ($400$--$449$). The conditions form a full grid crossing the Poisson mean
 patch count $\{1,2,3,4,6,8,12,16,24\}$ against the median patch radius
 $\{15, 37.5, 75, 150, 300, 600\}$ m, so that the ecology ranges from single small
 patches (essentially undiscoverable) to many large ones (easily found by random
-search). All other ecological parameters are held at their fixed values
-(\Cref{tab:fixed-params}).
+search). The remaining parameters of \Cref{tab:varied-params} are held fixed: a
+patch at the median radius has capacity $6$, patches lie no farther than
+$d_{\max} = 6$ km, and foraging is charged $0.027$ per km travelled.
 
 The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}).
 Because the follow decision is a randomized coin flip on \trait{receiver attention} within
@@ -964,7 +955,11 @@ $110$--$149$, while all held-out evaluation uses seeds $200$--$299$.
 \paragraph{Parameter search.}
 We search eight parameters with the Tree-structured Parzen Estimator sampler of
 Optuna: food-site count, patch radius, capacity, maximum distance, and travel
-cost, together with $B$, $\sigma_m$, and $\rho$ (food value fixed at $v = 1$). We
+cost, together with $B$, $\sigma_m$, and $\rho$ (food value fixed at $v = 1$).
+\Cref{tab:search-space} gives the interval and step size searched for each; the
+sampler proposes values on these steps rather than continuously, so the search
+space is a discrete lattice rather than a box. Colonies evolve for $120$
+generations throughout. We
 run $1024$ trials in total across sixteen parallel workers evaluated against a
 single shared study, each worker seeded independently and drawing $64$ startup
 random trials. Each trial evaluates a panel of $10$ seeds ($100$--$109$) and is
@@ -977,6 +972,28 @@ mean \trait{transposition} traits $\ge 0.50$, \emph{collapsed} if its minimum
 success rate over the run falls to $\le 0.02$, and \emph{progress} is a bounded
 $[0,1]$ score measuring how close a non-stable seed came to the stable thresholds.
 The stable-count term dominates while the progress term ranks near misses.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lrr}
+    \toprule
+    Symbol / name & Interval & Step \\
+    \midrule
+    food-site count & $1$--$8$ & integer \\
+    $\rho_r$ (m)    & $60$--$360$ & $15$ \\
+    capacity        & $2$--$12$ & integer \\
+    $d_{\max}$ (km) & $3$--$7.5$ & $0.25$ \\
+    travel cost (per km) & $0.010$--$0.060$ & $0.0025$ \\
+    $B$        & $0.10$--$0.60$ & $0.02$ \\
+    $\sigma_m$ & $0.04$--$0.14$ & $0.01$ \\
+    $\rho$     & $0.0$--$1.0$   & $0.1$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{The space searched by the Optuna study. Each parameter is proposed on
+    a lattice of the given step within its interval, so the space is discrete
+    rather than continuous.}
+  \label{tab:search-space}
+\end{table}
 
 \paragraph{Confirmation and held-out validation.}
 The strongest search trials are re-run on a disjoint confirmation panel of $40$
