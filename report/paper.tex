@@ -717,7 +717,12 @@ the \trait{sender transposition} $t_s$ and \trait{receiver transposition} $t_r$
 (both in $[0,1]$ and expressed with individual variation as in
 \Cref{sec:traits}). These set how much weight a worker places on the
 gravity-referenced code rather than the direct code when, respectively, producing
-and interpreting a dance.
+and interpreting a dance.\footnote{The alternative is a binary trait, with a
+worker either pointing directly or referring to gravity and no blending in
+between.We use graded weights because they let \trait{transposition} change by the
+same small mutational steps as every other trait here, but they are the more
+permissive of the two assumptions, and the transition we report should be read in
+that light.}
 
 Both roles blend the codes by the same rule. Given the angles
 $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$ the two codes assign, and a
@@ -769,8 +774,10 @@ so the shifting reference selects for genuine transposition rather than a stable
 blend of the two codes.
 
 \paragraph{Coupling of sender and receiver.}
-Because a working code must change on both sides at once, we allow the mutations
-of $t_s$ and $t_r$ to be correlated. Their mutational steps are drawn as a
+A change of code pays off only to the extent that it is matched on the other
+side, so the two traits may plausibly not mutate independently. We therefore
+allow the mutations of $t_s$ and $t_r$ to be correlated, treating the strength of
+the coupling as a parameter. Their mutational steps are drawn as a
 correlated Gaussian pair whose sender--receiver coupling is the
 correlation coefficient $\rho$,
 \begin{equation}
