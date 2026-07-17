@@ -942,14 +942,18 @@ $\sigma_m$, and the sender--receiver coupling $\rho$.
 
 The question we ask in this stage is whether there is \emph{any} combination of
 ecology and evolutionary regime which lets a population cross between the two
-codes without a breakdown of communication, and if so which. The search space is
-large and costly to explore: eight parameters interact, and evaluating one
-combination costs a full evolutionary run over a panel of seeds. We therefore
-use optimization to give the transition its best chance of succeeding, treating
-the search as a way of locating viable regions, and then probe the robustness of
-what it finds in the sequence of sub-experiments below. Because a search that
-maximizes over a seed panel will also fit that panel's noise, tuning and
-evaluation draw from disjoint random seed blocks, with details specified below.
+codes without a breakdown of communication, and if so which. The space in which
+to look is both large and costly to cover: eight parameters interact, the values
+we admit for them (\Cref{tab:search-space}) already combine into some $2.3$
+billion distinct settings, and pricing a single setting costs a full evolutionary
+run on a panel of seeds. We therefore use optimization, which spends its budget
+where success looks likely instead of spreading it evenly.
+The search tells us \emph{where} viable settings lie, but its
+trials cluster around what already worked, so their density cannot tell us how
+\emph{large} a viable region is. The sub-experiments below therefore re-examine
+what the search finds on fixed grids. They also re-examine it on fresh random
+seeds, because a search that maximizes over a panel of seeds will fit that
+panel's noise along with its signal.
 
 \paragraph{Decode variants.}
 On a tilted comb (\Cref{sec:vertical}) the direct code can be decoded via
@@ -959,39 +963,52 @@ comparing them isolates the effect of the geometric decode assumption on whether
 and where the transition occurs.
 
 \paragraph{Parameter search.}
-We search eight parameters with the Tree-structured Parzen Estimator sampler of Optuna \citep{akiba2019optuna}:
-food-site count, patch radius, capacity, maximum distance, and travel cost,
-together with $B$, $\sigma_m$, and $\rho$. \Cref{tab:search-space} gives the
-interval and step size searched for each; the sampler proposes values on these
-steps rather than continuously, so the search space is a discrete lattice rather
-than a box. Colonies evolve for $120$ generations throughout. We run $1024$
-trials per decode variant, distributed over sixteen compute nodes of thirty-two
-workers each, all proposing against a single shared study so that every worker
-samples in the light of every trial completed so far. Each worker draws from an
-independently seeded sampler, and the sampler proposes at random until the study
-has $64$ completed trials, after which it fits the estimator.
+We search eight parameters: food-site count, patch radius, capacity, maximum
+distance, and travel cost, together with $B$, $\sigma_m$, and $\rho$.
+\Cref{tab:search-space} gives the interval and step size searched for each, and
+the sampler proposes values on those steps, so the settings form a
+grid rather than a continuum. One \emph{trial} is one such setting, scored by
+simulating it as described below; colonies evolve for $120$ generations
+throughout. Trials are proposed by the Tree-structured Parzen Estimator
+\citep{bergstra2011algorithms} as implemented in Optuna
+\citep{akiba2019optuna}, which fits per-parameter distributions to the
+best-scoring trials so far and proposes settings typical of them, so that later
+trials concentrate where earlier ones succeeded; the first $64$ trials are drawn
+at random. We run $1024$ trials per decode variant.
+
+\paragraph{Scoring a trial.}
 Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). For seed $j$ we write
 $\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$ for the final-generation
 population means of the \trait{comb tilt} and the two \trait{transposition}
 traits, and $m_j$ for the lowest foraging success the run reaches at any
 generation. A seed is \emph{stable} if $\bar\gamma_j \ge \gamma^\ast$ and
-$\min(\bar t_{s,j}, \bar t_{r,j}) \ge t^\ast$, where $\gamma^\ast = 0.80$ and
-$t^\ast = 0.50$, and \emph{collapsed} if $m_j \le m^\ast$ with $m^\ast = 0.02$.
-Its \emph{progress} is how far the laggard of the three traits got towards its
-threshold, capped at one,
+$\min(\bar t_{s,j}, \bar t_{r,j}) \ge t^\ast$, and \emph{collapsed} if
+$m_j \le m^\ast$. The three thresholds mark what we are willing to call a
+completed transition: $\gamma^\ast = 0.80$ asks for a comb that is mostly
+vertical, $t^\ast = 0.50$ asks that both roles weight the gravity reference at
+least as heavily as direct pointing, so that the code has genuinely tipped over
+rather than merely drifted, and $m^\ast = 0.02$ marks a colony that has stopped
+finding food at all. A seed's \emph{progress} measures how near it came to the
+first two: each trait is expressed as a fraction of the threshold it must reach,
+and progress is the smallest of those fractions, capped at one,
 \begin{equation}
   g_j = \min\Bigl(1,\; \frac{\bar\gamma_j}{\gamma^\ast},\;
     \frac{\bar t_{s,j}}{t^\ast},\; \frac{\bar t_{r,j}}{t^\ast}\Bigr),
 \end{equation}
-so that $g_j = 1$ holds exactly when seed $j$ is stable. The trial score is then
+so that $g_j$ tracks whichever of the three lags furthest behind. Each fraction
+reaches one exactly when its trait reaches its threshold, so $g_j = 1$ holds
+exactly when seed $j$ is stable, and $g_j < 1$ grades the near misses. The trial
+score is then
 \begin{equation}
   \sum_{j=1}^{J} \mathbf{1}\bigl[g_j = 1\bigr]
   \;+\; \frac{1}{J}\sum_{j=1}^{J} g_j
   \;-\; \sum_{j=1}^{J} \mathbf{1}\bigl[m_j \le m^\ast\bigr].
 \end{equation}
-The stable-count term dominates while the progress term ranks near misses: a
-whole extra stable seed is always worth more than any improvement in progress
-across the panel.
+The three terms count the stable seeds, average the progress, and subtract the
+collapsed seeds. Because the progress term is an average of quantities bounded by
+one, it can never contribute more than a single point, so one further stable seed
+outweighs any improvement in progress across the whole panel: the search pursues
+transitions that complete, and uses progress only to rank panels that fail.
 
 \begin{table}
   \centering
