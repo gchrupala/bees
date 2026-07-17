@@ -512,9 +512,9 @@ and $n_a$ dance-following attempts yields raw payoff
 where the dance-cost sum runs over $S_d$ because a success produces a dance only
 when the recruitment decision is positive.
 The scaled episode payoff is $\pi = (1 + B\gamma)\,\pi_{\mathrm{raw}}$, where
-$\gamma$ is the \trait{comb tilt} and $B \ge 0$ the vertical-comb benefit
-(\Cref{sec:vertical}); in the horizontal model $\gamma = 0$, so the scaling is
-inert. A colony's fitness is its mean episode payoff (floored at a
+$\gamma$ is the \trait{comb tilt} and $B \ge 0$ the vertical-comb benefit; in the
+horizontal model $\gamma = 0$, so the scaling is inert. We motivate its form in
+\Cref{sec:transition}. A colony's fitness is its mean episode payoff (floored at a
 small positive value).
 For diagnostic purposes we also record a \emph{recruitment advantage}: the
 difference between the success rate of workers that followed a dance and that of
@@ -552,7 +552,17 @@ horizontal comb, to the gravity-referenced code used on a vertical one. We do no
 model why combs come to hang vertically; instead we impose an exogenous benefit
 for vertical building through the payoff scaling $(1 + B\gamma)$
 (\Cref{sec:foraging}), which rewards greater \trait{comb tilt} on its own, and ask
-whether communication can survive as the comb tilts under that pressure. Because
+whether communication can survive as the comb tilts under that pressure. The
+scaling is multiplicative because the advantages usually attributed to a vertical
+comb are architectural,\footnote{A vertical comb carries cells on both faces of a
+single sheet, whereas a horizontal one can open its cells only upward; and a comb
+attached along its top edge is loaded in its own plane rather than in bending,
+which wax tolerates better \citep{seeley1976nest,hepburn2014nests}. We take no
+position on which advantage dominates: the argument here needs only that they
+scale with what the colony forages.} and improve the return on what a colony
+forages rather than paying a subsidy that arrives whether it forages or not. This
+couples the two pressures, since tilt is then worth most to a colony that already
+forages well, and therefore has a working direct code to lose. Because
 \trait{comb tilt} is itself a trait that starts flat and evolves by small
 mutational steps, a lineage passes through intermediate, partly tilted combs
 rather than jumping from horizontal to vertical.
