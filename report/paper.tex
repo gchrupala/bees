@@ -695,15 +695,16 @@ select it before combs tilted.
     encoding; since $\det M = \cos\theta > 0$ for $\theta < \pi/2$, the true
     heading is recovered without bias.
   \item[Flatten] The receiver reads the dance as a direction in space and drops
-    its vertical component, taking the compass bearing of what is left
-    (formally, lifting $\delta$ to the in-surface vector
-    $\cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$ and keeping its
-    east--north part). Where the sender projected the food direction onto the
-    comb, the receiver projects the danced direction back onto the horizontal
-    plane: a second projection rather than an undoing of the first, which
-    applies $M^\top$ rather than $M^{-1}$. On a flat comb $M$ is a rotation, so
-    the two coincide; on a tilted comb they differ and the recovered heading
-    $\mathbf{r}$ is systematically biased.
+    its vertical component, taking the compass bearing of what is left. Where
+    the sender projected the food direction onto the comb, the receiver projects
+    the danced direction back onto the horizontal plane: a second projection
+    rather than an undoing of the first, so the recovered heading $\mathbf{r}$
+    is systematically biased on a tilted comb.\footnote{Formally, the receiver
+    lifts $\delta$ to the in-surface vector $\cos\delta\,\mathbf{e}_1 +
+    \sin\delta\,\mathbf{e}_2$ and keeps its east--north part, which applies
+    $M^\top$ rather than $M^{-1}$. On a flat comb $M$ is a rotation, so the two
+    coincide and the decodes are identical; they differ only once the comb
+    tilts.}
 \end{description}
 
 The gravity code, by contrast, is always decoded by exact inversion:
