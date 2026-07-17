@@ -717,36 +717,47 @@ the \trait{sender transposition} $t_s$ and \trait{receiver transposition} $t_r$
 (both in $[0,1]$ and expressed with individual variation as in
 \Cref{sec:traits}). These set how much weight a worker places on the
 gravity-referenced code rather than the direct code when, respectively, producing
-and interpreting a dance. Let $\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$
-be the in-surface angles the two codes assign to the food just visited. The
-intended dance direction $\delta$ is a weighted circular mean of the two:
-each angle is turned into a unit vector, scaled by its weight, the two vectors
-are summed, and $\delta$ is the heading of the resultant,
+and interpreting a dance.
+
+Both roles blend the codes by the same rule. Given the angles
+$\delta_{\mathrm{dir}}$ and $\delta_{\mathrm{grav}}$ the two codes assign, and a
+transposition $t$, each angle is turned into a unit vector, scaled by its weight,
+the two vectors are summed, and the blend is the heading of the resultant:
 \begin{equation}
-  \delta = \operatorname{atan2}\Bigl(\textstyle\sum_k w_k \sin\delta_k,\;
-    \sum_k w_k \cos\delta_k\Bigr), \qquad k \in \{\mathrm{dir}, \mathrm{grav}\}.
+  \operatorname{blend}(\delta_{\mathrm{dir}}, \delta_{\mathrm{grav}};\, t)
+    = \operatorname{atan2}\Bigl(\textstyle\sum_k w_k \sin\delta_k,\;
+      \sum_k w_k \cos\delta_k\Bigr),
+  \qquad k \in \{\mathrm{dir}, \mathrm{grav}\},
 \end{equation}
-The weights combine the
-worker's \trait{transposition} with each channel's geometric strength,
+where the weights combine the transposition with each channel's geometric
+strength,
 \begin{equation}
-  w_{\mathrm{dir}} = (1 - t_{s,i})\,s_{\mathrm{dir}}, \qquad
-  w_{\mathrm{grav}} = t_{s,i}\,s_{\mathrm{grav}}.
+  w_{\mathrm{dir}} = (1 - t)\,s_{\mathrm{dir}}, \qquad
+  w_{\mathrm{grav}} = t\,s_{\mathrm{grav}}.
 \end{equation}
-A worker with $t_{s,i} = 0$ therefore signals purely by direct pointing and one
-with $t_{s,i} = 1$ purely by the gravity reference, while the strength factors
-ensure that a code with no geometric support (such as the gravity code on a
-horizontal comb) contributes nothing regardless of $t_s$. The geometric strength
-thus enters in two distinct roles: it degrades the world direction each channel
-recovers, interpolating it toward a uniformly random heading as described above,
-and it scales that channel's weight in the blend, so a channel with weak geometric
-support is at once less reliable and less relied upon. The signal is then
-emitted from a von Mises distribution about $\delta$ as in \Cref{sec:signals}. A
-receiver decodes the observed signal under both codes and recombines the recovered
-world directions by the same weighted circular mean, with weights
-$(1 - t_{r,i})\,s_{\mathrm{dir}}$ and $t_{r,i}\,s_{\mathrm{grav}}$. Successful
-communication therefore requires senders and receivers to use compatible codes: a
-dance produced under the gravity reference is understood correctly only by a
-receiver who also decodes it that way.
+A sender blends the in-surface angles the two codes assign to the food just
+visited, giving the intended dance direction
+$\delta = \operatorname{blend}(\delta_{\mathrm{dir}}, \delta_{\mathrm{grav}};\,
+t_{s,i})$, and emits a signal from a von Mises distribution about $\delta$ as in
+\Cref{sec:signals}. A receiver decodes the observed signal under both codes and
+blends the two recovered \emph{world} directions the same way, with $t_{r,i}$ in
+place of $t_{s,i}$.
+
+A worker with $t_i = 0$ therefore relies purely on direct pointing and one with
+$t_i = 1$ purely on the gravity reference, while the strength factors ensure that
+a code with no geometric support (such as the gravity code on a horizontal comb)
+contributes nothing regardless of $t$. The geometric strength thus enters in two
+distinct roles: it degrades the world direction each channel recovers,
+interpolating it toward a uniformly random heading as described above, and it
+scales that channel's weight in the blend, so a channel with weak geometric
+support is at once less reliable and less relied upon.
+
+Communication is accurate to the extent that senders and receivers weight the two
+codes alike: the further $t_{r,i}$ sits from $t_{s,i}$, the more the receiver
+reads the dance under a mix of references the sender did not use, and the larger
+the resulting directional error. Alignment only matters where the codes disagree,
+however, so on a horizontal comb, where $s_{\mathrm{grav}} = 0$ collapses both
+blends onto the direct code, $t_r$ is free to drift.
 
 The per-episode sun azimuth (\Cref{sec:environment}) matters through this
 blending. Within an episode the sun is shared by every worker, so when a dancer
