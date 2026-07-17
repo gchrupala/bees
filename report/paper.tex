@@ -557,9 +557,7 @@ scaling is multiplicative because the advantages usually attributed to a vertica
 comb are architectural,\footnote{A vertical comb carries cells on both faces of a
 single sheet, whereas a horizontal one can open its cells only upward; and a comb
 attached along its top edge is loaded in its own plane rather than in bending,
-which wax tolerates better \citep{seeley1976nest,hepburn2014nests}. We take no
-position on which advantage dominates: the argument here needs only that they
-scale with what the colony forages.} and improve the return on what a colony
+which wax tolerates better \citep{seeley1976nest,hepburn2014nests}.} and improve the return on what a colony
 forages rather than paying a subsidy that arrives whether it forages or not. This
 couples the two pressures, since tilt is then worth most to a colony that already
 forages well, and therefore has a working direct code to lose. Because
@@ -573,7 +571,7 @@ surface foreshortens it in a bearing-dependent fashion, leaving less of the
 direction in the surface to carry the signal. How faithfully the heading is
 recovered depends on whether the receiver corrects for comb orientation. We thus
 model two decoders (\Cref{sec:vertical}): a more biologically plausible
-\emph{flatten} decoder that applies no such correction and is therefore biased
+\emph{flatten} decoder which applies no such correction and is therefore biased
 on a tilted comb, and an idealized \emph{unproject} decoder that corrects
 exactly and serves as a bias-free reference against which to read the results of
 \emph{flatten}.
@@ -620,9 +618,9 @@ $\theta = \pi/2$ it lies in the horizontal plane pointing along $\phi$.
 Both codes express the food direction as an angle in the comb surface; they
 differ in the reference the angle is measured from and in how much of the
 direction the surface can carry. In the \emph{direct} (iconic) code the worker
-projects the food's world direction $\mathbf{f} = (\cos\alpha, \sin\alpha, 0)$, a
-horizontal unit vector at azimuth $\alpha$, orthogonally onto the comb and dances
-along the resulting in-surface vector $\mathbf{p}$ (\Cref{fig:direct-decode}).
+projects the world direction of the food, $\mathbf{f} = (\cos\alpha, \sin\alpha,
+0)$, orthogonally onto the comb and dances along the resulting in-surface vector
+$\mathbf{p}$ (\Cref{fig:direct-decode}).
 
 \begin{figure}
   \centering
@@ -651,7 +649,7 @@ part of $\mathbf{f}$ along the comb normal, $\mathbf{f}\cdot\mathbf{n} =
 \begin{equation}
   s_{\mathrm{dir}} = \sqrt{1 - \sin^2\theta\,\cos^2(\alpha-\phi)}.
 \end{equation}
-On a horizontal comb $s_{\mathrm{dir}} = 1$: the direction lies entirely within
+On a horizontal comb $s_{\mathrm{dir}} = 1$; that is the direction lies entirely within
 the surface and is represented faithfully. As the comb tilts $s_{\mathrm{dir}}$
 shrinks, reaching its minimum $\cos\theta$ for the food site in the direction the comb
 faces ($\alpha = \phi$). Only on a fully vertical comb does this minimum fall to
