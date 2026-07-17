@@ -490,7 +490,9 @@ attention $a_i$, reading it out as a search direction, and otherwise searches in
 uniformly random direction. The worker then sets out along that direction on a
 foray whose length is drawn as in \Cref{sec:environment} and enters the first
 food patch on its path, among patches that still have remaining
-capacity and lie within the foray length; if no patch is reached the attempt fails.
+capacity and lie within the foray length; if no patch is reached the attempt
+fails. The fraction of foraging attempts that reach a patch is their
+\emph{foraging success}.
 
 Payoff accrues per episode. A successful foraging attempt yields the patch value $v$, minus
 a travel cost $c_{\mathrm{travel}}$ per unit of patch distance, and may prompt the worker to
@@ -520,8 +522,8 @@ horizontal model $\gamma = 0$, so the scaling is inert. We motivate its form in
 \Cref{sec:transition}. A colony's fitness is its mean episode payoff (floored at a
 small positive value).
 For diagnostic purposes we also record a \emph{recruitment advantage}: the
-difference between the success rate of workers that followed a dance and that of
-contemporaneous workers that searched at random while dances were available. A
+difference between the foraging success of workers that followed a dance and that
+of contemporaneous workers that searched at random while dances were available. A
 positive recruitment advantage indicates that the code is functioning, since
 following a dance then beats searching blindly.
 
@@ -977,13 +979,11 @@ trials concentrate where earlier ones succeeded; the first $64$ trials are drawn
 at random. We run $1024$ trials per decode variant.
 
 \paragraph{Scoring a trial.}
-Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). A run's
-\emph{foraging success} at a generation is the fraction of that generation's
-foraging attempts that reach a food site (\Cref{sec:foraging}), averaged over the
-colonies. For seed $j$ we write $\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$
-for the final-generation population means of the \trait{comb tilt} and the two
-\trait{transposition} traits, and $m_j$ for the lowest foraging success reached at
-any generation of the run. A seed is \emph{stable} if $\bar\gamma_j \ge
+Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). For seed $j$ we
+write $\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$ for the final-generation
+population means of the \trait{comb tilt} and the two \trait{transposition}
+traits, and $m_j$ for the lowest foraging success (\Cref{sec:foraging}, averaged
+over the colonies) reached at any generation of the run. A seed is \emph{stable} if $\bar\gamma_j \ge
 \gamma^\ast$ and $\min(\bar t_{s,j}, \bar t_{r,j}) \ge t^\ast$, and
 \emph{non-viable} if $m_j \le m^\ast$. The first two thresholds mark what we count
 as a completed transition: $\gamma^\ast = 0.80$ asks for a mostly vertical comb,
@@ -992,7 +992,7 @@ heavily as direct pointing, so that the code has genuinely tipped over rather th
 merely drifted. The threshold $m^\ast = 0.02$ is a viability floor:
 colonies begin with almost no communicative ability and forage by near-random
 search, so foraging success is lowest in the founding generation and climbs as
-the code evolves. The minimum $m_j$ is thus in effect the founders' success rate,
+the code evolves. The minimum $m_j$ is thus in effect the founders' foraging success,
 and penalizing it steers the search away from settings in which foraging is never
 viable. A seed's \emph{progress} measures how near it came to the
 first two: each trait is expressed as a fraction of the threshold it must reach,
