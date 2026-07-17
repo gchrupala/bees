@@ -640,9 +640,10 @@ $\mathbf{p}$ (\Cref{fig:direct-decode}).
 \end{figure}
 
 In the comb's orthonormal surface axes $\mathbf{e}_1, \mathbf{e}_2$, this
-projection has coordinates $p_i = \mathbf{e}_i\cdot\mathbf{f}$, and the encoded
-signal is its angle $\delta_{\mathrm{dir}} = \operatorname{atan2}(p_2,p_1)$. The
-code's \emph{strength} is how much of the unit direction survives the projection,
+projection has coordinates $(p_1, p_2) = (\mathbf{e}_1\cdot\mathbf{f},\;
+\mathbf{e}_2\cdot\mathbf{f})$, and the encoded signal is its angle
+$\delta_{\mathrm{dir}} = \operatorname{atan2}(p_2,p_1)$. The code's
+\emph{strength} is how much of the unit direction survives the projection,
 $s_{\mathrm{dir}} = \lVert\mathbf{p}\rVert$. What the projection discards is the
 part of $\mathbf{f}$ along the comb normal, $\mathbf{f}\cdot\mathbf{n} =
 \sin\theta\cos(\alpha-\phi)$, leaving
@@ -678,18 +679,18 @@ uniformly random one with weight equal to the strength.
 The direct encoding is linear in the horizontal food vector:
 $(p_1,p_2)^\top = M(\cos\alpha,\sin\alpha)^\top$, where $M$ is the $2\times 2$
 matrix whose rows are the east--north parts of $\mathbf{e}_1,\mathbf{e}_2$, with
-$\det M = \cos\theta$. Decoding recovers a world heading by inverting this map,
-and we model two receivers, bracketing whether the geometric correction is done
-in full (\Cref{fig:direct-decode}).
+$\det M = \cos\theta$. Recovering the world heading exactly requires inverting
+this map, and we model two receivers that differ in whether they do so
+(\Cref{fig:direct-decode}).
 \begin{description}
+  \item[Unproject] The receiver applies $M^{-1}$, exactly inverting the
+    encoding; since $\det M = \cos\theta > 0$ for $\theta < \pi/2$, the true
+    heading is recovered without bias.
   \item[Flatten] The receiver lifts the signal $\delta$ to the unit in-surface
     vector $\cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$ and reads its
     horizontal heading $\mathbf{r}$, which applies $M^\top$ rather than
     $M^{-1}$. Because $M^\top \ne M^{-1}$ on a tilted comb, $\mathbf{r}$ is
     systematically biased there.
-  \item[Unproject] The receiver instead applies $M^{-1}$, exactly inverting the
-    encoding; since $\det M = \cos\theta > 0$ for $\theta < \pi/2$, the true
-    heading is recovered without bias.
 \end{description}
 On a flat comb $M$ is a rotation, so $M^\top = M^{-1}$ and the two variants
 coincide. The gravity code, by contrast, is always decoded by exact inversion:
