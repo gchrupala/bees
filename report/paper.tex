@@ -803,8 +803,7 @@ under what ecological conditions the direct-pointing code is worth maintaining
 (\Cref{sec:setup-horizontal}). The second stage releases the comb and the
 \trait{transposition} traits and asks under what conditions a population can migrate from
 the direct to the gravity-referenced code as an extrinsic pressure tilts the comb
-(\Cref{sec:setup-transition}). All experiments are run from configuration files
-and fixed random seeds so that every reported run is reproducible.
+(\Cref{sec:setup-transition}).
 
 \subsection{Fixed model parameters}
 \label{sec:setup-fixed}
@@ -812,19 +811,26 @@ A core set of parameters is held fixed throughout, and only the ecological and
 evolutionary parameters named below are varied. \Cref{tab:fixed-params} lists the
 fixed values. The population contains $60$ colonies of $80$ workers each,
 evolving for $120$ non-overlapping generations; each colony is evaluated over
-$50$ independent foraging episodes of $12$ foraging attempts. Workers express
-colony traits with variation scale $\eta = 0.08$ (\Cref{sec:traits}); dances are
-emitted with maximum concentration $\kappa_{\max} = 14$ and production noise
-$0.18$, and read with interpretation noise $0.12$ (\Cref{sec:signals}). All
-lengths follow a fixed convention (distances in kilometers, patch radii in meters): the maximum search distance is $D = 6$ km and food
+$50$ independent foraging episodes of $12$ foraging attempts, each attempt made
+by a single worker drawn at random (the worker pool is therefore a sample of the
+colony's trait distribution rather than a workforce: its size sets how finely
+that distribution is discretized, not how much a colony can forage). Workers
+express colony traits with variation scale $\eta$ (\Cref{sec:traits}); dances are
+performed with maximum concentration $\kappa_{\max}$ and are subject to both
+production and interpretation noise (\Cref{sec:signals}). These three terms
+compound: even a colony at maximum \trait{directional bias} recovers a search
+direction with a circular standard deviation of about $20^\circ$, so the model
+imposes a floor on communication error and evolved colonies do not approach
+perfect accuracy. All lengths follow a fixed convention (distances in kilometers,
+patch radii in meters): the maximum search distance is $D = 6$ km and food
 patches lie at distances in $[0.75, d_{\max}]$ km. Food patches are physical disks
-whose radius is drawn from a lognormal of median $150$ m and log-scale spread
-$0.6$; capacity scales with patch area from a base of $6$ loads at the median
-radius, and the number of patches per episode is Poisson (\Cref{sec:environment}).
-Each foray draws its outbound distance from a Gamma of shape $2$ with the colony's
-evolved mean. Foraging carries a per-distance travel cost, a dance cost
-$c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$ with $c_{\mathrm{base}} = 0$ and
-$c_{\mathrm{cue}} = 0.02$, and an attention cost $c_{\mathrm{att}} = 0.01$
+whose radius is drawn from a lognormal of median $150$ m; capacity scales with
+patch area from a base of $6$ loads at the median radius, and the number of
+patches per episode is Poisson (\Cref{sec:environment}). Each foray draws its
+outbound distance from a Gamma of fixed shape with the colony's evolved mean.
+Foraging carries a per-distance travel cost, a dance cost
+$c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$ that is purely bias-dependent
+($c_{\mathrm{base}} = 0$), and an attention cost $c_{\mathrm{att}}$
 (\Cref{sec:foraging}). The sun is drawn from an arc of width $\pi$ centered on
 $\pi/2$, and the \trait{comb orientation} is treated as axially symmetric (period $\pi$).
 Colonies start with little communicative ability: the initial \trait{directional bias} is
@@ -845,19 +851,19 @@ pointing.
     generations & $120$ & evolutionary horizon (transition runs) \\
     episodes per colony & $50$ & foraging episodes averaged for fitness \\
     attempts per episode & $12$ & foraging attempts per episode \\
-    $\eta$ & $0.08$ & worker-variation scale \\
-    $\kappa_{\max}$ & $14$ & maximum dance concentration \\
-    dance noise & $0.18$ & production noise (wrapped Gaussian) \\
-    interpretation noise & $0.12$ & receiver decoding noise \\
+    $\eta$ & $0.08$ & worker-variation scale (trait sd; traits on $[0,1]$) \\
+    $\kappa_{\max}$ & $14$ & maximum dance concentration ($\approx 16^\circ$ scatter at $b_i = 1$) \\
+    dance noise & $0.18$ & production noise (wrapped Gaussian, rad; $\approx 10^\circ$) \\
+    interpretation noise & $0.12$ & receiver decoding noise (rad; $\approx 7^\circ$) \\
     $D$ & $6$ & maximum search distance (km) \\
     $d_{\min}$ & $0.75$ & minimum food distance (km) \\
     $\rho_r$ & $150$ & median patch radius (m, lognormal) \\
-    $\sigma_r$ & $0.6$ & patch-radius log-scale spread \\
-    foray shape & $2$ & Gamma shape of per-foray distance \\
-    $c_{\mathrm{base}},\,c_{\mathrm{cue}}$ & $0,\ 0.02$ & dance cost terms \\
-    $c_{\mathrm{att}}$ & $0.01$ & attention cost \\
-    $v$ & $1$ & food value \\
-    $\mu_{\mathrm{sun}},\,\Delta_{\mathrm{sun}}$ & $\pi/2,\ \pi$ & sun arc center and width \\
+    $\sigma_r$ & $0.6$ & patch-radius log-scale spread ($80\%$ of radii in $70$--$325$ m) \\
+    foray shape & $2$ & Gamma shape of per-foray distance (coefficient of variation $\approx 0.71$) \\
+    $c_{\mathrm{base}},\,c_{\mathrm{cue}}$ & $0,\ 0.02$ & dance cost terms (in units of $v$) \\
+    $c_{\mathrm{att}}$ & $0.01$ & attention cost (in units of $v$) \\
+    $v$ & $1$ & food value (sets the payoff scale) \\
+    $\mu_{\mathrm{sun}},\,\Delta_{\mathrm{sun}}$ & $\pi/2,\ \pi$ & sun arc center and width (rad; a $180^\circ$ arc) \\
     \bottomrule
   \end{tabular}
   \caption{Parameters held fixed across all experiments. Ecological parameters
@@ -867,12 +873,12 @@ pointing.
   \label{tab:fixed-params}
 \end{table}
 
-The parameters that are deliberately varied are summarized in
+The parameters whose values we systematically explore are summarized in
 \Cref{tab:varied-params}: five ecological parameters (food-site count, patch
 radius, capacity, maximum food distance, and travel cost) and three evolutionary
 parameters ($B$, $\sigma_m$, $\rho$). The ranges given there are the union across
-sub-experiments; the specific sweeps and grids used in each are described in the
-sections below.
+sub-experiments; the specific sweeps and grids used in each are described in
+\Cref{sec:setup-horizontal,sec:setup-transition}.
 
 \begin{table}
   \centering
