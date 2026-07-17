@@ -965,9 +965,12 @@ together with $B$, $\sigma_m$, and $\rho$. \Cref{tab:search-space} gives the
 interval and step size searched for each; the sampler proposes values on these
 steps rather than continuously, so the search space is a discrete lattice rather
 than a box. Colonies evolve for $120$ generations throughout. We run $1024$
-trials in total across sixteen parallel workers evaluated against a single
-shared study, each worker seeded independently and drawing $64$ startup random
-trials. Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). For seed $j$ we write
+trials per decode variant, distributed over sixteen compute nodes of thirty-two
+workers each, all proposing against a single shared study so that every worker
+samples in the light of every trial completed so far. Each worker draws from an
+independently seeded sampler, and the sampler proposes at random until the study
+has $64$ completed trials, after which it fits the estimator.
+Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). For seed $j$ we write
 $\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$ for the final-generation
 population means of the \trait{comb tilt} and the two \trait{transposition}
 traits, and $m_j$ for the lowest foraging success the run reaches at any
