@@ -681,7 +681,15 @@ $(p_1,p_2)^\top = M(\cos\alpha,\sin\alpha)^\top$, where $M$ is the $2\times 2$
 matrix whose rows are the east--north parts of $\mathbf{e}_1,\mathbf{e}_2$, with
 $\det M = \cos\theta$. Recovering the world heading exactly requires inverting
 this map, and we model two receivers that differ in whether they do so
-(\Cref{fig:direct-decode}).
+(\Cref{fig:direct-decode}). The inversion asks a lot of a receiver: it must know
+\trait{comb tilt} and \trait{comb orientation}, and apply a correction that
+varies with the direction danced. The uncorrected reading asks nothing, since the
+dance is a direction in space and the food is on the ground: a receiver that
+flies along the dance's compass bearing drops the vertical component simply by
+flying. That reading is also exactly right on a horizontal comb (the ancestral
+state), which is why we regard it as the more plausible of the two: it leaves the
+ancestral rule unchanged, whereas the correction would have had no function to
+select it before combs tilted.
 \begin{description}
   \item[Unproject] The receiver applies $M^{-1}$, exactly inverting the
     encoding; since $\det M = \cos\theta > 0$ for $\theta < \pi/2$, the true
@@ -689,11 +697,12 @@ this map, and we model two receivers that differ in whether they do so
   \item[Flatten] The receiver lifts the signal $\delta$ to the unit in-surface
     vector $\cos\delta\,\mathbf{e}_1 + \sin\delta\,\mathbf{e}_2$ and reads its
     horizontal heading $\mathbf{r}$, which applies $M^\top$ rather than
-    $M^{-1}$. Because $M^\top \ne M^{-1}$ on a tilted comb, $\mathbf{r}$ is
-    systematically biased there.
+    $M^{-1}$. On a flat comb $M$ is a rotation, so the two coincide; because
+    $M^\top \ne M^{-1}$ on a tilted comb, $\mathbf{r}$ is systematically biased
+    there.
 \end{description}
-On a flat comb $M$ is a rotation, so $M^\top = M^{-1}$ and the two variants
-coincide. The gravity code, by contrast, is always decoded by exact inversion:
+
+The gravity code, by contrast, is always decoded by exact inversion:
 the projected gravity reference is available to any receiver, so the sun-relative
 food azimuth is read back directly.
 
