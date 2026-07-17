@@ -437,17 +437,17 @@ Poisson distribution with mean $n$, so episodes vary in how much food they offer
  Each site is placed at an azimuth drawn uniformly around
 the colony and at a distance drawn uniformly from $[d_{\min}, d_{\max}]$, and is
 a physical circular disk whose radius is drawn independently from a
-lognormal distribution with median $\rho_r$ and log-scale spread $\sigma_r$. A
+lognormal distribution with median $\mu_r$ and log-scale spread $\sigma_r$. A
 forager finds the patch when its straight outbound path crosses the disk, so a
 fixed patch subtends a smaller angle when farther from the nest, and distant
 food demands more accurate dances. Each patch has value $v$ per visit and a finite
 capacity limiting how many foragers it can supply before being exhausted;
 capacity scales with the patch area, growing with the square of its radius, so
 that larger patches hold proportionally more food while the per-visit value
-stays fixed. In our
-experiments $v = 1$, the median radius is $\rho_r = 150$ m with log-scale spread
-$\sigma_r = 0.6$, a patch at the median radius has capacity $6$, and sites lie
-between $d_{\min} = 0.75$ km and $d_{\max} = 6$ km.
+stays fixed. Throughout, $v = 1$, the log-scale spread is $\sigma_r = 0.6$, and
+sites lie no closer than $d_{\min} = 0.75$ km; the median radius $\mu_r$, the
+capacity at that radius, and the maximum distance $d_{\max}$ vary by experiment
+(\Cref{tab:varied-params}).
 
 The \trait{foray distance} trait $\ell$ (\Cref{sec:traits}) sets how far workers travel.
 Each individual foray draws its own outbound length from a Gamma distribution
@@ -824,9 +824,8 @@ imposes a floor on communication error and evolved colonies do not approach
 perfect accuracy. All lengths follow a fixed convention (distances in kilometers,
 patch radii in meters): the maximum search distance is $D = 6$ km and food
 patches lie at distances in $[0.75, d_{\max}]$ km. Food patches are physical disks
-whose radius is drawn from a lognormal of median $150$ m; capacity scales with
-patch area from a base of $6$ loads at the median radius, and the number of
-patches per episode is Poisson (\Cref{sec:environment}). Each foray draws its
+whose radius is drawn from a lognormal and whose capacity scales with patch area,
+and the number of patches per episode is Poisson (\Cref{sec:environment}). Each foray draws its
 outbound distance from a Gamma of fixed shape with the colony's evolved mean.
 Foraging carries a per-distance travel cost, a dance cost
 $c_{\mathrm{base}} + c_{\mathrm{cue}}\,b_i$ that is purely bias-dependent
@@ -885,7 +884,7 @@ are stated with the experiments themselves in
     \midrule
     \multicolumn{2}{l}{\emph{Ecological}} \\
     food-site count & Poisson mean number of patches per episode \\
-    $\rho_r$        & median patch radius (m, lognormal) \\
+    $\mu_r$        & median patch radius (m, lognormal) \\
     capacity        & base loads a patch supplies at the median radius \\
     $d_{\max}$      & maximum patch distance (km) \\
     travel cost     & cost per km of foray distance (in units of $v$) \\
@@ -980,7 +979,7 @@ The stable-count term dominates while the progress term ranks near misses.
     Symbol / name & Interval & Step \\
     \midrule
     food-site count & $1$--$8$ & integer \\
-    $\rho_r$ (m)    & $60$--$360$ & $15$ \\
+    $\mu_r$ (m)    & $60$--$360$ & $15$ \\
     capacity        & $2$--$12$ & integer \\
     $d_{\max}$ (km) & $3$--$7.5$ & $0.25$ \\
     travel cost (per km) & $0.010$--$0.060$ & $0.0025$ \\
