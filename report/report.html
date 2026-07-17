@@ -116,8 +116,12 @@ bee model</h1>
 <nav id="TOC" role="doc-toc">
 <ul>
 <li><a href="#introduction" id="toc-introduction">Introduction</a></li>
-<li><a href="#current-model" id="toc-current-model">Current
-Model</a></li>
+<li><a href="#current-model" id="toc-current-model">Current Model</a>
+<ul>
+<li><a href="#blended-codes-versus-binary-choosers"
+id="toc-blended-codes-versus-binary-choosers">Blended Codes Versus
+Binary Choosers</a></li>
+</ul></li>
 <li><a href="#experiments" id="toc-experiments">Experiments</a></li>
 <li><a href="#results" id="toc-results">Results</a>
 <ul>
@@ -247,6 +251,149 @@ final mean comb tilt is at least 0.80 and both final mean sender and
 receiver transposition are at least 0.50. Gravity reached means both
 transposition traits crossed 0.50 at any generation. A seed is counted
 as collapsed if mean success falls to 0.02 or below.</p>
+<h2 id="blended-codes-versus-binary-choosers">Blended Codes Versus
+Binary Choosers</h2>
+<p>Workers in this model weight the direct and gravity-referenced codes
+continuously, through the sender and receiver transposition traits. The
+obvious alternative is a binary trait: each worker either points
+directly or refers to gravity, with no blending in between. The two are
+not interchangeable, and the difference flatters the blending
+assumption, so it is worth stating plainly.</p>
+<p>This probe measures communication accuracy directly rather than
+running evolution. For each comb tilt it sweeps a single mixing
+parameter
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>
+and compares a <em>blender</em> population, in which every worker blends
+both codes with sender and receiver transposition
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>,
+against a <em>chooser</em> population, in which a fraction
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>
+of workers use the gravity code purely and the rest the direct code
+purely, with dancer and follower drawn independently. A follower
+succeeds when the direction it recovers falls within 15 degrees of the
+true food direction, a hard threshold mirroring the angular food
+geometry; chance is 0.083. Dances are noiseless, so the comparison
+isolates the coding geometry. The decode is unproject, 20,000 pairs per
+cell.</p>
+<table>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th
+style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math></th>
+<th style="text-align: right;">Blender, flat</th>
+<th style="text-align: right;">Chooser, flat</th>
+<th style="text-align: right;">Blender, 45°</th>
+<th style="text-align: right;">Chooser, 45°</th>
+<th style="text-align: right;">Blender, vertical</th>
+<th style="text-align: right;">Chooser, vertical</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.583</td>
+<td style="text-align: right;">0.584</td>
+<td style="text-align: right;">0.084</td>
+<td style="text-align: right;">0.085</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.602</td>
+<td style="text-align: right;">0.523</td>
+<td style="text-align: right;">0.378</td>
+<td style="text-align: right;">0.206</td>
+<td style="text-align: right;">0.139</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.314</td>
+<td style="text-align: right;">0.377</td>
+<td style="text-align: right;">0.252</td>
+<td style="text-align: right;">0.393</td>
+<td style="text-align: right;">0.310</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.141</td>
+<td style="text-align: right;">0.274</td>
+<td style="text-align: right;">0.220</td>
+<td style="text-align: right;">0.852</td>
+<td style="text-align: right;">0.594</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.083</td>
+<td style="text-align: right;">0.081</td>
+<td style="text-align: right;">0.271</td>
+<td style="text-align: right;">0.261</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+</tbody>
+</table>
+<p>The two populations agree at the endpoints, as they must, and diverge
+across the interior. Splitting the chooser pairs by type explains why.
+On a 45-degree comb, matched pairs score 0.584 (both direct) and 0.269
+(both gravity), while both mismatched combinations score 0.080 to 0.083,
+which is chance: mismatched pairs are not degraded, they communicate
+nothing. A chooser population therefore pays a frequency-dependent
+coordination cost on the fraction
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">2x(1-x)</annotation></semantics></math>
+of pairs that talk past each other, and that cost is largest at
+intermediate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>.
+A blender population pays no such cost, because it resolves the mixture
+inside the sender’s head, before the signal, rather than across pairs.
+Since success is a hard threshold on angular error, mixing and then
+thresholding is not the same as thresholding and then mixing, and no
+choice of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>
+makes the two setups meet.</p>
+<p>The implication cuts against the modeling assumption rather than for
+it. Blending does not merely permit intermediate strategies where a
+binary trait would forbid them; it deletes a coordination valley that a
+chooser population would have to cross. Because an achievable transition
+is the result of interest here, an assumption that removes the main
+barrier to it should be named as such. The mutational coupling between
+sender and receiver transposition is a second device aimed at the same
+coordination problem, which is worth keeping in mind when reading the
+correlation axis of the interaction grid below. The defense of graded
+weighting has to rest on whether bees in fact dance intermediate codes,
+not on its convenience.</p>
+<p>Two further points fall out of the sweep. First, on a flat comb the
+blender row is flat at 1.000 across the whole interior:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>s</mi><mrow><mi mathvariant="normal">g</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">v</mi></mrow></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">s_\mathrm{grav} = 0</annotation></semantics></math>
+zeroes the gravity weight for sender and receiver alike, so neither
+transposition is under selection and both drift freely until the comb
+tilts. Second, at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">x = 1</annotation></semantics></math>
+exactly on a flat comb, both weights are zero and the blend returns a
+uniformly random heading, giving the 0.083 in the table. This is a
+reachable corner rather than a measure-zero one, because mutation clamps
+transposition to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[0, 1]</annotation></semantics></math>,
+so a lineage pushed past 1 lands exactly on 1. Such a colony dances
+noise on a flat comb. The effect is small but it is a discontinuity at a
+point the model can occupy.</p>
+<p>The probe is a static landscape measurement, not a dynamical one: it
+uses one comb orientation, no signal noise, no individual variation, and
+the unproject decode only. It says how the two setups differ in
+accuracy, not how a population under selection would move through either
+landscape.</p>
 <h1 id="experiments">Experiments</h1>
 <p>The disk-geometry model is exercised by a flat-comb experiment that
 characterizes the food ecology, followed by a vertical-transition
@@ -955,6 +1102,9 @@ with:</p>
 <p>The vertical-transition pipeline under both direct-decode variants
 (flatten and unproject) is run on Snellius with:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> experiments/submit_food_transition_disk_pipeline_snellius.sh</span></code></pre></div>
+<p>The blended-versus-chooser probe writes its two tracked CSVs
+with:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-u</span> experiments/probe_blending_vs_choosers.py</span></code></pre></div>
 <p>Results are kept in sync between the local and Snellius checkouts
 through git (commit and push run outputs rather than copying result CSVs
 between machines).</p>

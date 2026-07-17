@@ -96,6 +96,71 @@ at least 0.80 and both final mean sender and receiver transposition are at least
 Gravity reached means both transposition traits crossed 0.50 at any generation. A seed
 is counted as collapsed if mean success falls to 0.02 or below.
 
+## Blended Codes Versus Binary Choosers
+
+Workers in this model weight the direct and gravity-referenced codes
+continuously, through the sender and receiver transposition traits. The obvious
+alternative is a binary trait: each worker either points directly or refers to
+gravity, with no blending in between. The two are not interchangeable, and the
+difference flatters the blending assumption, so it is worth stating plainly.
+
+This probe measures communication accuracy directly rather than running
+evolution. For each comb tilt it sweeps a single mixing parameter $x$ and
+compares a *blender* population, in which every worker blends both codes with
+sender and receiver transposition $x$, against a *chooser* population, in which a
+fraction $x$ of workers use the gravity code purely and the rest the direct code
+purely, with dancer and follower drawn independently. A follower succeeds when
+the direction it recovers falls within 15 degrees of the true food direction, a
+hard threshold mirroring the angular food geometry; chance is 0.083. Dances are
+noiseless, so the comparison isolates the coding geometry. The decode is
+unproject, 20,000 pairs per cell.
+
+| $x$ | Blender, flat | Chooser, flat | Blender, 45° | Chooser, 45° | Blender, vertical | Chooser, vertical |
+|----:|--------------:|--------------:|-------------:|-------------:|------------------:|------------------:|
+| 0.00 | 1.000 | 1.000 | 0.583 | 0.584 | 0.084 | 0.085 |
+| 0.25 | 1.000 | 0.602 | 0.523 | 0.378 | 0.206 | 0.139 |
+| 0.50 | 1.000 | 0.314 | 0.377 | 0.252 | 0.393 | 0.310 |
+| 0.75 | 1.000 | 0.141 | 0.274 | 0.220 | 0.852 | 0.594 |
+| 1.00 | 0.083 | 0.081 | 0.271 | 0.261 | 1.000 | 1.000 |
+
+The two populations agree at the endpoints, as they must, and diverge across the
+interior. Splitting the chooser pairs by type explains why. On a 45-degree comb,
+matched pairs score 0.584 (both direct) and 0.269 (both gravity), while both
+mismatched combinations score 0.080 to 0.083, which is chance: mismatched pairs
+are not degraded, they communicate nothing. A chooser population therefore pays a
+frequency-dependent coordination cost on the fraction $2x(1-x)$ of pairs that
+talk past each other, and that cost is largest at intermediate $x$. A blender
+population pays no such cost, because it resolves the mixture inside the sender's
+head, before the signal, rather than across pairs. Since success is a hard
+threshold on angular error, mixing and then thresholding is not the same as
+thresholding and then mixing, and no choice of $x$ makes the two setups meet.
+
+The implication cuts against the modeling assumption rather than for it. Blending
+does not merely permit intermediate strategies where a binary trait would forbid
+them; it deletes a coordination valley that a chooser population would have to
+cross. Because an achievable transition is the result of interest here, an
+assumption that removes the main barrier to it should be named as such. The
+mutational coupling between sender and receiver transposition is a second device
+aimed at the same coordination problem, which is worth keeping in mind when
+reading the correlation axis of the interaction grid below. The defense of graded
+weighting has to rest on whether bees in fact dance intermediate codes, not on
+its convenience.
+
+Two further points fall out of the sweep. First, on a flat comb the blender row
+is flat at 1.000 across the whole interior: $s_\mathrm{grav} = 0$ zeroes the
+gravity weight for sender and receiver alike, so neither transposition is under
+selection and both drift freely until the comb tilts. Second, at $x = 1$ exactly
+on a flat comb, both weights are zero and the blend returns a uniformly random
+heading, giving the 0.083 in the table. This is a reachable corner rather than a
+measure-zero one, because mutation clamps transposition to $[0, 1]$, so a lineage
+pushed past 1 lands exactly on 1. Such a colony dances noise on a flat comb. The
+effect is small but it is a discontinuity at a point the model can occupy.
+
+The probe is a static landscape measurement, not a dynamical one: it uses one
+comb orientation, no signal noise, no individual variation, and the unproject
+decode only. It says how the two setups differ in accuracy, not how a population
+under selection would move through either landscape.
+
 # Experiments
 
 The disk-geometry model is exercised by a flat-comb experiment that characterizes the food
@@ -437,6 +502,12 @@ is run on Snellius with:
 
 ```sh
 bash experiments/submit_food_transition_disk_pipeline_snellius.sh
+```
+
+The blended-versus-chooser probe writes its two tracked CSVs with:
+
+```sh
+python -u experiments/probe_blending_vs_choosers.py
 ```
 
 Results are kept in sync between the local and Snellius checkouts through git (commit and
