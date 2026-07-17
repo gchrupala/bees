@@ -906,20 +906,20 @@ are stated with the experiments themselves in
   \label{tab:varied-params}
 \end{table}
 
-\subsection{Emergence of direct pointing (horizontal comb)}
+\subsection{Emergence of direct pointing}
 \label{sec:setup-horizontal}
-The first stage uses the horizontal-comb model of \Cref{sec:horizontal}: comb
+The first experiment uses the horizontal-comb model of \Cref{sec:horizontal}: comb
 tilt is fixed at $0$ and not allowed to evolve, so the gravity reference has zero
 strength and the \trait{transposition} traits are inert, leaving only the direct-pointing
 code in play. Colonies evolve for $60$ generations under mutation rate
 $\sigma_m = 0.07$, and we vary only the food distribution across $50$ replicate
 seeds ($400$--$449$). The conditions form a full grid crossing the Poisson mean
 patch count $\{1,2,3,4,6,8,12,16,24\}$ against the median patch radius
-$\{15, 37.5, 75, 150, 300, 600\}$ m, so that the ecology ranges from single small
+$\{15, 37.5, 75, 150, 300, 600\}$ meters, so that the ecology ranges from single small
 patches (essentially undiscoverable) to many large ones (easily found by random
 search). The remaining parameters of \Cref{tab:varied-params} are held fixed: a
 patch at the median radius has capacity $6$, patches lie no farther than
-$d_{\max} = 6$ km, and foraging is charged $0.027$ per km travelled.
+$d_{\max} = 6$ km, and foraging cost is $0.027$ per km travelled.
 
 The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}).
 Because the follow decision is a randomized coin flip on \trait{receiver attention} within
@@ -929,50 +929,66 @@ directional-bias trait that has merely drifted upward. We report it as a mean ov
 the final generations, alongside final-generation mean \trait{directional bias}, foraging
 success, and payoff.
 
-\subsection{Evolution of the gravity code (vertical transition)}
+\subsection{Evolution of the gravity code}
 \label{sec:setup-transition}
-The second stage uses the full model of \Cref{sec:vertical}: \trait{comb tilt} $\gamma$
+The second experiment uses the full model of \Cref{sec:vertical}: \trait{comb tilt} $\gamma$
 and orientation $\phi$ are free to evolve, the \trait{transposition} traits $t_s, t_r$ are
 active, and the raw payoff is scaled by the vertical-comb benefit
 $1 + B\gamma$. Populations always start horizontal, so a successful run must
 evolve both a vertical comb \emph{and} a matched sender--receiver gravity code.
 The transition is governed by the interaction of the ecology with three
 evolutionary parameters: the benefit magnitude $B$, the mutation rate
-$\sigma_m$, and the sender--receiver coupling $\rho$. Because the joint search
-space is large, we locate viable regions by optimization and then probe their
-robustness, in the sequence of sub-experiments below. Tuning and evaluation draw
-from disjoint seed blocks: the search uses seeds $100$--$109$ and confirmation
-$110$--$149$, while all held-out evaluation uses seeds $200$--$299$.
+$\sigma_m$, and the sender--receiver coupling $\rho$. 
+
+The question we ask in this stage is whether there is \emph{any} combination of
+ecology and evolutionary regime which lets a population cross between the two
+codes without a breakdown of communication, and if so which. The search space is
+large and costly to explore: eight parameters interact, and evaluating one
+combination costs a full evolutionary run over a panel of seeds. We therefore
+use optimization to give the transition its best chance of succeeding, treating
+the search as a way of locating viable regions, and then probe the robustness of
+what it finds in the sequence of sub-experiments below. Because a search that
+maximizes over a seed panel will also fit that panel's noise, tuning and
+evaluation draw from disjoint random seed blocks, with details specified below.
 
 \paragraph{Decode variants.}
-The direct code can be decoded in two ways on a tilted comb
-(\Cref{sec:vertical}), and we run the whole pipeline below under each. The
-\emph{flatten} decode applies $M^\top$, introducing a tilt-dependent directional
-bias; the \emph{unproject} decode applies $M^{-1}$, recovering the heading without
-bias. The two pipelines are identical in every other respect, so comparing them
-isolates the effect of the geometric decode assumption on whether and where the
-transition occurs.
+On a tilted comb (\Cref{sec:vertical}) the direct code can be decoded via
+\emph{flatten} or \emph{unproject}, and we run the experiments below with each
+variant.  The two pipelines are identical in every other respect, so
+comparing them isolates the effect of the geometric decode assumption on whether
+and where the transition occurs.
 
 \paragraph{Parameter search.}
-We search eight parameters with the Tree-structured Parzen Estimator sampler of
-Optuna: food-site count, patch radius, capacity, maximum distance, and travel
-cost, together with $B$, $\sigma_m$, and $\rho$ (food value fixed at $v = 1$).
-\Cref{tab:search-space} gives the interval and step size searched for each; the
-sampler proposes values on these steps rather than continuously, so the search
-space is a discrete lattice rather than a box. Colonies evolve for $120$
-generations throughout. We
-run $1024$ trials in total across sixteen parallel workers evaluated against a
-single shared study, each worker seeded independently and drawing $64$ startup
-random trials. Each trial evaluates a panel of $10$ seeds ($100$--$109$) and is
-scored by
+We search eight parameters with the Tree-structured Parzen Estimator sampler of Optuna \citep{akiba2019optuna}:
+food-site count, patch radius, capacity, maximum distance, and travel cost,
+together with $B$, $\sigma_m$, and $\rho$. \Cref{tab:search-space} gives the
+interval and step size searched for each; the sampler proposes values on these
+steps rather than continuously, so the search space is a discrete lattice rather
+than a box. Colonies evolve for $120$ generations throughout. We run $1024$
+trials in total across sixteen parallel workers evaluated against a single
+shared study, each worker seeded independently and drawing $64$ startup random
+trials. Each trial evaluates a panel of $J = 10$ seeds ($100$--$109$). For seed $j$ we write
+$\bar\gamma_j$, $\bar t_{s,j}$ and $\bar t_{r,j}$ for the final-generation
+population means of the \trait{comb tilt} and the two \trait{transposition}
+traits, and $m_j$ for the lowest foraging success the run reaches at any
+generation. A seed is \emph{stable} if $\bar\gamma_j \ge \gamma^\ast$ and
+$\min(\bar t_{s,j}, \bar t_{r,j}) \ge t^\ast$, where $\gamma^\ast = 0.80$ and
+$t^\ast = 0.50$, and \emph{collapsed} if $m_j \le m^\ast$ with $m^\ast = 0.02$.
+Its \emph{progress} is how far the laggard of the three traits got towards its
+threshold, capped at one,
 \begin{equation}
-  \text{stable seed count} + \overline{\text{progress}} - \text{collapse count},
+  g_j = \min\Bigl(1,\; \frac{\bar\gamma_j}{\gamma^\ast},\;
+    \frac{\bar t_{s,j}}{t^\ast},\; \frac{\bar t_{r,j}}{t^\ast}\Bigr),
 \end{equation}
-where a seed is \emph{stable} if it ends with mean \trait{comb tilt} $\ge 0.80$ and both
-mean \trait{transposition} traits $\ge 0.50$, \emph{collapsed} if its minimum
-success rate over the run falls to $\le 0.02$, and \emph{progress} is a bounded
-$[0,1]$ score measuring how close a non-stable seed came to the stable thresholds.
-The stable-count term dominates while the progress term ranks near misses.
+so that $g_j = 1$ holds exactly when seed $j$ is stable. The trial score is then
+\begin{equation}
+  \sum_{j=1}^{J} \mathbf{1}\bigl[g_j = 1\bigr]
+  \;+\; \frac{1}{J}\sum_{j=1}^{J} g_j
+  \;-\; \sum_{j=1}^{J} \mathbf{1}\bigl[m_j \le m^\ast\bigr].
+\end{equation}
+The stable-count term dominates while the progress term ranks near misses: a
+whole extra stable seed is always worth more than any improvement in progress
+across the panel.
 
 \begin{table}
   \centering
@@ -990,18 +1006,18 @@ The stable-count term dominates while the progress term ranks near misses.
     $\rho$     & $0.0$--$1.0$   & $0.1$ \\
     \bottomrule
   \end{tabular}
-  \caption{The space searched by the Optuna study. Each parameter is proposed on
+  \caption{The space searched by the optimization. Each parameter is proposed on
     a lattice of the given step within its interval, so the space is discrete
     rather than continuous.}
   \label{tab:search-space}
 \end{table}
 
 \paragraph{Confirmation and held-out validation.}
-The strongest search trials are re-run on a disjoint confirmation panel of $40$
-seeds ($110$--$149$), and the best candidates are then validated on $100$
-held-out seeds ($200$--$299$) that were used in neither search nor confirmation.
-Validation reports, per candidate, the fraction of stable seeds, the collapse
-count, and final-generation means of foraging success, \trait{comb tilt}, and the lower of
+The highest-scoring search trials are re-run on a disjoint confirmation panel of
+$40$ seeds ($110$--$149$), and the best candidates are then validated on $100$
+held-out seeds ($200$--$299$) that were used in neither search nor confirmation. Validation reports, per
+candidate, the fraction of stable seeds, the collapse count, and
+final-generation means of foraging success, \trait{comb tilt}, and the lower of
 the two \trait{transposition} traits.
 
 \paragraph{One-parameter sensitivity.}
