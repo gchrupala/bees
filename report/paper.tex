@@ -960,9 +960,14 @@ panel's noise along with its signal.
 \paragraph{Decode variants.}
 On a tilted comb (\Cref{sec:vertical}) the direct code can be decoded via
 \emph{flatten} or \emph{unproject}, and we run the experiments below with each
-variant.  The two pipelines are identical in every other respect, so
-comparing them isolates the effect of the geometric decode assumption on whether
-and where the transition occurs.
+variant.  The two pipelines are identical in every other respect, so comparing
+them isolates the effect of the geometric decode assumption on whether and where
+the transition occurs. Which way that effect should run is not clear a priori.
+On the one hand, \emph{flatten} is biased on a tilted comb, and this imprecision
+may push a colony toward the gravity referenced code. On the other hand,
+\emph{unproject} keeps direct pointing accurate as the comb tilts and so keeps
+transitional colonies more viable, which may instead ease the transition by
+keeping them alive long enough to complete it. 
 
 \paragraph{Parameter search.}
 We search eight parameters: food-site count, patch radius, capacity, maximum
@@ -1108,17 +1113,19 @@ large ones, where independent search already finds the food.
 \label{sec:results-transition}
 
 \paragraph{Parameter search.}
-Stable vertical-gravity transitions are common under both decodes, and unproject is
+Stable vertical-gravity transitions, in which a seed ends with a mostly vertical
+comb and both worker roles committed to the gravity reference
+(\Cref{sec:setup-transition}), are common under both decodes, and \emph{unproject} is
 slightly broader (\Cref{tab:optuna-stability}). Both searches concentrate their
-strongly stable trials in much the same region: abundant, large, reachable food
+strongly stable trials, those stable in at least eight of their ten seeds, in much
+the same region: abundant, large, reachable food
 paired with a strong tilt incentive and a high mutation scale
-(\Cref{tab:optuna-region}). The main difference is that unproject tolerates
-food at longer range (median maximum distance $5.25$ km against flatten's $3.25$ km).
-The sender--receiver correlation $\rho$ is not
-decisive, its stable range spanning almost the whole $[0,1]$ axis under both
-decodes, and mean foraging success across the strongly stable trials is only $0.27$
-in each, so the transition needs a reliably communicable ecology rather than an
-abundant one.
+(\Cref{tab:optuna-region}). The main difference is that \emph{unproject} tolerates
+food at longer range: this suggests that the bias of \emph{flatten} works against
+the transition more than it drives it. Distant food demands accurate dances, and
+that is just where \emph{flatten}'s bias corrupts the direct code, so under
+\emph{flatten} the transition completes only where food is close enough for the
+biased dance to stay usable.
 
 \begin{table}
   \centering
@@ -1183,9 +1190,7 @@ distances, low travel cost, high benefit.
     \bottomrule
   \end{tabular}
   \caption{Strongest validated candidate per decode over $100$ held-out seeds;
-    $t_f$ is final mean \trait{comb tilt}. Both reach foraging success ${\approx}0.35$,
-    higher than the $0.27$ mean across all strongly stable search trials, as
-    expected for the single strongest candidate of each decode.}
+    $t_f$ is final mean \trait{comb tilt}.}
   \label{tab:validation}
 \end{table}
 
@@ -1238,7 +1243,11 @@ correlation only partly compensate for weaker architectural benefit. This
 compensation from correlation is concentrated in the low-mutation regime: at the
 smallest mutation scale, raising the correlation from $0$ to $0.9$ roughly
 doubles the stable rate, whereas at the highest mutation scale its effect is much
-weaker, and slightly negative under unproject.
+weaker, and slightly negative under unproject. This regime-dependence explains why
+the search itself left $\rho$ largely unconstrained, its strongly stable trials
+spanning almost the whole $[0,1]$ axis under both decodes (\Cref{tab:optuna-region}):
+the search concentrated at high mutation scale, exactly where correlation barely
+moves the outcome.
 
 \begin{figure}
   \centering
