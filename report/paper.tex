@@ -910,7 +910,7 @@ are stated with the experiments themselves in
 
 \subsection{Emergence of direct pointing}
 \label{sec:setup-horizontal}
-The first experiment uses the horizontal-comb model of \Cref{sec:horizontal}: comb
+The first stage uses the horizontal-comb model of \Cref{sec:horizontal}: comb
 tilt is fixed at $0$ and not allowed to evolve, so the gravity reference has zero
 strength and the \trait{transposition} traits are inert, leaving only the direct-pointing
 code in play. Colonies evolve for $60$ generations under mutation rate
@@ -929,11 +929,11 @@ the same episodes, it is a near-randomized, contemporaneous estimate of what the
 dance actually buys, and it distinguishes functioning communication from a
 directional-bias trait that has merely drifted upward. We report it as a mean over
 the final generations, alongside final-generation mean \trait{directional bias}, foraging
-success, and payoff.
+success, and \trait{dance propensity}.
 
 \subsection{Evolution of the gravity code}
 \label{sec:setup-transition}
-The second experiment uses the full model of \Cref{sec:vertical}: \trait{comb tilt} $\gamma$
+The second stage uses the full model of \Cref{sec:vertical}: \trait{comb tilt} $\gamma$
 and orientation $\phi$ are free to evolve, the \trait{transposition} traits $t_s, t_r$ are
 active, and the raw payoff is scaled by the vertical-comb benefit
 $1 + B\gamma$. Populations always start horizontal, so a successful run must
@@ -952,7 +952,7 @@ run on a panel of seeds. We therefore use optimization, which spends its budget
 where success looks likely instead of spreading it evenly.
 The search tells us \emph{where} viable settings lie, but its
 trials cluster around what already worked, so their density cannot tell us how
-\emph{large} a viable region is. The sub-experiments below therefore re-examine
+\emph{large} a viable region is. The experiments below therefore re-examine
 what the search finds on fixed grids. They also re-examine it on fresh random
 seeds, because a search that maximizes over a panel of seeds will fit that
 panel's noise along with its signal.
@@ -1070,35 +1070,30 @@ $100$ held-out seeds.
 \paragraph{Outcome measures.}
 Across the transition experiments we summarize runs by the same thresholds used in
 the search objective: the \emph{stable} fraction (vertical comb with a coordinated
-gravity code), the \emph{gravity-reached} fraction (both \trait{transposition} traits
-crossing $0.50$ at any generation, whether or not verticality is retained), and
-the \emph{non-viable} fraction (foraging success $\le 0.02$ at its worst
-generation), alongside
+gravity code) and the \emph{non-viable} fraction (foraging success $\le 0.02$ at its
+worst generation), alongside
 final-generation trait and success means. Seed-bootstrap intervals over the
 per-seed outcomes quantify sampling uncertainty in the reported fractions.
 
 \section{Results}
 \label{sec:results}
 
-We report the two stages in turn: the horizontal-comb ecology that fixes when the
+We report the two stages in turn: the horizontal-comb ecology which fixes when the
 direct-pointing code is worth maintaining (\Cref{sec:setup-horizontal}), and the
 vertical transition under both decode variants (\Cref{sec:setup-transition}).
 
 \subsection{Emergence of direct pointing}
 \label{sec:results-horizontal}
-On a comb held flat, communication is favored along a diagonal band of the
-food grid rather than along a single axis (\Cref{fig:food-grid}). Evolved
-\trait{directional bias} lifts off its ${\sim}0.38$ drift floor only above a patch-size
-threshold that falls as patches become more numerous: a single patch must reach
-${\sim}600$ m radius before a precise dance evolves (bias $0.81$), whereas at
-eight patches $75$ m already suffices ($0.84$); below a few tens of meters the
-dance never evolves regardless of abundance. The recruitment advantage peaks for
-few, large patches (up to $0.31$ at a single $600$ m patch) and erodes toward both
-small patches (successful foragers too rare to seed dances) and many large patches
-(independent discovery already succeeds; the advantage falls to $0.04$ at
-twenty-four $600$ m patches even as foraging success reaches $0.88$). The evolvable
-\trait{dance propensity} shows little structure across the grid, settling near $0.6$
-everywhere.
+On a comb held flat, the evolved \trait{directional bias}, which sets how precisely
+a dance points, is what tells us communication is favored. Absent selection for
+communication it drifts to a low baseline; it rises clearly above that baseline
+only along a diagonal band of the food grid (\Cref{fig:food-grid}), and the
+patch size at which a precise dance becomes worthwhile falls as patches grow more
+numerous. Below a patch radius of a few tens of meters the dance never evolves,
+however abundant the food. The recruitment advantage shows what a dance is worth
+where it does evolve: it is largest for few, large patches and erodes toward both
+small patches, where successful foragers are too rare to seed dances, and abundant
+large ones, where independent search already finds the food.
 
 \begin{figure}
   \centering
@@ -1106,10 +1101,7 @@ everywhere.
   \caption{Evolved \trait{directional bias} (left) and recruitment advantage (right) on a
     flat comb across the grid of Poisson mean site count against median patch
     radius, $50$ seeds per cell. Recruitment advantage is the follower--searcher
-    success difference, and shading is normalized within each panel. The bias
-    traces a diagonal band whose patch-size threshold falls as patches grow more
-    numerous, whereas the recruitment advantage instead peaks for few, large
-    patches and erodes toward both small and abundant food.}
+    success difference, and shading is normalized within each panel.}
   \label{fig:food-grid}
 \end{figure}
 \subsection{Evolution of the gravity code}
@@ -1171,7 +1163,8 @@ abundant one.
 \end{table}
 
 \paragraph{Held-out validation.}
-The top five distinct candidates from each search, rerun on $100$ held-out seeds
+The top five distinct candidates from each search, carried through the $40$-seed
+confirmation panel and rerun on $100$ held-out seeds
 ($200$--$299$), all produced frequent stable transitions and no non-viable seeds;
 stable rates ran $80$--$91$ of $100$ for flatten and $82$--$92$ for unproject. The
 strongest candidate of each decode (\Cref{tab:validation}) lands on very similar
