@@ -1224,7 +1224,7 @@ A one-parameter sweep around each validated baseline identifies the mutation sca
 as the sharpest boundary (\Cref{fig:sensitivity-flatten,fig:sensitivity-unproject}):
 lowering it collapses the
 transition (flatten falls from $91/100$ to $49/100$ at $\sigma_m = 0.05$; unproject
-to $16/100$ at $0.04$), while the validated $\sigma_m$ of $0.07$--$0.09$ sits on the
+holds until a lone drop to $16/100$ at $0.04$), while the validated $\sigma_m$ of $0.07$--$0.09$ sits on the
 plateau. The sharpest \emph{ecological} boundary is food-site count under flatten
 ($46/100$ at a Poisson mean of two, rising to $87/100$ at seven); unproject is more
 robust to count. Vertical-comb benefit and correlation are monotone and moderate,
@@ -1239,9 +1239,7 @@ and patch radius, capacity, distance, and travel cost stay within a narrow band.
     is a swept value's rate and its width that value's sampling uncertainty; dots
     mark the per-value rates (orange below, green above baseline) and the dashed line
     the baseline. Parameters are sorted by worst-case drop (shared order and x-range
-    with \Cref{fig:sensitivity-unproject}). Mutation scale is the widest,
-    most collapse-prone lever and food-site count the sharpest ecological one, while
-    patch radius and capacity stay tightly at baseline.}
+    with \Cref{fig:sensitivity-unproject}).}
   \label{fig:sensitivity-flatten}
 \end{figure}
 
@@ -1249,10 +1247,7 @@ and patch radius, capacity, distance, and travel cost stay within a narrow band.
   \centering
   \includegraphics[width=0.82\textwidth]{figures/food_transition_disk_sensitivity_ridge_unproject.png}
   \caption{One-parameter sensitivity of the unproject decode, drawn as in
-    \Cref{fig:sensitivity-flatten} and sharing its parameter order and x-range.
-    Mutation scale is again the sharpest boundary (a lone collapse at
-    $\sigma_m = 0.04$), but every other parameter stays tightly at baseline; in
-    particular, unproject is markedly more robust to food-site count than flatten.}
+    \Cref{fig:sensitivity-flatten} and sharing its parameter order and x-range.}
   \label{fig:sensitivity-unproject}
 \end{figure}
 
@@ -1261,7 +1256,7 @@ Fixing each decode's validated ecology and sweeping $B$, $\sigma_m$, and $\rho$
 across the search range, stable rate falls steeply with benefit: robust near the
 validated $B\approx0.56$--$0.60$, already marginal by $B=0.30$, and collapsing at
 the search floor $B=0.10$, with unproject again slightly more robust than flatten
-(\Cref{fig:interaction}). A complete failure to produce even one stable transition
+at every benefit tested (\Cref{fig:interaction}). A complete failure to produce even one stable transition
 among the $100$ seeds is rare and confined to that same floor: it occurs in $3$ of
 the $64$ cells under each decode, all at $B=0.10$ and, in all but one, also at the
 lowest mutation scale. Within each benefit panel the rate rises with mutation
@@ -1287,9 +1282,7 @@ moves the outcome.
     $B{=}0.60$). Tiles cross the sender--receiver mutation correlation $\rho$
     against the mutation scale $\sigma_m$, faceted by decode (rows) and
     vertical-comb benefit $B$ (columns); each cell summarizes $100$ held-out
-    seeds, and its label is the percentage of seeds with a stable transition.
-    Stable rate rises with benefit, mutation scale, and correlation, and
-    unproject clears a broader region than flatten at every benefit.}
+    seeds, and its label is the percentage of seeds with a stable transition.}
   \label{fig:interaction}
 \end{figure}
 
