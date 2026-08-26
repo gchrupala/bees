@@ -1297,70 +1297,54 @@ moves the outcome.
 \label{sec:discussion}
 
 The current study poses two questions: under what ecological conditions a
-direct-pointing referential code emerges and stabilizes, and which factors lead
-to a gradual transition from this code to its gravity-referenced variant. 
-The two stages of the simulation address them in turn.
+direct-pointing referential code emerges and stabilizes, and which factors let
+a population move from this code to its gravity-referenced variant. Both are
+feasibility questions rather than probability estimates: they ask what
+conditions make each code possible at all, not how likely a given ecology or
+lineage was to realize it. The two stages of the simulation answer them in
+turn.
 
-On a horizontal comb, with comb tilt fixed at zero, direct pointing is worth
-maintaining only within a moderate band of foraging difficulty
-(\Cref{fig:food-grid}). Evolved directional bias and recruitment advantage both
-form a ridge across the grid, rising from a low baseline to a peak at moderate
-patch size and site count and falling off gradually toward both sparser and more
-abundant food; nowhere in the swept range does the code turn on or off sharply,
-so the answer to the first question is a graded ecological condition rather than
-a threshold.
+On a horizontal comb, direct pointing is feasible only within a moderate band
+of foraging difficulty (\Cref{fig:food-grid}), and the edges of that band are
+gradual rather than sharp: too little food never seeds enough dances to be
+useful, too much makes independent search sufficient on its own. 
 
-The second question concerns the transition itself, and the transition-stage
-results (\Cref{sec:results-transition}) are graded in a similar way, though here
-evolutionary parameters can also bound bare feasibility, not only its
-probability. Sweeping the benefit $B$, the mutation scale $\sigma_m$, and the
+The transition itself turns out to be feasible far more broadly than it is
+probable. Sweeping the benefit $B$, the mutation scale $\sigma_m$, and the
 sender--receiver correlation $\rho$ over their full search ranges at a fixed,
-favorable ecology, a transition fails to occur in only
-$3$ of $64$ grid cells per decode, and each sits at the lowest benefit and
-mutation scale tested (\Cref{fig:interaction}). Outside that single corner, some
-seeds complete the transition everywhere in the grid, though often only a
-minority. Ecology draws the broader boundary here too: food-site count under the
-flatten decode is the steepest constraint the one-parameter sensitivity analysis
-finds among $B$, $\sigma_m$, and $\rho$
-(\Cref{fig:sensitivity-flatten,fig:sensitivity-unproject}), and the
-horizontal-stage grid's no-signal region covers a much larger share of the space
-swept there than the evolutionary-parameter grid's infeasible corner does of its
-own.
+favorable ecology, a transition fails to occur in only $3$ of $64$ grid cells
+per decode, each at the lowest benefit and mutation scale tested
+(\Cref{fig:interaction}); everywhere else, some seeds complete it, though
+often only a minority do. The regime the search converges on, a high mutation
+scale paired with a large benefit, is not especially biologically plausible, 
+nor is it necessary to allow the code transition to occur.
 
-The decode comparison sharpens this ecological picture further. \emph{Flatten},
-the decode we take to be more biologically plausible because it leaves the
-ancestral, uncorrected reading of a dance intact, tolerates a narrower range of
-food distances than the idealized \emph{unproject}: its bias on a tilted comb
-corrupts long-range dances precisely where accuracy matters most. The transition
-remains possible under flatten, but if flatten is closer to how bees actually
-decode a tilted dance, a real population's viable ecology is correspondingly
-narrower than an idealized receiver would suggest. 
-
-$B$ and $\sigma_m$ deserve a further caution. The model assigns vertical combs
-an exogenous, fixed-form benefit rather than deriving one from a mechanical or
-thermal account of comb architecture, so a large validated $B$ shows only that a
-sufficiently strong independent advantage would carry the transition, not that
-real vertical combs conferred a benefit of that magnitude. Likewise $\sigma_m$
-sets how fast colony traits explore trait space over a fixed number of
-generations rather than estimating a literal mutation rate; a transition that
-requires a mutation scale toward the upper end of the range we searched is
-better read as a demand for sufficient evolvability than as a claim about real
-per-generation mutation rates.
+Our approach is to treat the pattern of results here as a transition feasibility demonstration
+rather than a claim about its likelihood: across nearly all
+of the range we tested, nothing about the evolutionary parameters rules the
+transition out.
 
 Taken together, these answers complement the mechanistic proposal of
-\citet{10.1242/jeb.142778}, which addresses how a single bee's brain can support
-either code: if the underlying heading representation is indeed indifferent to
-the spatial reference frame, our results indicate where the remaining barrier
-lies, not in individual cognition but in whether an evolving population of
-senders and receivers can stay coordinated as the code itself changes. Returning
-to the coordination problem posed in the introduction: a shared code, once
-established, appears
-robust to the pace or genetic architecture of its own change across most of the
-range we tested. Given an ecology that rewards vertical building and a colony
-that already communicates well on a horizontal comb, the transition is closed
-off only where benefit and mutation scale are jointly weak; short of that
-corner, what mainly determines whether it proceeds is the ecology colonies
-forage in, not the tempo or coupling of the underlying genetic change.
+\citet{10.1242/jeb.142778}, which addresses how a single bee's brain can
+support either code: if the underlying heading representation is indeed
+indifferent to the spatial reference frame, our results indicate where the
+remaining barrier lies, not in individual cognition but in whether an
+evolving population of senders and receivers can stay coordinated as the code
+itself changes.
+
+The broader picture across both stages is the same kind of claim at two
+different scales: a referential code, and later its replacement, need not be
+finely tuned into existence. Direct pointing is favored across a real, if
+bounded, swath of foraging ecologies; the shift to a gravity-referenced code,
+once that ecology holds and vertical building pays off, fails only at the
+joint extreme of weak benefit and low mutation scale, and remains open
+everywhere else we tested. This is a claim about what is possible, not what was likely in the actual
+evolutionary history of \emph{Apis}: that would need independent evidence on
+ancestral foraging ecology, the real benefit of vertical combs, and the
+genetic basis of dance production and interpretation. Feasibility is, however,
+enough to answer the coordination problem posed in the introduction: a shared code can be revised
+without a breakdown of communication across most of the conditions we
+examined, not just at one finely tuned point among them.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -1368,12 +1352,14 @@ forage in, not the tempo or coupling of the underlying genetic change.
 Several aspects of the model bound what these results can support. Only the
 dance's directional component is modeled, so the results say nothing about how
 encoding distance would affect the emergence or the transition of the code.
-Colonies reproduce asexually, with no sexual reproduction or gene flow between
+Colonies reproduce asexually, with no gene flow between
 them, and the vertical-comb benefit $B$ is an exogenous, fixed-form term
 (\Cref{sec:transition}) rather than one derived from a mechanical or thermal
-account of comb architecture, so the model is silent on the real advantage's
-magnitude or origin. Transposition is also blended continuously rather than
-switched discretely (\Cref{sec:vertical}), a permissive choice that may widen
+account of comb architecture, so the model is silent on magnitude or origin of the 
+real advantage. Likewise, the mutation scale $\sigma_m$ sets how fast
+colony traits explore trait space over a fixed number of generations, not a
+real per-generation mutation rate. Transposition is also blended continuously rather than
+switched discretely (\Cref{sec:vertical}): a permissive choice that may widen
 the feasible region we report.
 
 The parameter analyses are similarly bounded. The one-parameter sensitivity
@@ -1384,15 +1370,6 @@ effects generalize elsewhere; and because the horizontal and transition stages
 sweep different ecological grids under different evolutionary horizons
 (\Cref{sec:setup-horizontal,sec:setup-transition}), their results are best read
 side by side rather than combined into a single claim.
-
-Finally, "stable" and "non-viable" are operational thresholds
-($\bar\gamma \ge 0.80$, $\min(\bar t_s, \bar t_r) \ge 0.50$, minimum foraging
-success $\le 0.02$; \Cref{sec:setup-transition}), not direct measures of
-communicative quality. In particular, "without a breakdown of communication"
-means only that foraging success never fell to the non-viability floor at a
-run's worst generation; it does not rule out temporary, sub-threshold
-degradation in communicative accuracy during the transition, and a stable seed
-need not have fully replaced the ancestral code.
 
 \bibliographystyle{apalike}
 \bibliography{biblio}
