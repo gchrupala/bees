@@ -1,8 +1,8 @@
 """Illustration of the direct code's projection step and the flatten decode bias.
 
-Extends ``illustrate_direct_projection.py``: the same comb tile and the same
-encoded (projected) signal, but with one more arrow in the world plane showing
-what a receiver recovers from that signal under the ``flatten`` decode rule,
+Draws a comb tile and its encoded (projected) signal, with one more arrow in the
+world plane showing what a receiver recovers from that signal under the
+``flatten`` decode rule,
 which is biased and drifts off the true food direction. Geometry and decoding
 are both taken directly from ``bees.model`` so the figure stays faithful to the
 simulation.

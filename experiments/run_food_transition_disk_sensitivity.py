@@ -1,6 +1,6 @@
 """One-at-a-time (OAT) sensitivity around a disk-ecology transition baseline.
 
-The disk sibling of ``run_food_transition_oat_sensitivity.py``. It takes a
+It takes a
 baseline candidate (the top validated disk candidate, or the base config's own
 parameters), perturbs each disk parameter one at a time along a coarse ladder,
 and reruns every point on a held-out seed panel using the shared disk stability

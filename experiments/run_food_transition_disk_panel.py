@@ -1,8 +1,7 @@
 """Confirmation / validation panel for the disk-ecology vertical transition.
 
-The disk sibling of ``run_food_transition_v2_candidate_panel.py``. The angular
-panel is wired to the angular parameter schema (``food_site_width`` etc.); this
-one works in the disk schema and reuses the single disk stability definition
+This panel is wired to the disk parameter schema and reuses the single disk
+stability definition
 (``optimize_food_transition_disk.evaluate_seed``) so search, confirmation, and
 validation all agree on what "stable" means.
 

@@ -2,177 +2,241 @@
 
 Computational models for exploring the evolution of honeybee communication.
 
-The current work asks when populations that start with horizontal direct-pointing
-communication can evolve both a vertical comb and a gravity-referenced sender-receiver
-code. The codebase is intentionally small: model rules live in `src/bees/`, experiment
-scripts live in `experiments/`, and scientific claims should stay grounded in tracked
-configuration, seeds, and result CSVs.
+Communication requires a shared code, and any change to it must be coordinated between
+senders and receivers. The honeybee waggle dance illustrates this problem: species with
+horizontal combs point directly at a food source, while species with vertical combs
+cannot point directly and instead reference the dance to gravity, decoded against the
+position of the sun. This project models the emergence of direct pointing and its
+evolutionary transition to a gravity-referenced code in populations of bee-like agents,
+with selection acting at the level of colonies. The full argument, setup, and results are
+written up in `report/paper.tex`; this README covers the codebase and how to reproduce
+every figure and table in that paper.
 
 ## Repository Structure
 
-- `src/bees/`: Python package for model code
-- `configs/`: reproducible experiment settings
+- `src/bees/`: the model itself (colonies, workers, foraging, mutation, evolution)
+- `configs/`: reproducible experiment settings (JSON, one per experiment)
 - `experiments/`: runnable experiment, analysis, plotting, and Snellius scripts
-- `results/`: tracked result CSVs and local/generated experiment outputs
-- `report/`: lightweight Markdown/HTML report and figures
+- `results/`: tracked result CSVs (large trajectory files are gzipped)
+- `report/`: `paper.tex`, its bibliography and figures, and a slide deck
 - `tests/`: focused tests for model behavior and experiment helpers
 
-## Current V2 Model
+## Environment & Dependencies
 
-Colonies are the reproducing entities. Workers are behavioral samples from heritable
-colony means. A colony has heritable means for directional bias, receiver attention,
-sender transposition, receiver transposition, search limit, comb tilt, and comb
-orientation.
-
-Each foraging episode samples food sites with direction, angular width, distance, value,
-and capacity. Workers act sequentially. A worker may follow an available dance according
-to its receiver-attention trait; otherwise it searches in a random direction. Every
-successful worker produces a dance for the food site and pays the dance cost, including
-workers that were themselves recruited by a dance.
-
-Comb geometry supplies two possible directional mappings. Direct pointing projects the
-horizontal food direction into the comb plane. Gravity-referenced signaling uses the
-projection of gravity into the comb plane together with the episode sun azimuth. The
-gravity cue is unavailable on a horizontal comb and strengthens as the comb becomes
-vertical. The v2 transition runs use axial comb orientation, so orientations separated
-by 180 degrees are treated as the same comb plane.
-
-The transition experiments start from horizontal combs and use a linear multiplicative
-vertical-comb benefit:
-
-```text
-episode payoff = foraging payoff * (1 + vertical_comb_benefit * comb_tilt)
-```
-
-This benefit scales viable foraging performance; it does not rescue a colony whose
-foraging payoff has collapsed. All heritable traits, including comb tilt and comb
-orientation, mutate with the shared `mutation_sd`. Sender and receiver transposition
-mutations can be coupled with `transposition_mutation_correlation`.
-
-A seed is counted as a stable vertical gravity-code outcome when final mean comb tilt is
-at least `0.80` and both final mean sender and receiver transposition are at least
-`0.50`. A seed is counted as collapsed if mean foraging success reaches `0.02` or below.
-
-## Current Report
-
-The working report is v2-only:
-
-- source: `report/report.md`
-- rendered HTML: `report/report.html`
-- figures: `report/figures/`
-- primary result inputs: `results/food_transition_v2_*`
-
-Render the report:
+Requires Python >=3.11. Dependencies are declared in `pyproject.toml`; add or change them
+there rather than `pip install`-ing extras directly.
 
 ```sh
-python -u experiments/render_report_html.py
-```
-
-Regenerate the figures used by the report:
-
-```sh
-python -u experiments/plot_oat_sensitivity_effects.py \
-  --points results/food_transition_v2_oat_sensitivity_points.csv \
-  --events results/food_transition_v2_oat_sensitivity_events.csv \
-  --output report/figures/oat_sensitivity_stable_delta
-
-python -u experiments/plot_evolutionary_interaction_heatmap.py \
-  --group-summary results/food_transition_v2_evolutionary_interaction_group_summary.csv \
-  --output report/figures/evolutionary_interaction_stable_heatmap
-
-python -u experiments/plot_evolutionary_interaction_seed_outcomes.py \
-  --events results/food_transition_v2_evolutionary_interaction_events.csv \
-  --output report/figures/evolutionary_interaction_seed_outcomes_binary
-```
-
-`report/paper.tex` is only a LaTeX scaffold. The primary maintained report artifact is
-the Markdown/HTML workflow above.
-
-## Development
-
-Install dependencies:
-
-```sh
+python -m venv .venv
+source .venv/bin/activate
 python -m pip install -e .
 ```
 
-Run tests:
+The `src/bees` layout needs this editable install for `import bees` and the experiment
+scripts to resolve; re-run it after changing dependencies.
+
+Run the tests:
 
 ```sh
 PYTHONPATH=src python -m unittest discover -s tests
 ```
 
-Run a small local v2 Optuna search:
+## Reproducing the Paper
+
+Every figure and table in `report/paper.tex` traces back to a config in `configs/`, a
+tracked CSV in `results/`, and a script in `experiments/`. Two ways to reproduce them:
+
+- **From tracked results** (seconds, exact): re-run the plotting/table scripts below
+  against the CSVs already committed in `results/`.
+- **From scratch** (hours to days, matches procedure not necessarily bit-for-bit): re-run
+  the simulation scripts that produced those CSVs. The confirmation, validation,
+  sensitivity, and interaction runs are deterministic given a seed range; only the Optuna
+  search itself is order-sensitive under parallel workers, so a from-scratch search will
+  differ from the committed trials in its particulars while following the same
+  procedure.
+
+All commands assume the repo root as the working directory and the editable install
+above. `report/figures/apis_phylogeny.pdf` (`fig:phylo`) is a hand-authored TikZ figure
+compiled as part of the LaTeX build, not a Python script; no separate step is needed.
+
+### Quick build: every figure, then the PDF
+
+Regenerates all six raster figures from the tracked results (fast, no simulation),
+then builds the paper (`fig:phylo` is compiled as part of this LaTeX step, see above):
 
 ```sh
-python -u experiments/optimize_food_transition.py \
-  --workers 4 \
-  --n-trials 32 \
-  --seeds 100-102
+python -u experiments/illustrate_waggle_dance.py && \
+python -u experiments/illustrate_direct_decode.py && \
+python -u experiments/visualize_disk_food_samples.py && \
+python -u experiments/plot_food_distribution_disk_grid.py && \
+python -u experiments/plot_food_transition_disk_sensitivity_ridge.py && \
+python -u experiments/plot_food_transition_disk_interaction_heatmap.py && \
+(cd report && latexmk -pdf paper.tex)
 ```
 
-Run a small candidate panel from Optuna trials:
+The sections below cover each figure/table individually, including regenerating the
+underlying result CSVs from scratch.
+
+### Building the paper itself
 
 ```sh
-python -u experiments/run_food_transition_v2_candidate_panel.py \
+cd report && latexmk -pdf paper.tex
+```
+
+### Schematic figures (no simulation data)
+
+```sh
+python -u experiments/illustrate_waggle_dance.py   # fig:waggle
+python -u experiments/illustrate_direct_decode.py  # fig:direct-decode
+```
+
+### Sampled food geometry (fig:environment)
+
+```sh
+python -u experiments/visualize_disk_food_samples.py
+```
+
+### Horizontal-comb food-distribution grid (fig:food-grid)
+
+```sh
+# regenerate results/food_distribution_disk_{events,points,group_summary}.csv
+python -u experiments/run_food_distribution_disk.py \
+  --config configs/food_distribution_disk.json \
+  --seeds 400-449 \
+  --output-prefix results/food_distribution_disk \
+  --max-workers 16
+
+# regenerate the figure from the group summary
+python -u experiments/plot_food_distribution_disk_grid.py
+```
+
+### Transition-stage pipeline (both decodes)
+
+The paper runs this same pipeline once per decode, over
+`configs/long_vertical_transition_disk.json` (flatten) and
+`configs/long_vertical_transition_disk_unproject.json` (unproject). Substitute the
+config, `--output-prefix`, `--output`, and result filenames accordingly; the flatten
+paths are shown below.
+
+**1. Optuna search** (1024 trials over 10 seeds each; backs `tab:optuna-stability` and
+`tab:optuna-region`):
+
+```sh
+python -u experiments/optimize_food_transition_disk.py \
+  --config configs/long_vertical_transition_disk.json \
+  --workers 16 \
+  --n-trials 1024 \
+  --startup-trials 64 \
+  --seeds 100-109 \
+  --export \
+  --journal-output results/food_transition_disk_optuna.journal \
+  --trials-output results/food_transition_disk_optuna_trials.csv \
+  --seed-output results/food_transition_disk_optuna_seed_metrics.csv
+```
+
+`tab:optuna-stability` and `tab:optuna-region` are computed directly from
+`*_optuna_seed_metrics.csv` / `*_optuna_trials.csv` with pandas, not by a dedicated
+script, e.g.:
+
+```python
+import pandas as pd
+trials = pd.read_csv("results/food_transition_disk_optuna_trials.csv")
+trials["stable_count"].value_counts().sort_index()
+```
+
+**2. Confirmation** (top 20 distinct Optuna candidates, 40 held-out seeds):
+
+```sh
+python -u experiments/run_food_transition_disk_panel.py \
   --source trials \
-  --trials results/food_transition_v2_optuna_trials.csv \
+  --config configs/long_vertical_transition_disk.json \
+  --trials results/food_transition_disk_optuna_trials.csv \
+  --max-candidates 20 \
+  --seeds 110-149 \
+  --output-prefix results/food_transition_disk_confirmation \
+  --max-workers 16
+```
+
+**3. Validation** (top 5 confirmed candidates, 100 held-out seeds; backs
+`tab:validation`):
+
+```sh
+python -u experiments/run_food_transition_disk_panel.py \
+  --source panel \
+  --config configs/long_vertical_transition_disk.json \
+  --points results/food_transition_disk_confirmation_points.csv \
+  --group-summary results/food_transition_disk_confirmation_group_summary.csv \
   --max-candidates 5 \
-  --seeds 110-119 \
-  --max-workers 4 \
-  --output-prefix results/food_transition_v2_confirmation
+  --seeds 200-299 \
+  --output-prefix results/food_transition_disk_validation \
+  --max-workers 16
 ```
 
-Run a small v2 sensitivity panel around the current validated baseline:
+**4. One-parameter sensitivity** (around the strongest validated candidate; backs
+`fig:sensitivity-flatten` / `fig:sensitivity-unproject`):
 
 ```sh
-python -u experiments/run_food_transition_oat_sensitivity.py \
-  --panel coarse \
-  --baseline-points results/food_transition_v2_validation_points.csv \
-  --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
-  --seeds 300-309 \
-  --max-workers 4
+python -u experiments/run_food_transition_disk_sensitivity.py \
+  --config configs/long_vertical_transition_disk.json \
+  --baseline-points results/food_transition_disk_validation_points.csv \
+  --baseline-summary results/food_transition_disk_validation_group_summary.csv \
+  --seeds 200-299 \
+  --output-prefix results/food_transition_disk_sensitivity \
+  --max-workers 16
+
+# regenerate both decode figures at once, from tracked results
+python -u experiments/plot_food_transition_disk_sensitivity_ridge.py
 ```
 
-Run one local shard of the evolutionary interaction grid:
+**5. Evolutionary-parameter interaction grid** (8x8 over $B$, $\sigma_m$, $\rho$; backs
+`fig:interaction`):
 
 ```sh
-python -u experiments/run_evolutionary_interaction_array.py \
-  --task-id 0 \
-  --task-count 4 \
-  --baseline-points results/food_transition_v2_validation_points.csv \
-  --baseline-group-summary results/food_transition_v2_validation_group_summary.csv \
-  --max-workers 4 \
-  --max-seeds 10
+python -u experiments/run_food_transition_disk_interaction.py \
+  --config configs/long_vertical_transition_disk.json \
+  --baseline-points results/food_transition_disk_validation_points.csv \
+  --baseline-summary results/food_transition_disk_validation_group_summary.csv \
+  --seeds 200-299 \
+  --output results/food_transition_disk_interaction.csv \
+  --max-workers 16
+
+# regenerate the figure from both decodes' tracked interaction CSVs
+python -u experiments/plot_food_transition_disk_interaction_heatmap.py
 ```
+
+Static tables (`tab:routes`, `tab:traits`, `tab:fixed-params`, `tab:varied-params`,
+`tab:search-space`) describe the model and search space directly and are not generated
+from result files.
 
 ## Snellius
 
-The Snellius checkout is `/gpfs/home2/gchrupala1/bees`. Sync it before launching jobs:
+`<user>` and `<path-to-checkout>` below are placeholders; see `AGENTS.local.md`
+(gitignored, not in this public repo) for the real values. Sync your checkout before
+launching jobs:
 
 ```sh
-ssh gchrupala1@snellius.surf.nl
-cd /gpfs/home2/gchrupala1/bees
+ssh <user>@snellius.surf.nl
+cd <path-to-checkout>
 git pull --rebase
 ```
 
-Submit the full v2 pipeline from the Snellius checkout:
+Submit the full disk-ecology pipeline (both decodes) from the remote checkout:
 
 ```sh
-BEES_ARRAY_TASKS=64 BEES_ARRAY_CONCURRENCY=4 \
-./experiments/submit_food_transition_v2_snellius.sh
+BEES_PUSH=1 ./experiments/submit_food_transition_disk_pipeline_snellius.sh
 ```
 
-The helper submits, in order, the v2 Optuna search, confirmation panel, validation
-panel, coarse and refined sensitivity panels, evolutionary interaction array, and
-interaction finalizer. Set `BEES_PUSH=1` when the finalizer should commit and push the
-merged evolutionary-interaction result CSVs after the array succeeds. The submit helper
-and Slurm scripts also accept `BEES_VENV`, `BEES_PYTHON`, and `BEES_MODULE_LOAD` for
-environment control.
-
-Monitor jobs and logs with:
+This runs the unproject Optuna search as a Slurm array (reusing the already-tracked
+flatten Optuna trials), then confirmation, validation, sensitivity, and the interaction
+grid for both decodes, committing and pushing the merged result CSVs at the end. Submit
+the horizontal-stage food-distribution grid separately:
 
 ```sh
-squeue -u gchrupala1
-ls -lt slurm-*.out slurm-*.err
+sbatch experiments/run_food_distribution_disk_snellius.sbatch
 ```
+
+Monitor with `squeue -u <user>`, and inspect `logs/slurm-*.out` / `logs/slurm-*.err`.
+Both checkouts must stay in sync via git: `git pull --rebase` before new work, and commit
+result CSVs (never `scp`/`rsync` them) after a run. See `AGENTS.md` for the full Snellius
+and environment-variable conventions (`BEES_VENV`, `BEES_PYTHON`, `BEES_MODULE_LOAD`, and
+why job-side variables need `--export=ALL,VAR=value`).

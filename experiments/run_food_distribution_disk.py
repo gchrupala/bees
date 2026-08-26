@@ -1,8 +1,7 @@
 """Food-distribution / communication experiment on the disk-geometry model.
 
-This is the ecologically grounded re-run of the direct-pointing food-distribution
-experiment (see ``run_food_distribution_v2.py``). It asks the same question --
-where is direct-pointing dance communication favored as the food ecology is
+This is the ecologically grounded direct-pointing food-distribution experiment.
+It asks where direct-pointing dance communication is favored as the food ecology is
 varied, on a comb held flat so only the direct-pointing dance is in play -- but
 replaces the legacy angular-width patch model with physical geometry:
 

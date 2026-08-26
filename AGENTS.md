@@ -66,16 +66,21 @@ We are modeling the evolution of bee communication.
 
 ## Snellius
 
-- Use `ssh gchrupala1@snellius.surf.nl` for Snellius access. Do not record
-  passwords, private keys, or other secrets in this repo.
-- The project checkout on Snellius is `/gpfs/home2/gchrupala1/bees`.
-- Snellius uses Slurm. Submit the evolutionary interaction array from the
-  remote checkout with `./experiments/submit_evolutionary_interaction_snellius.sh`;
-  monitor with `squeue`, and inspect the `logs/slurm-*.out` / `logs/slurm-*.err`
-  logs (the `.sbatch` files write there; `logs/` is gitignored except `.gitkeep`).
-- The submit helper accepts `BEES_ARRAY_TASKS`, `BEES_ARRAY_CONCURRENCY`,
-  `BEES_VENV`, `BEES_PYTHON`, and `BEES_PUSH`. Set `BEES_PUSH=1` when the
-  finalizer should commit and push merged result CSVs after the array succeeds.
+- The Snellius account and checkout path are kept out of this public repo; see
+  `AGENTS.local.md` (gitignored, repo root) for the real SSH account and path. Do
+  not record passwords, private keys, or other secrets in either file.
+- Below, `<user>` and `<path-to-checkout>` refer to the values in `AGENTS.local.md`.
+- Snellius uses Slurm. Submit the full disk-ecology transition pipeline (both
+  decodes) from the remote checkout with
+  `./experiments/submit_food_transition_disk_pipeline_snellius.sh`; monitor with
+  `squeue`, and inspect the `logs/slurm-*.out` / `logs/slurm-*.err` logs (the
+  `.sbatch` files write there; `logs/` is gitignored except `.gitkeep`). Submit
+  the horizontal-stage food-distribution grid separately with
+  `sbatch experiments/run_food_distribution_disk_snellius.sbatch`.
+- The pipeline submit helper accepts `BEES_DISK_ARRAY_TASKS`,
+  `BEES_DISK_ARRAY_CONCURRENCY`, `BEES_VENV`, `BEES_PYTHON`, and `BEES_PUSH`
+  (default `1`). Set `BEES_PUSH=0` to skip the finalizer's commit and push of
+  merged result CSVs after the array succeeds.
 - **Slurm does not inherit the submitting shell's environment on this cluster.**
   A plain `sbatch job.sbatch` runs with a clean environment, so any `BEES_*`
   variable the *job* reads (`BEES_PUSH`, per-task trial counts, output-path
@@ -103,18 +108,6 @@ git as the single source of truth for results:
   (commit, or confirm byte-identical to what is tracked before removing) rather
   than deleting data blindly.
 
-## Reports
-
-- The working report is `report/report.md`, rendered to `report/report.html`
-  with `python -u experiments/render_report_html.py`. Rebuild the HTML before
-  finishing if Pandoc is available; if it is unavailable, say so clearly.
-- Keep the workflow lightweight: prefer Markdown, tracked CSV-backed summaries,
-  and simple generated HTML over heavyweight notebook or PDF pipelines.
-- For static report figures from tabular results, prefer `plotnine` over raw
-  `matplotlib` unless lower-level plotting control is needed.
-- Do not compile or expand `report/paper.tex` during ordinary report maintenance;
-  it is the publication paper (see Paper) and is touched only on explicit request.
-
 ## Paper
 
 - The publication paper is `report/paper.tex` and its related files. Only touch
@@ -126,13 +119,14 @@ git as the single source of truth for results:
 - Avoid excessive em-dashes (`---`) in the paper or report prose. Recast with
   commas, colons, semicolons, or parentheses instead. (En-dashes, `--`, for
   ranges and compounds such as `$80$--$91$` or `sender--receiver` are fine.)
-- While writing, make sure that the paper writing style and personality matches the description in @style.md
+
 
 
 ### Data and visualizations
 - For the display of quantitative data (when it's useful to show spread), prefer figures to tables
 - Use clean, uncluttered design for figures. Explanatory text should be in the caption, not figure title or embedded in the figure. Labels for key elements in a figure and legends are OK. 
 - If there is text in a figure, it should be in a large and readable font.
+- Prefer `plotnine` over raw `matplotlib` for figures generated from tabular results, unless lower-level plotting control is needed.
 
 
 ## Token-Conservative Workflow
