@@ -1012,12 +1012,12 @@ as a completed transition: $\gamma^\ast = 0.80$ asks for a mostly vertical comb,
 and $t^\ast = 0.50$ asks that both roles weight the gravity reference at least as
 heavily as direct pointing, so that the code has genuinely tipped over rather than
 merely drifted. The threshold $m^\ast = 0.02$ is a viability floor:
-colonies begin with almost no communicative ability and forage by near-random
-search, so foraging success is lowest in the founding generation and climbs as
-the code evolves. The minimum $m_j$ is thus in effect the founders' foraging success,
-and penalizing it steers the search away from settings in which foraging is never
-viable. A seed's \emph{progress} measures how near it came to the
-first two: each trait is expressed as a fraction of the threshold it must reach,
+near-random search leaves the founding generation with low success, but the
+minimum can also occur later, when comb tilt outpaces the \trait{transposition}
+traits and degrades the ancestral code before the gravity-referenced one takes
+over. Penalizing $m_j$ wherever it falls steers the search away from settings in
+which foraging is never adequate. A seed's \emph{progress} measures how near it
+came to the first two: each trait is expressed as a fraction of the threshold it must reach,
 and progress is the smallest of those fractions, capped at one,
 \begin{equation}
   g_j = \min\Bigl(1,\; \frac{\bar\gamma_j}{\gamma^\ast},\;
