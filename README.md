@@ -56,8 +56,10 @@ tracked CSV in `results/`, and a script in `experiments/`. Two ways to reproduce
   procedure.
 
 All commands assume the repo root as the working directory and the editable install
-above. `report/figures/apis_phylogeny.pdf` (`fig:phylo`) is a hand-authored TikZ figure
-compiled as part of the LaTeX build, not a Python script; no separate step is needed.
+above. `report/figures/apis_phylogeny.pdf` (`fig:phylo`) is a hand-authored TikZ figure,
+not a Python script; it is a standalone document, not `\input` by `paper.tex`, so it is
+not rebuilt by the main LaTeX pass. Regenerate it separately with
+`cd report/figures && pdflatex apis_phylogeny.tex` (no shell-escape needed).
 
 ### Quick build: every figure, then the PDF
 
