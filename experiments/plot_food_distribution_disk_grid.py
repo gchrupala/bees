@@ -108,7 +108,6 @@ def main() -> None:
         + labs(
             x="median patch radius (m)",
             y="mean site count",
-            title="Disk-geometry food-distribution matrix",
         )
         + theme_minimal(base_size=15)
         + theme(
@@ -121,7 +120,6 @@ def main() -> None:
             axis_text_y=element_text(size=13),
             axis_title_x=element_text(size=15, margin={"t": 8}),
             axis_title_y=element_text(size=15, margin={"r": 8}),
-            plot_title=element_text(weight="bold", size=18),
         )
     )
     output.parent.mkdir(parents=True, exist_ok=True)
