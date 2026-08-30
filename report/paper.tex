@@ -1259,24 +1259,11 @@ patch radius and travel cost, with little margin left elsewhere.
 
 \paragraph{Evolutionary-parameter interaction.}
 Fixing each decode's validated ecology and sweeping $B$, $\sigma_m$, and $\rho$
-across the search range, stable rate falls steeply with benefit: robust near the
-validated $B\approx0.56$--$0.60$, already marginal by $B=0.30$, and collapsing at
-the search floor $B=0.10$, with unproject again slightly more robust than flatten
-at every benefit tested (\Cref{fig:interaction}). A complete failure to produce even one stable transition
-among the $100$ seeds is rare and confined to that same floor: it occurs in $3$ of
-the $64$ cells under each decode, all at $B=0.10$ and, in all but one, also at the
-lowest mutation scale. Within each benefit panel the rate rises with mutation
-scale and with correlation, and the best cells pair a high mutation scale
-($0.09$--$0.11$) with moderate-to-high correlation, so higher mutation and
-correlation only partly compensate for weaker architectural benefit. This
-compensation from correlation is concentrated in the low-mutation regime: at the
-smallest mutation scale, raising the correlation from $0$ to $0.9$ roughly
-doubles the stable rate, whereas at the highest mutation scale its effect is much
-weaker, and slightly negative under unproject. This regime-dependence explains why
-the search itself left $\rho$ largely unconstrained, its strongly stable trials
-spanning almost the whole $[0,1]$ axis under both decodes (\Cref{tab:optuna-region}):
-the search concentrated at high mutation scale, exactly where correlation barely
-moves the outcome.
+across the search range, stable rate falls with benefit for both decodes
+(\Cref{fig:interaction}). A complete failure to produce even one stable
+transition among the $100$ seeds is rare for both decodes, but noticeably rarer
+and more constrained for unproject. Within each benefit panel, higher mutation
+scale and correlation both help, but only partly compensate for weak benefit.
 
 \begin{figure}
   \centering
