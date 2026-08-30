@@ -228,10 +228,9 @@ Submit the full disk-ecology pipeline (both decodes) from the remote checkout:
 BEES_PUSH=1 ./experiments/submit_food_transition_disk_pipeline_snellius.sh
 ```
 
-This runs the unproject Optuna search as a Slurm array (reusing the already-tracked
-flatten Optuna trials), then confirmation, validation, sensitivity, and the interaction
-grid for both decodes, committing and pushing the merged result CSVs at the end. Submit
-the horizontal-stage food-distribution grid separately:
+This runs each decode's Optuna search as a Slurm array, then confirmation, validation,
+sensitivity, and the interaction grid for both decodes, committing and pushing the merged
+result CSVs at the end. Submit the horizontal-stage food-distribution grid separately:
 
 ```sh
 sbatch experiments/run_food_distribution_disk_snellius.sbatch

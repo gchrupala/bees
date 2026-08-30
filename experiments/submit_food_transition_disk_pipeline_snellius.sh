@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # Submit the full disk-ecology transition pipeline for BOTH decode variants.
 #
-#   flatten   : confirmation -> validation -> {sensitivity, interaction}
-#               (Optuna already run; reuses results/food_transition_disk_optuna_trials.csv)
+#   flatten   : optuna array -> finalize -> confirmation -> validation ->
+#               {sensitivity, interaction}
 #   unproject : optuna array -> finalize -> confirmation -> validation ->
 #               {sensitivity, interaction}
 #   collect   : after all leaves, commit + push every disk result CSV (BEES_PUSH=1)
 #
-# Env knobs: BEES_DISK_ARRAY_TASKS (unproject optuna breadth, default 16),
+# Both decodes rerun their Optuna search from scratch: the food-site distance
+# sampler changed (uniform per unit area over the annulus, not per unit
+# distance -- see model.py's _sample_site_distance), which invalidates the
+# previously tracked trials for both decodes, not just unproject.
+#
+# Env knobs: BEES_DISK_ARRAY_TASKS (optuna breadth per decode, default 16),
 # BEES_DISK_ARRAY_CONCURRENCY, BEES_PUSH (default 1), BEES_VENV/BEES_PYTHON.
 set -euo pipefail
 
@@ -24,16 +29,25 @@ VALID="${D}/run_food_transition_disk_validation_snellius.sbatch"
 SENS="${D}/run_food_transition_disk_sensitivity_snellius.sbatch"
 INTER="${D}/run_food_transition_disk_interaction_snellius.sbatch"
 
-# ── flatten (Optuna already complete) ─────────────────────────────────────────
+# ── flatten (optuna array + finalize, then downstream) ────────────────────────
 FLAT="ALL"
 FLAT+=",BEES_CONFIG=configs/long_vertical_transition_disk.json"
+FLAT+=",BEES_OPTUNA_JOURNAL=results/food_transition_disk_optuna.journal"
 FLAT+=",BEES_OPTUNA_TRIALS_CSV=results/food_transition_disk_optuna_trials.csv"
+FLAT+=",BEES_OPTUNA_SEED_METRICS=results/food_transition_disk_optuna_seed_metrics.csv"
 FLAT+=",BEES_CONFIRMATION_PREFIX=results/food_transition_disk_confirmation"
 FLAT+=",BEES_VALIDATION_PREFIX=results/food_transition_disk_validation"
 FLAT+=",BEES_SENSITIVITY_PREFIX=results/food_transition_disk_sensitivity"
 FLAT+=",BEES_INTERACTION_OUTPUT=results/food_transition_disk_interaction.csv"
 
-conf_f="$(sbatch --parsable --export="${FLAT}" "${CONFIRM}")"
+rm -f results/food_transition_disk_optuna.journal \
+      results/food_transition_disk_optuna.journal*.lock 2>/dev/null || true
+
+opt_f="$(sbatch --parsable --array="${array_spec}" --export="${FLAT}" \
+    "${D}/run_food_transition_disk_optuna_snellius.sbatch")"
+fin_f="$(sbatch --parsable --dependency=afterok:"${opt_f}" --export="${FLAT}" \
+    "${D}/run_food_transition_disk_finalize_snellius.sbatch")"
+conf_f="$(sbatch --parsable --dependency=afterok:"${fin_f}" --export="${FLAT}" "${CONFIRM}")"
 val_f="$(sbatch --parsable --dependency=afterok:"${conf_f}" --export="${FLAT}" "${VALID}")"
 sens_f="$(sbatch --parsable --dependency=afterok:"${val_f}" --export="${FLAT}" "${SENS}")"
 inter_f="$(sbatch --parsable --dependency=afterok:"${val_f}" --export="${FLAT}" "${INTER}")"
@@ -67,6 +81,6 @@ collect="$(sbatch --parsable \
     --export="ALL,BEES_PUSH=${push}" \
     "${D}/run_food_transition_disk_collect_snellius.sbatch")"
 
-echo "flatten:   confirm ${conf_f}  valid ${val_f}  sens ${sens_f}  inter ${inter_f}"
+echo "flatten:   optuna ${opt_f}  finalize ${fin_f}  confirm ${conf_f}  valid ${val_f}  sens ${sens_f}  inter ${inter_f}"
 echo "unproject: optuna ${opt_u}  finalize ${fin_u}  confirm ${conf_u}  valid ${val_u}  sens ${sens_u}  inter ${inter_u}"
 echo "collect:   ${collect}"
