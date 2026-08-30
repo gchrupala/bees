@@ -1224,15 +1224,17 @@ short-to-moderate distances, low travel cost, high benefit.
 \end{table}
 
 \paragraph{One-parameter sensitivity.}
-A one-parameter sweep around each validated baseline identifies the mutation scale
-as the sharpest boundary (\Cref{fig:sensitivity-flatten,fig:sensitivity-unproject}):
-lowering it collapses the
-transition (flatten falls from $91/100$ to $49/100$ at $\sigma_m = 0.05$; unproject
-holds until a lone drop to $16/100$ at $0.04$), while the validated $\sigma_m$ of $0.07$--$0.09$ sits on the
-plateau. The sharpest \emph{ecological} boundary is food-site count under flatten
-($46/100$ at a Poisson mean of two, rising to $87/100$ at seven); unproject is more
-robust to count. Vertical-comb benefit and correlation are monotone and moderate,
-and patch radius, capacity, distance, and travel cost stay within a narrow band.
+A one-parameter sweep around each validated baseline finds a different sharpest
+boundary per decode (\Cref{fig:sensitivity-flatten,fig:sensitivity-unproject}).
+Under unproject, mutation scale is the one parameter whose perturbation strongly
+affects the outcome; every other parameter, food-site count included, makes
+little difference. Under flatten, sensitivity is spread across several
+parameters: food-site count matters most, followed by mutation scale, then
+travel cost and maximum distance. Meanwhile patch radius, capacity,
+vertical-comb benefit, and correlation make little difference. Most food lies at
+long range, where flatten's tilt-dependent decoding bias makes precise dances
+hard to produce, pushing its validated point to the edge of the search range on
+patch radius and travel cost, with little margin left elsewhere.
 
 \begin{figure}
   \centering
