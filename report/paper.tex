@@ -1138,17 +1138,15 @@ large ones, where independent search already finds the food.
 \paragraph{Parameter search.}
 Stable vertical-gravity transitions, in which a seed ends with a mostly vertical
 comb and both worker roles committed to the gravity reference
-(\Cref{sec:setup-transition}), are common under both decodes, and \emph{unproject} is
-slightly broader (\Cref{tab:optuna-stability}). Both searches concentrate their
-strongly stable trials, those stable in at least eight of their ten seeds, in much
-the same region: abundant, large, reachable food
-paired with a strong tilt incentive and a high mutation scale
-(\Cref{tab:optuna-region}). The main difference is that \emph{unproject} tolerates
-food at longer range: this suggests that the bias of \emph{flatten} works against
-the transition more than it drives it. Distant food demands accurate dances, and
-that is just where \emph{flatten}'s bias corrupts the direct code, so under
-\emph{flatten} the transition completes only where food is close enough for the
-biased dance to stay usable.
+(\Cref{sec:setup-transition}), are common under both decodes: \emph{flatten} has
+more trials stable in all ten or at least eight seeds, while \emph{unproject} has
+more stable in at least one (\Cref{tab:optuna-stability}). Both searches
+concentrate their strongly stable trials, those stable in at least eight of their
+ten seeds, in much the same region: abundant, large, reachable food paired with a
+strong tilt incentive and a high mutation scale (\Cref{tab:optuna-region}). The
+main difference is that \emph{flatten}'s strongly stable trials occur at the edge
+of the search range on patch radius and travel cost, needing larger patches and
+cheaper travel than \emph{unproject} to remain viable.
 
 \begin{table}
   \centering
