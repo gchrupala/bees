@@ -455,10 +455,12 @@ its fitness is averaged over them (\Cref{sec:foraging}). Each episode draws a
 fresh environment (\Cref{fig:environment}), with patch radii in meters and
 distances from the nest in kilometers. The number of food sites is drawn from a
 Poisson distribution with mean $n$, so episodes vary in how much food they offer.
- Each site is placed at an azimuth drawn uniformly around
-the colony and at a distance drawn uniformly from $[d_{\min}, d_{\max}]$, and is
-a physical circular disk whose radius is drawn independently from a
-lognormal distribution with median $\mu_r$ and log-scale spread $\sigma_r$. A
+ Each site is a physical circular disk whose radius is drawn independently
+from a lognormal distribution with median $\mu_r$ and log-scale spread
+$\sigma_r$. It is placed at an azimuth drawn uniformly around the colony,
+with its distance chosen so that sites are uniformly dense per unit area
+between $d_{\min}$ and $d_{\max}$. Concretely, the squared distance is drawn
+uniformly between $d_{\min}^2$ and $d_{\max}^2$. A
 forager finds the patch when its straight outbound path crosses the disk, so a
 fixed patch subtends a smaller angle when farther from the nest, and distant
 food demands more accurate dances. Each patch has value $v$ per visit and a finite
