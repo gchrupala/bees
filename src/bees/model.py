@@ -428,10 +428,7 @@ def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodS
         # reproducibility; capacity is derived from the drawn radius and draws
         # no randomness.
         direction = rng.random() * tau
-        distance = rng.uniform(
-            settings.food_site_min_distance,
-            settings.food_site_max_distance,
-        )
+        distance = _sample_site_distance(settings, rng)
         radius = _sample_patch_radius(settings, rng)
         sites.append(
             FoodSite(
@@ -444,6 +441,17 @@ def generate_food_sites(settings: DirectionSettings, rng: Random) -> tuple[FoodS
             )
         )
     return tuple(sites)
+
+
+def _sample_site_distance(settings: DirectionSettings, rng: Random) -> float:
+    """Draw a site's distance from the colony so that sites are uniformly
+    dense per unit *area* over the annulus [min_distance, max_distance], not
+    uniformly dense per unit distance. Sampling distance itself uniformly
+    concentrates sites near the inner edge, since equal-width distance bins
+    near the colony cover less area than equal-width bins farther out."""
+    d_min = settings.food_site_min_distance
+    d_max = settings.food_site_max_distance
+    return sqrt(rng.random() * (d_max * d_max - d_min * d_min) + d_min * d_min)
 
 
 def _sample_site_count(settings: DirectionSettings, rng: Random) -> int:
