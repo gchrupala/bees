@@ -119,8 +119,11 @@ git as the single source of truth for results:
 - Avoid excessive em-dashes (`---`) in the paper or report prose. Recast with
   commas, colons, semicolons, or parentheses instead. (En-dashes, `--`, for
   ranges and compounds such as `$80$--$91$` or `sender--receiver` are fine.)
-
-
+- To produce an arXiv submission bundle, run `report/make_arxiv_bundle.sh`
+  (optionally with an output path; defaults to `report/bees_arxiv.tar.gz`).
+  It rebuilds `paper.bbl`, auto-discovers the figures actually referenced via
+  `\includegraphics`, and verifies the bundle by compiling it standalone in a
+  fresh directory before writing the tarball.
 
 ### Data and visualizations
 - For the display of quantitative data (when it's useful to show spread), prefer figures to tables
