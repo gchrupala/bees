@@ -61,7 +61,7 @@ coordinated between senders and receivers if the breakdown of
 communication is to be avoided.
 
 In many cases it is possible to think of a plausible pathway for the
-coordinated emergence and development of a shared code, but a verbally
+coordinated rise and development of a shared code, but a verbally
 formulated scenario leaves many details underspecified and makes it
 hard to be precise about the specific conditions that make code change
 trajectories feasible. For this reason computational models of the
@@ -133,22 +133,21 @@ gravity code was linked to vertical combs and that cavity nesting is not
 required for its emergence \citep{10.1242/jeb.142778}.
 
 Nevertheless, the exact sequence and nature of evolutionary events that led to
-the emergence of the gravity-based waggle dance is not known in detail. It is
-also not clear how the transition from one version of the code to the other
-could happen gradually, while maintaining communicative success at all stages,
-and how this process interacted with the change in the orientation of
-honeycombs. Because the code is shared, such a transition poses a coordination
-problem: a change adopted by senders but not matched by the receivers'
-interpretation, or the reverse, disrupts communication, so that intermediate
-stages risk a loss of communicative success. A mechanistic account of this
-transition has been proposed at the neural level: the central-complex circuitry
-that represents the bee's directional heading (its own compass orientation) is not
-tied to any particular spatial reference frame, so
-a gravity reference could in principle substitute for the celestial one without a
-dedicated switching mechanism \citep{10.1242/jeb.142778}. Such an account
-addresses how an individual brain can support either version of the code, but
-not how a population of senders and receivers stays coordinated while the shared
-code itself evolves, which is the question we address.
+the rise of the gravity-based waggle dance is not known in detail. It is also
+unclear how the transition from one code to the other could happen gradually
+while maintaining communicative success at every stage, or how this process
+interacted with the change in comb orientation. Because the code is shared,
+such a transition poses a coordination problem: a change adopted by senders
+but not matched by receivers' interpretation, or the reverse, disrupts
+communication, so intermediate stages risk a loss of communicative success.
+A mechanistic account has been proposed at the neural level: the
+central-complex circuitry that represents the bee's directional heading is
+not tied to any particular spatial reference frame, so a gravity reference
+could in principle substitute for a celestial one without a dedicated
+switching mechanism \citep{10.1242/jeb.142778}. Such an account addresses how
+a single brain can support either code, but not how a population of senders
+and receivers stays coordinated as the shared code itself evolves, which
+is the question we address.
 
 \begin{figure}
     \centering
@@ -341,9 +340,9 @@ addresses.
 \section{Method}
 \label{sec:method}
 Our model is inspired by bee colonies and their waggle dance, but it is
-simplified in many important ways, as our goal was not to model bee biology in
-detail but rather investigate scenarios for the emergence and evolution of
-referential communicative codes, while adopting the case of the waggle dance as a way
+simplified in many important ways. Our goal is not to model bee biology in
+detail, but to investigate scenarios for the rise and evolution of
+referential communicative codes. We adopt the case of the waggle dance as a way
 to ground the modeling in the real world and ensuring that it is evolutionarily
 plausible.
 
@@ -582,13 +581,14 @@ for vertical building through the payoff scaling $(1 + B\gamma)$
 (\Cref{sec:foraging}), which rewards greater \trait{comb tilt} on its own, and ask
 whether communication can survive as the comb tilts under that pressure. The
 scaling is multiplicative because the advantages usually attributed to a vertical
-comb are architectural,\footnote{A vertical comb carries cells on both faces of a
+comb are architectural:\footnote{A vertical comb carries cells on both faces of a
 single sheet, whereas a horizontal one can open its cells only upward; and a comb
 attached along its top edge is loaded in its own plane rather than in bending,
-which wax tolerates better \citep{seeley1976nest,hepburn2014nests}.} and improve the return on what a colony
-forages rather than paying a subsidy that arrives whether it forages or not. This
-couples the two pressures, since tilt is then worth most to a colony that already
-forages well, and therefore has a working direct code to lose. Because
+which wax tolerates better \citep{seeley1976nest,hepburn2014nests}.} they improve the return on what a colony
+already forages, rather than providing a bonus that arrives regardless of
+foraging success. This form couples the two pressures: comb tilt pays off
+most for a colony that already forages well, which is exactly the colony
+with a working direct code to lose. Because
 \trait{comb tilt} is itself a trait that starts flat and evolves by small
 mutational steps, a lineage passes through intermediate, partly tilted combs
 rather than jumping from horizontal to vertical.
@@ -948,10 +948,11 @@ patch at the median radius has capacity $6$, patches lie no farther than
 $d_{\max} = 6$ km, and foraging cost is $0.027$ per km travelled.
 
 The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}).
-Because the follow decision is a randomized coin flip on \trait{receiver attention} within
-the same episodes, it is a near-randomized, contemporaneous estimate of what the
-dance actually buys, and it distinguishes functioning communication from a
-directional-bias trait that has merely drifted upward. We report it as a mean over
+Because whether a worker follows a dance is a probabilistic coin flip on
+\trait{receiver attention}, comparing followers and searchers within the same
+episode approximates a randomized trial of how much benefit the dance
+provides, distinguishing functioning communication from a directional-bias
+trait that has merely drifted upward. We report it as a mean over
 the final generations, alongside final-generation mean \trait{directional bias}, foraging
 success, and \trait{dance propensity}.
 
@@ -1139,9 +1140,8 @@ large ones, where independent search already finds the food.
 \paragraph{Parameter search.}
 Stable vertical-gravity transitions, in which a seed ends with a mostly vertical
 comb and both worker roles committed to the gravity reference
-(\Cref{sec:setup-transition}), are common under both decodes: \emph{flatten} has
-more trials stable in all ten or at least eight seeds, while \emph{unproject} has
-more stable in at least one (\Cref{tab:optuna-stability}). Both searches
+(\Cref{sec:setup-transition}), are common under both decodes
+(\Cref{tab:optuna-stability}). Both searches
 concentrate their strongly stable trials, those stable in at least eight of their
 ten seeds, in much the same region: abundant, large, reachable food paired with a
 strong tilt incentive and a high mutation scale (\Cref{tab:optuna-region}). The
@@ -1306,9 +1306,9 @@ converges on, a high mutation scale paired with a large benefit, is not
 especially biologically plausible, nor is it necessary to allow the code
 transition to occur.
 
-Our approach is to treat the pattern of results here as a transition feasibility demonstration
-rather than a claim about its likelihood: across nearly all
-of the range we tested, nothing about the evolutionary parameters rules the
+We interpret this pattern of results as a demonstration of the feasibility of
+transition, rather than a claim about its likelihood: across nearly all of
+the range we tested, nothing about the evolutionary parameters rules the
 transition out.
 
 Taken together, these answers complement the mechanistic proposal of
@@ -1339,11 +1339,11 @@ examined, not just at one finely tuned point among them.
 Several aspects of the model bound what these results can support. Only the
 dance's directional component is modeled, so the results say nothing about how
 encoding distance would affect the emergence or the transition of the code.
-Colonies reproduce asexually, with no gene flow between
-them, and the vertical-comb benefit $B$ is an exogenous, fixed-form term
+Colonies reproduce asexually, with no gene flow between them. The
+vertical-comb benefit $B$ is an exogenous, fixed-form term
 (\Cref{sec:transition}) rather than one derived from a mechanical or thermal
-account of comb architecture, so the model is silent on magnitude or origin of the 
-real advantage. Likewise, the mutation scale $\sigma_m$ sets how fast
+account of comb architecture, so the model is silent on the magnitude or
+origin of the real advantage. Likewise, the mutation scale $\sigma_m$ sets how fast
 colony traits explore trait space over a fixed number of generations, not a
 real per-generation mutation rate. Transposition is also blended continuously rather than
 switched discretely (\Cref{sec:vertical}): a permissive choice that may widen
