@@ -2,11 +2,11 @@
 
 Computational models for exploring the evolution of honeybee communication.
 
-Communication requires a shared code, and any change to it must be coordinated between
-senders and receivers. The honeybee waggle dance illustrates this problem: species with
-horizontal combs point directly at a food source, while species with vertical combs
+Communication typically relies on a shared code, and any change to it must be coordinated
+between senders and receivers. The honeybee waggle dance illustrates this problem: species
+with horizontal combs point directly at a food source, while species with vertical combs
 cannot point directly and instead reference the dance to gravity, decoded against the
-position of the sun. This project models the emergence of direct pointing and its
+position of the sun. This project models the rise of direct pointing and its
 evolutionary transition to a gravity-referenced code in populations of bee-like agents,
 with selection acting at the level of colonies. The full argument, setup, and results are
 written up in `report/paper.tex`; this README covers the codebase and how to reproduce
