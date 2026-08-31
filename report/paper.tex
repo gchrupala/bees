@@ -699,9 +699,10 @@ supports only direct pointing, a vertical comb makes the gravity reference
 available for every food direction, and at intermediate tilts both carry
 information.
 
-When code strength is below $1$, the direction it recovers is correspondingly
-degraded, modeled as a circular interpolation between the true angle and a
-uniformly random one with weight equal to the strength.
+When code strength is below $1$, the angle a worker computes for either
+code---whether producing or interpreting a signal---is independently degraded,
+modeled as a circular interpolation between the true angle and a uniformly
+random one, with weight equal to the strength.
 
 \paragraph{Decoding the direct code.}
 The direct encoding is linear in the horizontal food vector:
@@ -1191,8 +1192,8 @@ cheaper travel than \emph{unproject} to remain viable.
 \end{table}
 
 \paragraph{Held-out validation.}
-The top five distinct candidates from each search, carried through the $40$-seed
-confirmation panel and rerun on $100$ held-out seeds
+The top five distinct candidates emerging from each search's $40$-seed
+confirmation panel, rerun on $100$ held-out seeds
 ($200$--$299$), all produced frequent stable transitions and no non-viable seeds,
 with flatten's candidates achieving somewhat higher stable rates than
 unproject's. The strongest candidate of each decode (\Cref{tab:validation}) lands
@@ -1259,7 +1260,7 @@ patch radius and travel cost, with little margin left elsewhere.
 
 \paragraph{Evolutionary-parameter interaction.}
 Fixing each decode's validated ecology and sweeping $B$, $\sigma_m$, and $\rho$
-across the search range, stable rate falls with benefit for both decodes
+across the search range, stable rate rises with benefit for both decodes
 (\Cref{fig:interaction}). A complete failure to produce even one stable
 transition among the $100$ seeds is rare for both decodes, but noticeably rarer
 and more constrained for unproject. Within each benefit panel, higher mutation
