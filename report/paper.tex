@@ -944,8 +944,10 @@ patch count $\{1,2,3,4,6,8,12,16,24\}$ against the median patch radius
 $\{15, 37.5, 75, 150, 300, 600\}$ meters, so that the ecology ranges from single small
 patches (essentially undiscoverable) to many large ones (easily found by random
 search). The remaining parameters of \Cref{tab:varied-params} are held fixed: a
-patch at the median radius has capacity $6$, patches lie no farther than
-$d_{\max} = 6$ km, and foraging cost is $0.027$ per km travelled.
+patch at the median radius has capacity $6$, and patches lie no farther than
+$d_{\max} = 6$ km. Each km flown subtracts a fixed amount from the colony's
+payoff, whether or not the foray finds food. Reaching the nearest patch costs
+$2\%$ of the food it yields; reaching the farthest costs $16\%$.
 
 The primary outcome is the \emph{recruitment advantage} (\Cref{sec:foraging}).
 Because whether a worker follows a dance is a probabilistic coin flip on
