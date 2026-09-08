@@ -459,7 +459,10 @@ from a lognormal distribution with median $\mu_r$ and log-scale spread
 $\sigma_r$. It is placed at an azimuth drawn uniformly around the colony,
 with its distance chosen so that sites are uniformly dense per unit area
 between $d_{\min}$ and $d_{\max}$. Concretely, the squared distance is drawn
-uniformly between $d_{\min}^2$ and $d_{\max}^2$. A
+uniformly between $d_{\min}^2$ and $d_{\max}^2$. This places most patches in the
+outer part of the range, the sparse-landscape regime in which distant patches are
+thought to be exploitable only by colonies that recruit
+\citep{beekman2000longrange}. A
 forager finds the patch when its straight outbound path crosses the disk, so a
 fixed patch subtends a smaller angle when farther from the nest, and distant
 food demands more accurate dances. Each patch has value $v$ per visit and a finite
@@ -850,9 +853,12 @@ production and interpretation noise (\Cref{sec:signals}). These three terms
 compound: even a colony at maximum \trait{directional bias} recovers a search
 direction with a circular standard deviation of about $20^\circ$, so the model
 imposes a floor on communication error and evolved colonies do not approach
-perfect accuracy. All lengths follow a fixed convention (distances in kilometers,
-patch radii in meters): the maximum search distance is $D = 6$ km and food
-patches lie at distances in $[0.75, d_{\max}]$ km. Food patches are physical disks
+perfect accuracy. That floor sits just above the $10$--$15^\circ$ lower margin
+reported for real waggle dances \citep{okada2014error}. All lengths follow a
+fixed convention (distances in kilometers, patch radii in meters): the maximum
+search distance is $D = 6$ km, the $95$th percentile of foraging distance
+recorded by \citet{visscher1982foraging}, and food patches lie at distances in
+$[0.75, d_{\max}]$ km. Food patches are physical disks
 whose radius is drawn from a lognormal and whose capacity scales with patch area,
 and the number of patches per episode is Poisson (\Cref{sec:environment}). Each foray draws its
 outbound distance from a Gamma of fixed shape with the colony's evolved mean.
