@@ -77,6 +77,12 @@ We are modeling the evolution of bee communication.
   `.sbatch` files write there; `logs/` is gitignored except `.gitkeep`). Submit
   the horizontal-stage food-distribution grid separately with
   `sbatch experiments/run_food_distribution_disk_snellius.sbatch`.
+- The assumption-sensitivity re-run of that grid (branch
+  `sensitivity-model-assumptions`) is a 5-task array, one per model variant:
+  `sbatch experiments/run_assumption_sensitivity_snellius.sbatch`. Each task
+  writes `results/assumption_sensitivity_<variant>_{events,group_summary}.csv`;
+  every row carries a `variant` column, so the files concatenate directly. Add
+  `--export=ALL,BEES_PUSH=1` to have each task commit and push its own results.
 - The pipeline submit helper accepts `BEES_DISK_ARRAY_TASKS`,
   `BEES_DISK_ARRAY_CONCURRENCY`, `BEES_VENV`, `BEES_PYTHON`, and `BEES_PUSH`
   (default `1`). Set `BEES_PUSH=0` to skip the finalizer's commit and push of

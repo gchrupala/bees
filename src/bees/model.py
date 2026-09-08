@@ -58,6 +58,11 @@ class CombBasis:
     normal: Vector3
 
 
+# Colony fitness is clipped here so proportional selection sees a positive
+# weight. Colonies at this value are indistinguishable to that scheme.
+MIN_COLONY_PAYOFF = 0.001
+
+
 @dataclass(frozen=True)
 class DirectionSettings:
     colony_count: int
@@ -124,6 +129,27 @@ class DirectionSettings:
     # dance_propensity trait then evolves. When False, every successful scout
     # dances unconditionally (legacy behavior) and the trait draws no randomness.
     evolve_dance_propensity: bool = False
+    # --- Assumption-sensitivity knobs. Defaults reproduce the published model. ---
+    # Which capacity the recruitment decision reads. "remaining" uses the loads
+    # left after the scout's own visit, so a one-load patch is exhausted by its
+    # finder and never advertised. "pre_visit" uses the capacity before her visit,
+    # so a one-load patch can still seed a dance.
+    dance_capacity_basis: str = "remaining"
+    # Lower bound on a patch's area-scaled capacity. At the default of 1 every
+    # patch holds at least one load, so area scaling is inoperative below
+    # ``food_capacity_reference_radius / 2``. Setting 0 lets sub-threshold patches
+    # hold nothing, in which case foragers cannot enter them at all.
+    food_capacity_floor: int = 1
+    # When True, every colony in a generation is evaluated on the same sequence of
+    # episode environments (common random numbers), removing the environment draw
+    # as a source of between-colony variance. Worker behavior stays independent.
+    common_episode_draws: bool = False
+    # Parent selection. "proportional" is fitness-proportional on the floored
+    # payoff, which cannot distinguish colonies at the floor. "tournament" picks
+    # the best of ``tournament_size`` uniformly drawn colonies, which depends only
+    # on payoff order and so is unaffected by the floor.
+    selection: str = "proportional"
+    tournament_size: int = 3
 
 
 @dataclass(frozen=True)
@@ -154,6 +180,9 @@ class GenerationSummary:
     matched_searcher_success_rate: float
     recruitment_advantage: float
     dance_follow_share: float
+    # Share of colonies whose payoff was clipped to ``MIN_COLONY_PAYOFF``.
+    # Selection cannot order these colonies under proportional selection.
+    floor_fraction: float = 0.0
 
 
 def angular_distance(first: float, second: float) -> float:
@@ -495,7 +524,7 @@ def _site_capacity(settings: DirectionSettings, radius: float) -> int:
     if reference <= 0.0:
         return settings.food_site_capacity
     scaled = settings.food_site_capacity * (radius / reference) ** 2
-    return max(1, round(scaled))
+    return max(settings.food_capacity_floor, round(scaled))
 
 
 def _sample_patch_radius(settings: DirectionSettings, rng: Random) -> float:
@@ -619,13 +648,23 @@ def _scout_dances(
 ) -> bool:
     """Whether a successful scout produces a dance. Unconditional in the legacy
     model; otherwise the scout dances with probability
-    ``1 - (1 - dance_propensity) ** remaining_capacity`` -- zero once the patch
-    is exhausted, rising with the forage still left for recruits."""
+    ``1 - (1 - dance_propensity) ** capacity`` -- rising with the forage left for
+    recruits. Under the default ``dance_capacity_basis="remaining"`` the capacity
+    is what is left after the scout's visit, so an exhausted patch is never
+    advertised; under "pre_visit" it is the capacity she found, so a one-load
+    patch can still seed a dance."""
     if not settings.evolve_dance_propensity:
         return True
-    if remaining_capacity <= 0:
+    capacity = remaining_capacity
+    if settings.dance_capacity_basis == "pre_visit":
+        capacity += 1
+    elif settings.dance_capacity_basis != "remaining":
+        raise ValueError(
+            f"unknown dance capacity basis: {settings.dance_capacity_basis!r}"
+        )
+    if capacity <= 0:
         return False
-    probability = 1.0 - (1.0 - worker.dance_propensity) ** remaining_capacity
+    probability = 1.0 - (1.0 - worker.dance_propensity) ** capacity
     return rng.random() < probability
 
 
@@ -633,7 +672,13 @@ def evaluate_colony(
     colony: Colony,
     settings: DirectionSettings,
     rng: Random,
+    env_rng: Random | None = None,
 ) -> ColonyEvaluation:
+    """Evaluate one colony. ``env_rng``, when given, supplies the episode
+    environments (patches and sun) so that several colonies can be scored on
+    identical draws; worker behavior always comes from ``rng``."""
+    if env_rng is None:
+        env_rng = rng
     total_payoff = 0.0
     total_successes = 0
     total_attempts = (
@@ -645,8 +690,8 @@ def evaluate_colony(
     matched_searcher_successes = 0
 
     for _ in range(settings.episodes_per_colony):
-        sites = generate_food_sites(settings, rng)
-        sun_azimuth = sample_sun_azimuth(settings, rng)
+        sites = generate_food_sites(settings, env_rng)
+        sun_azimuth = sample_sun_azimuth(settings, env_rng)
         remaining_capacity = [site.capacity for site in sites]
         dances: list[Dance] = []
         attention_count = 0
@@ -730,7 +775,9 @@ def evaluate_colony(
         total_payoff += episode_payoff * vertical_modifier
 
     return ColonyEvaluation(
-        payoff=max(0.001, total_payoff / settings.episodes_per_colony),
+        payoff=max(
+            MIN_COLONY_PAYOFF, total_payoff / settings.episodes_per_colony
+        ),
         success_rate=total_successes / total_attempts,
         follower_attempts=follower_attempts,
         follower_successes=follower_successes,
@@ -764,14 +811,25 @@ def simulate(
     history = []
 
     for generation in range(settings.generations + 1):
-        evaluations = [evaluate_colony(colony, settings, rng) for colony in colonies]
+        if settings.common_episode_draws:
+            # One environment sequence per generation, replayed for every colony,
+            # so between-colony payoff differences come only from the colonies.
+            env_seed = rng.getrandbits(64)
+            evaluations = [
+                evaluate_colony(colony, settings, rng, env_rng=Random(env_seed))
+                for colony in colonies
+            ]
+        else:
+            evaluations = [
+                evaluate_colony(colony, settings, rng) for colony in colonies
+            ]
         history.append(_summarize(generation, colonies, evaluations, settings))
 
         if generation < settings.generations:
             colonies = [
                 create_colony(
                     _mutate_traits(
-                        _choose_parent(colonies, evaluations, rng).traits,
+                        _choose_parent(colonies, evaluations, settings, rng).traits,
                         settings,
                         rng,
                     ),
@@ -886,8 +944,24 @@ def _mutate_traits(
 def _choose_parent(
     colonies: list[Colony],
     evaluations: list[ColonyEvaluation],
+    settings: DirectionSettings,
     rng: Random,
 ) -> Colony:
+    """Pick one parent. Proportional selection weights colonies by payoff, so
+    every colony clipped to ``MIN_COLONY_PAYOFF`` carries the same weight;
+    tournament selection depends only on payoff order and so still separates
+    them."""
+    if settings.selection == "tournament":
+        size = max(2, settings.tournament_size)
+        best = rng.randrange(len(colonies))
+        for _ in range(size - 1):
+            challenger = rng.randrange(len(colonies))
+            if evaluations[challenger].payoff > evaluations[best].payoff:
+                best = challenger
+        return colonies[best]
+    if settings.selection != "proportional":
+        raise ValueError(f"unknown selection scheme: {settings.selection!r}")
+
     total_payoff = sum(evaluation.payoff for evaluation in evaluations)
     threshold = rng.random() * total_payoff
     cumulative = 0.0
@@ -967,6 +1041,10 @@ def _summarize(
         matched_searcher_success_rate=matched_searcher_success_rate,
         recruitment_advantage=follower_success_rate - matched_searcher_success_rate,
         dance_follow_share=_safe_ratio(follower_attempts, decision_attempts),
+        floor_fraction=sum(
+            1 for evaluation in evaluations if evaluation.payoff <= MIN_COLONY_PAYOFF
+        )
+        / count,
     )
 
 
