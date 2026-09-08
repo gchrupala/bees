@@ -141,8 +141,14 @@ class CommonEpisodeDrawTests(unittest.TestCase):
 
 class SelectionTests(unittest.TestCase):
     def _evaluations(self, payoffs: list[float]) -> list[ColonyEvaluation]:
+        """Evaluations whose raw payoffs are ``payoffs``, clipped as the model
+        clips them, so the pair behaves like a real generation."""
         return [
-            ColonyEvaluation(payoff=payoff, success_rate=0.0)
+            ColonyEvaluation(
+                payoff=max(MIN_COLONY_PAYOFF, payoff),
+                success_rate=0.0,
+                raw_payoff=payoff,
+            )
             for payoff in payoffs
         ]
 
@@ -156,7 +162,7 @@ class SelectionTests(unittest.TestCase):
     def test_tournament_prefers_the_higher_payoff(self) -> None:
         settings = _settings(selection="tournament", tournament_size=3)
         colonies = self._colonies(6)
-        payoffs = [MIN_COLONY_PAYOFF] * 5 + [4.0]
+        payoffs = [-0.5] * 5 + [4.0]
         evaluations = self._evaluations(payoffs)
         rng = Random(0)
         picks = [
@@ -167,20 +173,36 @@ class SelectionTests(unittest.TestCase):
         self.assertGreater(share, 0.35)
         self.assertLess(share, 0.65)
 
-    def test_tournament_separates_colonies_that_proportional_cannot(self) -> None:
-        # Payoffs below the floor are clipped to it, so proportional selection
-        # sees a flat population; tournament still orders any that differ.
+    def test_tournament_separates_colonies_the_clip_flattens(self) -> None:
+        # Every colony here is clipped to the floor, so proportional selection
+        # sees a flat population; ranking on raw payoff still orders them.
         settings = _settings(selection="tournament", tournament_size=2)
         colonies = self._colonies(4)
-        evaluations = self._evaluations(
-            [MIN_COLONY_PAYOFF, MIN_COLONY_PAYOFF, MIN_COLONY_PAYOFF, 0.002]
+        evaluations = self._evaluations([-0.9, -0.6, -0.3, -0.01])
+        self.assertTrue(
+            all(e.payoff == MIN_COLONY_PAYOFF for e in evaluations),
+            "the fixture must be entirely on the floor for this to mean anything",
         )
         rng = Random(1)
         picks = [
-            _choose_parent(colonies, evaluations, settings, rng) for _ in range(400)
+            _choose_parent(colonies, evaluations, settings, rng) for _ in range(600)
         ]
         share = sum(1 for c in picks if c is colonies[3]) / len(picks)
-        self.assertGreater(share, 0.3)
+        worst = sum(1 for c in picks if c is colonies[0]) / len(picks)
+        # The least-negative colony wins whenever drawn; the worst never does.
+        self.assertGreater(share, 0.35)
+        self.assertLess(worst, 0.10)
+
+    def test_proportional_cannot_separate_the_same_population(self) -> None:
+        settings = _settings(selection="proportional")
+        colonies = self._colonies(4)
+        evaluations = self._evaluations([-0.9, -0.6, -0.3, -0.01])
+        rng = Random(1)
+        picks = [
+            _choose_parent(colonies, evaluations, settings, rng) for _ in range(600)
+        ]
+        share = sum(1 for c in picks if c is colonies[3]) / len(picks)
+        self.assertLess(share, 0.35, "clipped payoffs must be indistinguishable")
 
     def test_unknown_selection_raises(self) -> None:
         settings = _settings(selection="nope")

@@ -156,6 +156,10 @@ class DirectionSettings:
 class ColonyEvaluation:
     payoff: float
     success_rate: float
+    # Mean episode payoff before the MIN_COLONY_PAYOFF clip, so it can be
+    # negative. ``payoff`` drives proportional selection, which needs a positive
+    # weight; order-based selection can use the true value instead.
+    raw_payoff: float = MIN_COLONY_PAYOFF
     follower_attempts: int = 0
     follower_successes: int = 0
     matched_searcher_attempts: int = 0
@@ -778,6 +782,7 @@ def evaluate_colony(
         payoff=max(
             MIN_COLONY_PAYOFF, total_payoff / settings.episodes_per_colony
         ),
+        raw_payoff=total_payoff / settings.episodes_per_colony,
         success_rate=total_successes / total_attempts,
         follower_attempts=follower_attempts,
         follower_successes=follower_successes,
@@ -949,14 +954,14 @@ def _choose_parent(
 ) -> Colony:
     """Pick one parent. Proportional selection weights colonies by payoff, so
     every colony clipped to ``MIN_COLONY_PAYOFF`` carries the same weight;
-    tournament selection depends only on payoff order and so still separates
-    them."""
+    tournament selection ranks on the unclipped ``raw_payoff``, which needs no
+    positive weight, and so still separates colonies the clip has flattened."""
     if settings.selection == "tournament":
         size = max(2, settings.tournament_size)
         best = rng.randrange(len(colonies))
         for _ in range(size - 1):
             challenger = rng.randrange(len(colonies))
-            if evaluations[challenger].payoff > evaluations[best].payoff:
+            if evaluations[challenger].raw_payoff > evaluations[best].raw_payoff:
                 best = challenger
         return colonies[best]
     if settings.selection != "proportional":
