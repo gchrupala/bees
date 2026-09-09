@@ -31,3 +31,6 @@ report/*.fls
 report/*.synctex.gz
 report/*.tar.gz
 q.log
+
+# Downloaded source papers (copyrighted; never commit)
+literature/
