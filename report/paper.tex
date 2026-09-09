@@ -837,24 +837,23 @@ under what ecological conditions the direct-pointing code is worth maintaining
 the direct to the gravity-referenced code as an extrinsic pressure tilts the comb
 (\Cref{sec:setup-transition}).
 
-\subsection{Fixed model parameters}
+\subsection{Model parameters}
 \label{sec:setup-fixed}
 A core set of parameters is held fixed throughout, and only the ecological and
-evolutionary parameters named below are varied. \Cref{tab:fixed-params} lists the
-fixed values. The population contains $60$ colonies of $80$ workers each,
+evolutionary parameters named in \Cref{tab:varied-params} are varied. 
+\Cref{tab:fixed-params} lists the fixed values. We do not attempt to model the 
+physiology and ecology of a particular bee species in detail; however we do try to
+make sure the fixed parameters values are reasonably plausible in order to make the results
+ interpretable in biological terms. 
+
+The population contains $60$ colonies of $80$ workers each,
 evolving for $120$ non-overlapping generations; each colony is evaluated over
 $50$ independent foraging episodes of $12$ foraging attempts, each attempt made
 by a single worker drawn at random (the worker pool is therefore a sample of the
-colony's trait distribution rather than a workforce: its size sets how finely
-that distribution is discretized, not how much a colony can forage). Workers
+colony's trait distribution rather than a workforce). Workers
 express colony traits with variation scale $\eta$ (\Cref{sec:traits}); dances are
 performed with maximum concentration $\kappa_{\max}$ and are subject to both
-production and interpretation noise (\Cref{sec:signals}). These three terms
-compound: even a colony at maximum \trait{directional bias} recovers a search
-direction with a circular standard deviation of about $20^\circ$, so the model
-imposes a floor on communication error and evolved colonies do not approach
-perfect accuracy. That floor sits just above the $10$--$15^\circ$ lower margin
-reported for real waggle dances \citep{okada2014error}. All lengths follow a
+production and interpretation noise (\Cref{sec:signals}). All lengths follow a
 fixed convention (distances in kilometers, patch radii in meters): the maximum
 search distance is $D = 6$ km, the $95$th percentile of foraging distance
 recorded by \citet{visscher1982foraging}, and food patches lie at distances in
