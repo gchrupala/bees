@@ -1,6 +1,8 @@
 \documentclass[11pt]{article}
 \usepackage{booktabs}
 \usepackage{natbib}
+% natbib 8.31b predates \setcitestyle{postnotedelim}; set the delimiter directly.
+\makeatletter\renewcommand{\NAT@cmt}{; }\makeatother
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -49,25 +51,29 @@ reliably and without a breakdown of communication.
 \section{Introduction}
 \label{sec:intro}
 Communication in animal species takes many forms, from the chemical
-signals of ants to the symbolic, compositional language of
-humans. Each of these communication systems has its own idiosyncratic
+signals of ants \citep{jackson2006communication} to the symbolic,
+compositional language of humans \citep{hockett1960origin}. Each of these communication systems has its own idiosyncratic
 properties. What ecological and evolutionary pressures shaped these
 systems has been of substantial interest to biologists and cognitive
 scientists.  In general, complex communication requires some kind of shared code
 between senders and receivers, and the emergence of such a code
-needs a degree of alignment between these two roles.
+needs a degree of alignment between these two roles
+\citep{lewis1969communication,skyrms2010signals}.
 Likewise, any change or modification to the code needs to be
 coordinated between senders and receivers if the breakdown of
 communication is to be avoided.
 
 In many cases it is possible to think of a plausible pathway for the
-coordinated rise and development of a shared code, but a verbally
+coordinated rise and development of a shared code
+(\citealp{skyrms2010signals}, p.~29), but a verbally
 formulated scenario leaves many details underspecified and makes it
 hard to be precise about the specific conditions that make code change
 trajectories feasible. For this reason computational models of the
 evolution of communication systems can provide insights which are hard to
 obtain by other means. Such models have been used extensively to study
-the emergence of communication and language (\Cref{sec:related}). In
+the emergence of communication and language
+\citep[][see \Cref{sec:related} for
+details]{nowak1999evolution,smith2003iterated,wagner2003progress,skyrms2010signals,lazaridou2020emergent}. In
 this paper we model a transition of a particularly intriguing
 communicative system in invertebrates: the waggle dance of honey bees.
 
@@ -82,9 +88,13 @@ some interesting questions about coordination between participants in a communic
 system.
 Different species of \emph{Apis} vary in the specific dance variant used to
 encode the direction of the food patch: in species with exposed horizontal combs
-(\emph{Apis florea} and \emph{Apis andreniformis}) the bees orient the axis of the
-waggle dance directly towards the food patch. In other members of the \emph{Apis}
-genus, combs are vertical and in some species also hidden in cavities. Such
+(\emph{Apis florea} and \emph{Apis andreniformis};
+\citealp{hepburn2011biogeography}) the bees orient the axis of the
+waggle dance directly towards the food patch
+\citep[for \emph{A. florea} see][]{dyer1985mechanisms,dyer2002biology}.
+In other members of the \emph{Apis}
+genus, combs are vertical and in some species also hidden in cavities
+\citep{hepburn2014nests}. Such
 combs make direct pointing impossible, and these species use gravity as a
 reference point, and map the azimuth of the food patch relative to the sun onto
 the angle of the waggle dance with respect to the vertical. \Cref{fig:waggle}
@@ -211,7 +221,7 @@ artificial multi-agent systems, viewed as an abstract computational problem.
  \subsection{Communication in agent societies}
 A long line of computational work has studied how communication systems can
 emerge and stabilize in populations of interacting agents. The signaling game
-introduced by \citet{lewis1969convention} provides the formal foundation for
+introduced by \citet{lewis1969communication,lewis1969coordination} provides the formal foundation for
 much of this work, framing a convention of meaning as a solution to a recurring
 coordination problem between a sender and a receiver. \citet{skyrms2010signals}
 shows how such signaling conventions can arise without prior agreement through
