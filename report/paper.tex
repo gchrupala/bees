@@ -846,14 +846,17 @@ physiology and ecology of a particular bee species in detail; however we do try 
 make sure the fixed parameters values are reasonably plausible in order to make the results
  interpretable in biological terms. 
 
-The population contains $60$ colonies of $80$ workers each,
-evolving for $120$ non-overlapping generations; each colony is evaluated over
+The population contains $60$ colonies of $80$ workers each
+(\citealp{visscher1982foraging} estimate $\approx 50$ feral colonies share one
+colony's foraging range), evolving in non-overlapping generations; each colony is evaluated over
 $50$ independent foraging episodes of $12$ foraging attempts, each attempt made
 by a single worker drawn at random (the worker pool is therefore a sample of the
 colony's trait distribution rather than a workforce). Workers
-express colony traits with variation scale $\eta$ (\Cref{sec:traits}); dances are
-performed with maximum concentration $\kappa_{\max}$ and are subject to both
-production and interpretation noise (\Cref{sec:signals}). All lengths follow a
+express colony traits with variation scale $\eta$ (\Cref{sec:traits}); a dance
+indicates its direction with limited angular precision, bounded by
+$\kappa_{\max}$ and reached only at maximum \trait{directional bias}; and every
+dance carries both production and interpretation noise (\Cref{sec:signals}).
+All lengths follow a
 fixed convention (distances in kilometers, patch radii in meters): the maximum
 search distance is $D = 6$ km, the $95$th percentile of foraging distance
 recorded by \citet{visscher1982foraging}, and food patches lie at distances in
