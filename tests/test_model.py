@@ -1,0 +1,1230 @@
+from __future__ import annotations
+
+import unittest
+from math import pi, tau
+from random import Random
+from statistics import mean
+
+from bees.model import (
+    ColonyTraits,
+    DirectionSettings,
+    FoodSite,
+    Worker,
+    angular_distance,
+    circular_interpolate,
+    create_colony,
+    direct_projection_strength,
+    direct_signal_to_world,
+    direct_signal_to_world_flatten,
+    direct_world_to_signal,
+    encode_dance_direction,
+    evaluate_colony,
+    find_food_site,
+    generate_food_sites,
+    gravity_reference_strength,
+    interpret_signal,
+    sample_sun_azimuth,
+    simulate,
+    _draw_foray_length,
+    _mutate_traits,
+    _orientation_mean_and_alignment,
+    _sample_patch_radius,
+    _sample_site_count,
+    _scout_dances,
+    _segment_disk_entry,
+    _site_capacity,
+)
+
+
+class DirectionModelTests(unittest.TestCase):
+    def test_angular_distance_wraps_around_zero(self) -> None:
+        self.assertAlmostEqual(angular_distance(0.05, tau - 0.05), 0.1)
+
+    def test_circular_interpolation_takes_short_path(self) -> None:
+        self.assertAlmostEqual(circular_interpolate(tau - 0.1, 0.1, 0.5), 0.0)
+
+    def test_worker_variation_is_sampled_inside_colonies(self) -> None:
+        settings = _settings(stable_worker_sd=0.1)
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+                search_limit=3.0,
+            ),
+            settings,
+            Random(1),
+        )
+        directional_biases = {
+            round(worker.directional_bias, 2) for worker in colony.workers
+        }
+
+        self.assertGreater(len(directional_biases), 1)
+        self.assertTrue(
+            all(0.0 <= worker.directional_bias <= 1.0 for worker in colony.workers)
+        )
+        self.assertTrue(
+            all(0.0 <= worker.receiver_attention <= 1.0 for worker in colony.workers)
+        )
+        self.assertTrue(
+            all(0.0 <= worker.sender_transposition <= 1.0 for worker in colony.workers)
+        )
+        self.assertTrue(
+            all(0.0 <= worker.receiver_transposition <= 1.0 for worker in colony.workers)
+        )
+        self.assertTrue(
+            all(
+                0.0 <= worker.search_limit <= settings.max_search_distance
+                for worker in colony.workers
+            )
+        )
+
+    def test_zero_transposition_mutation_correlation_uses_independent_draws(
+        self,
+    ) -> None:
+        settings = _settings(
+            mutation_sd=0.04,
+            transposition_mutation_correlation=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+        )
+        seed = 7
+        expected_rng = Random(seed)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_sender = traits.sender_transposition + expected_rng.gauss(
+            0.0,
+            settings.mutation_sd,
+        )
+        expected_receiver = traits.receiver_transposition + expected_rng.gauss(
+            0.0,
+            settings.mutation_sd,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(seed))
+
+        self.assertAlmostEqual(mutated.sender_transposition, expected_sender)
+        self.assertAlmostEqual(mutated.receiver_transposition, expected_receiver)
+
+    def test_full_transposition_mutation_correlation_couples_increments(
+        self,
+    ) -> None:
+        settings = _settings(
+            mutation_sd=0.04,
+            transposition_mutation_correlation=1.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(8))
+
+        self.assertAlmostEqual(
+            mutated.sender_transposition,
+            mutated.receiver_transposition,
+        )
+
+    def test_transposition_mutation_correlation_is_clamped(self) -> None:
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+        )
+
+        bounded = _mutate_traits(
+            traits,
+            _settings(
+                mutation_sd=0.04,
+                transposition_mutation_correlation=1.0,
+            ),
+            Random(9),
+        )
+        overbounded = _mutate_traits(
+            traits,
+            _settings(
+                mutation_sd=0.04,
+                transposition_mutation_correlation=2.0,
+            ),
+            Random(9),
+        )
+
+        self.assertEqual(overbounded, bounded)
+
+    def test_comb_tilt_uses_shared_mutation_scale(self) -> None:
+        settings = _settings(mutation_sd=0.04)
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.95,
+            comb_orientation=0.2,
+        )
+        seed = 11
+        expected_rng = Random(seed)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_tilt = traits.comb_tilt + expected_rng.gauss(
+            0.0,
+            settings.mutation_sd,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(seed))
+
+        self.assertAlmostEqual(mutated.comb_tilt, expected_tilt)
+
+    def test_axial_orientation_treats_opposite_normals_as_aligned(self) -> None:
+        _, circular_alignment = _orientation_mean_and_alignment(
+            [0.0, tau / 2],
+            axial=False,
+        )
+        axial_mean, axial_alignment = _orientation_mean_and_alignment(
+            [0.0, tau / 2],
+            axial=True,
+        )
+
+        self.assertAlmostEqual(circular_alignment, 0.0)
+        self.assertAlmostEqual(axial_alignment, 1.0)
+        self.assertAlmostEqual(axial_mean, 0.0)
+
+    def test_axial_orientation_mutation_wraps_to_half_turn_period(self) -> None:
+        settings = _settings(
+            mutation_sd=0.0,
+            comb_orientation_axial=True,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.95,
+            comb_orientation=0.75 * tau,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(12))
+
+        self.assertAlmostEqual(mutated.comb_orientation, 0.25 * tau)
+
+    def test_orientation_mutation_uses_shared_scale_and_orientation_period(
+        self,
+    ) -> None:
+        settings = _settings(mutation_sd=0.04, comb_orientation_axial=True)
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.5,
+            comb_orientation=0.2,
+        )
+        seed = 13
+        expected_rng = Random(seed)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_rng.gauss(0.0, settings.mutation_sd)
+        expected_orientation = (
+            traits.comb_orientation + expected_rng.gauss(0.0, settings.mutation_sd * pi)
+        ) % pi
+
+        mutated = _mutate_traits(traits, settings, Random(seed))
+
+        self.assertAlmostEqual(mutated.comb_orientation, expected_orientation)
+
+    def test_random_search_can_find_any_available_food_site(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=2.0, width=0.1, value=1.0, capacity=1),
+            FoodSite(
+                direction=tau / 2,
+                distance=2.0,
+                width=0.1,
+                value=1.0,
+                capacity=1,
+            ),
+        )
+        remaining_capacity = [1, 1]
+
+        self.assertEqual(
+            find_food_site(tau / 2 + 0.01, 3.0, sites, remaining_capacity),
+            1,
+        )
+
+    def test_depleted_food_sites_cannot_be_found(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=2.0, width=0.1, value=1.0, capacity=1),
+        )
+
+        self.assertIsNone(find_food_site(0.0, 3.0, sites, [0]))
+
+    def test_food_site_must_be_within_search_limit(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=4.0, width=0.1, value=1.0, capacity=1),
+        )
+
+        self.assertIsNone(find_food_site(0.0, 3.99, sites, [1]))
+        self.assertEqual(find_food_site(0.0, 4.0, sites, [1]), 0)
+
+    def test_closest_matching_food_site_is_found_first(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=4.0, width=0.1, value=1.0, capacity=1),
+            FoodSite(direction=0.0, distance=2.0, width=0.1, value=1.0, capacity=1),
+        )
+
+        self.assertEqual(find_food_site(0.0, 5.0, sites, [1, 1]), 1)
+
+    def test_generated_food_sites_have_distances_in_range(self) -> None:
+        settings = _settings(
+            food_site_count=20,
+            food_site_min_distance=2.0,
+            food_site_max_distance=4.0,
+        )
+        sites = generate_food_sites(settings, Random(1))
+
+        self.assertTrue(all(2.0 <= site.distance <= 4.0 for site in sites))
+
+    def test_horizontal_comb_has_direct_but_no_gravity_reference(self) -> None:
+        self.assertAlmostEqual(direct_projection_strength(1.2, 0.0, 0.0), 1.0)
+        self.assertAlmostEqual(gravity_reference_strength(0.0, 0.0), 0.0)
+
+    def test_vertical_direct_projection_depends_on_comb_orientation(self) -> None:
+        self.assertAlmostEqual(direct_projection_strength(0.0, 1.0, 0.0), 0.0)
+        self.assertAlmostEqual(direct_projection_strength(tau / 4, 1.0, 0.0), 1.0)
+
+    def test_direct_decode_inverts_encode_at_intermediate_tilt(self) -> None:
+        # The decode must invert the projection (M^-1), not merely read the
+        # in-plane vector's horizontal shadow (M^T). Those agree only on a flat
+        # comb, so the round trip must recover the heading exactly across a range
+        # of intermediate tilts, orientations, and food directions.
+        for comb_tilt in (0.2, 0.5, 0.8):
+            for comb_orientation in (0.0, pi / 6, 1.3, 2.7):
+                for direction in (0.3, 1.2, 2.5, 4.0, 5.6):
+                    signal, encode_strength = direct_world_to_signal(
+                        direction, comb_tilt, comb_orientation
+                    )
+                    world, decode_strength = direct_signal_to_world(
+                        signal, comb_tilt, comb_orientation
+                    )
+                    with self.subTest(
+                        comb_tilt=comb_tilt,
+                        comb_orientation=comb_orientation,
+                        direction=direction,
+                    ):
+                        self.assertAlmostEqual(
+                            angular_distance(world, direction), 0.0, places=9
+                        )
+                        # The recovered cue strength matches the encode strength
+                        # and the standalone projection-strength helper.
+                        self.assertAlmostEqual(encode_strength, decode_strength)
+                        self.assertAlmostEqual(
+                            decode_strength,
+                            direct_projection_strength(
+                                direction, comb_tilt, comb_orientation
+                            ),
+                        )
+
+    def test_direct_decode_differs_from_naive_shadow_on_a_tilt(self) -> None:
+        # Guard against regressing to the old transpose-based decode: on a tilted
+        # comb the correct inverse must differ from feeding the signal straight
+        # back as if it were already a world heading.
+        comb_tilt, comb_orientation, direction = 0.5, pi / 6, 1.0
+        signal, _ = direct_world_to_signal(direction, comb_tilt, comb_orientation)
+        world, _ = direct_signal_to_world(signal, comb_tilt, comb_orientation)
+        self.assertAlmostEqual(angular_distance(world, direction), 0.0, places=9)
+        self.assertGreater(angular_distance(signal, direction), 0.1)
+
+    def test_direct_decode_strength_zero_on_vertical_comb(self) -> None:
+        # A vertical comb makes the projection matrix singular (det = cos theta =
+        # 0), so the heading is unrecoverable and strength collapses to zero.
+        _, strength = direct_signal_to_world(0.7, 1.0, 0.0)
+        self.assertEqual(strength, 0.0)
+
+    def test_flatten_and_unproject_agree_on_flat_comb(self) -> None:
+        # On a flat comb M is a pure rotation so M^T = M^-1; both decodes
+        # must return the same heading and strength.
+        for direction in (0.3, 1.2, 2.5, 4.0):
+            signal, _ = direct_world_to_signal(direction, 0.0, 0.0)
+            angle_b, strength_b = direct_signal_to_world(signal, 0.0, 0.0)
+            angle_a, strength_a = direct_signal_to_world_flatten(signal, 0.0, 0.0)
+            with self.subTest(direction=direction):
+                self.assertAlmostEqual(angular_distance(angle_a, angle_b), 0.0)
+                self.assertAlmostEqual(strength_a, strength_b)
+
+    def test_flatten_and_unproject_differ_on_tilted_comb(self) -> None:
+        # On a tilted comb M^T != M^-1, so the two decodes must diverge.
+        signal, _ = direct_world_to_signal(1.0, 0.5, pi / 6)
+        angle_b, _ = direct_signal_to_world(signal, 0.5, pi / 6)
+        angle_a, _ = direct_signal_to_world_flatten(signal, 0.5, pi / 6)
+        self.assertGreater(angular_distance(angle_a, angle_b), 0.1)
+
+    def test_direct_decode_setting_routes_to_flatten(self) -> None:
+        # With direct_decode="flatten" interpret_signal must produce a different
+        # result from direct_decode="unproject" on a tilted comb.
+        rng = Random(0)
+        tilt, orientation, direction = 0.5, pi / 6, 1.0
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=10.0,
+            comb_tilt=tilt,
+            comb_orientation=orientation,
+        )
+        worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=10.0,
+        )
+        signal, _ = direct_world_to_signal(direction, tilt, orientation)
+        settings_b = _settings(direct_decode="unproject")
+        settings_a = _settings(direct_decode="flatten")
+        sun = 0.0
+        results_b = [
+            interpret_signal(signal, worker, traits, settings_b, sun, Random(s))
+            for s in range(200)
+        ]
+        results_a = [
+            interpret_signal(signal, worker, traits, settings_a, sun, Random(s))
+            for s in range(200)
+        ]
+        import statistics
+        mean_b = statistics.mean(results_b)
+        mean_a = statistics.mean(results_a)
+        self.assertGreater(angular_distance(mean_b, mean_a), 0.1)
+
+    def test_daytime_sun_sampling_stays_within_configured_arc(self) -> None:
+        settings = _settings(
+            sun_azimuth_center=tau / 4,
+            sun_azimuth_width=tau / 2,
+        )
+        samples = [sample_sun_azimuth(settings, Random(seed)) for seed in range(20)]
+
+        self.assertTrue(all(0.0 <= sample <= tau / 2 for sample in samples))
+
+    def test_horizontal_comb_preserves_direct_mapping(self) -> None:
+        settings = _settings(initial_comb_tilt=0.0, interpretation_noise_sd=0.0)
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=0.0,
+            comb_orientation=0.0,
+        )
+        worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+        )
+        food_direction = 1.2
+        signal = encode_dance_direction(
+            food_direction,
+            worker,
+            traits,
+            settings,
+            0.0,
+            Random(1),
+        )
+        decoded = interpret_signal(signal, worker, traits, settings, 0.0, Random(1))
+
+        self.assertAlmostEqual(signal, food_direction)
+        self.assertAlmostEqual(decoded, food_direction)
+
+    def test_vertical_comb_supports_sun_gravity_transposition_mapping(self) -> None:
+        settings = _settings(
+            initial_comb_tilt=1.0,
+            interpretation_noise_sd=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+            search_limit=5.0,
+            comb_tilt=1.0,
+            comb_orientation=0.0,
+        )
+        gravity_worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+            search_limit=5.0,
+        )
+        food_direction = 1.2
+        sun_azimuth = 0.3
+        signal = encode_dance_direction(
+            food_direction,
+            gravity_worker,
+            traits,
+            settings,
+            sun_azimuth,
+            Random(1),
+        )
+        decoded = interpret_signal(
+            signal,
+            gravity_worker,
+            traits,
+            settings,
+            sun_azimuth,
+            Random(1),
+        )
+
+        self.assertAlmostEqual(decoded, food_direction)
+
+    def test_horizontal_comb_cannot_use_gravity_transposition_mapping(self) -> None:
+        settings = _settings(
+            initial_comb_tilt=0.0,
+            interpretation_noise_sd=0.0,
+        )
+        traits = ColonyTraits(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+            search_limit=5.0,
+            comb_tilt=0.0,
+            comb_orientation=0.0,
+        )
+        gravity_worker = Worker(
+            directional_bias=1.0,
+            receiver_attention=1.0,
+            sender_transposition=1.0,
+            receiver_transposition=1.0,
+            search_limit=5.0,
+        )
+        food_direction = 1.2
+        sun_azimuth = 0.3
+        signal = encode_dance_direction(
+            food_direction,
+            gravity_worker,
+            traits,
+            settings,
+            sun_azimuth,
+            Random(1),
+        )
+        decoded = interpret_signal(
+            signal,
+            gravity_worker,
+            traits,
+            settings,
+            sun_azimuth,
+            Random(1),
+        )
+
+        self.assertGreater(angular_distance(decoded, food_direction), 0.1)
+
+    def test_dance_following_amplifies_independent_discovery(self) -> None:
+        settings = _settings(
+            episodes_per_colony=400,
+            foraging_attempts_per_episode=50,
+            stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
+            dance_noise_sd=0.0,
+            interpretation_noise_sd=0.0,
+            food_site_width=0.05,
+            food_site_min_distance=2.0,
+            food_site_max_distance=2.0,
+            max_search_distance=5.0,
+            food_site_capacity=50,
+            travel_cost_per_distance=0.0,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        attentive = create_colony(
+            ColonyTraits(
+                directional_bias=1.0,
+                receiver_attention=1.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+        random = create_colony(
+            ColonyTraits(
+                directional_bias=0.0,
+                receiver_attention=0.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        attentive_evaluation = evaluate_colony(attentive, settings, Random(3))
+        random_evaluation = evaluate_colony(random, settings, Random(3))
+
+        self.assertGreater(
+            attentive_evaluation.success_rate,
+            random_evaluation.success_rate + 0.01,
+        )
+
+    def test_distance_cost_reduces_payoff_for_far_food(self) -> None:
+        common = {
+            "episodes_per_colony": 80,
+            "foraging_attempts_per_episode": 4,
+            "stable_worker_sd": 0.0,
+            "food_site_width": tau,
+            "food_site_capacity": 8,
+            "max_search_distance": 10.0,
+            "travel_cost_per_distance": 0.05,
+            "cue_cost": 0.0,
+            "attention_cost": 0.0,
+        }
+        near_settings = _settings(
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            **common,
+        )
+        far_settings = _settings(
+            food_site_min_distance=5.0,
+            food_site_max_distance=5.0,
+            **common,
+        )
+        traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=10.0,
+        )
+        near_colony = create_colony(traits, near_settings, Random(2))
+        far_colony = create_colony(traits, far_settings, Random(2))
+
+        near_evaluation = evaluate_colony(near_colony, near_settings, Random(3))
+        far_evaluation = evaluate_colony(far_colony, far_settings, Random(3))
+
+        self.assertGreater(near_evaluation.payoff, far_evaluation.payoff)
+
+    def test_base_dance_cost_applies_independent_of_directional_bias(self) -> None:
+        settings = _settings(
+            episodes_per_colony=10,
+            foraging_attempts_per_episode=3,
+            stable_worker_sd=0.0,
+            food_site_width=tau,
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            food_site_capacity=3,
+            food_value=2.0,
+            travel_cost_per_distance=0.0,
+            base_dance_cost=0.5,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.0,
+                receiver_attention=0.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertAlmostEqual(evaluation.payoff, 4.5)
+
+    def test_recruited_successes_also_produce_costly_dances(self) -> None:
+        settings = _settings(
+            episodes_per_colony=10,
+            foraging_attempts_per_episode=3,
+            stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
+            dance_noise_sd=0.0,
+            interpretation_noise_sd=0.0,
+            food_site_width=tau,
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            food_site_capacity=3,
+            food_value=2.0,
+            travel_cost_per_distance=0.0,
+            base_dance_cost=0.5,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=1.0,
+                receiver_attention=1.0,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertAlmostEqual(evaluation.payoff, 4.5)
+
+    def test_vertical_comb_benefit_scales_colony_payoff(self) -> None:
+        traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=1.0,
+            comb_orientation=0.0,
+        )
+        common = {
+            "episodes_per_colony": 20,
+            "foraging_attempts_per_episode": 1,
+            "stable_worker_sd": 0.0,
+            "food_site_width": tau,
+            "food_value": 1.0,
+            "travel_cost_per_distance": 0.0,
+            "base_dance_cost": 0.0,
+            "cue_cost": 0.0,
+            "attention_cost": 0.0,
+        }
+        no_benefit_settings = _settings(vertical_comb_benefit=0.0, **common)
+        benefit_settings = _settings(vertical_comb_benefit=0.05, **common)
+        no_benefit_colony = create_colony(traits, no_benefit_settings, Random(2))
+        benefit_colony = create_colony(traits, benefit_settings, Random(2))
+
+        no_benefit = evaluate_colony(
+            no_benefit_colony,
+            no_benefit_settings,
+            Random(3),
+        )
+        with_benefit = evaluate_colony(benefit_colony, benefit_settings, Random(3))
+
+        self.assertAlmostEqual(with_benefit.payoff, no_benefit.payoff * 1.05)
+
+    def test_vertical_comb_benefit_does_not_rescue_zero_foraging_payoff(self) -> None:
+        traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=0.0,
+            comb_tilt=1.0,
+            comb_orientation=0.0,
+        )
+        settings = _settings(
+            episodes_per_colony=20,
+            foraging_attempts_per_episode=1,
+            stable_worker_sd=0.0,
+            food_site_width=tau,
+            food_site_min_distance=1.0,
+            food_site_max_distance=1.0,
+            food_value=1.0,
+            travel_cost_per_distance=0.0,
+            base_dance_cost=0.0,
+            cue_cost=0.0,
+            attention_cost=0.0,
+            vertical_comb_benefit=0.25,
+        )
+        colony = create_colony(traits, settings, Random(2))
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertAlmostEqual(evaluation.payoff, 0.001)
+
+    def test_threshold_vertical_comb_modifier_activates_at_threshold(self) -> None:
+        common = {
+            "episodes_per_colony": 20,
+            "foraging_attempts_per_episode": 1,
+            "stable_worker_sd": 0.0,
+            "food_site_width": tau,
+            "food_site_min_distance": 1.0,
+            "food_site_max_distance": 1.0,
+            "food_value": 2.0,
+            "travel_cost_per_distance": 0.0,
+            "base_dance_cost": 0.0,
+            "cue_cost": 0.0,
+            "attention_cost": 0.0,
+            "vertical_comb_benefit": 0.25,
+            "vertical_comb_modifier": "threshold_0.8",
+        }
+        below_traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=0.79,
+            comb_orientation=0.0,
+        )
+        threshold_traits = ColonyTraits(
+            directional_bias=0.0,
+            receiver_attention=0.0,
+            sender_transposition=0.0,
+            receiver_transposition=0.0,
+            search_limit=5.0,
+            comb_tilt=0.8,
+            comb_orientation=0.0,
+        )
+        settings = _settings(**common)
+        below_colony = create_colony(below_traits, settings, Random(2))
+        threshold_colony = create_colony(threshold_traits, settings, Random(2))
+
+        below = evaluate_colony(below_colony, settings, Random(3))
+        threshold = evaluate_colony(threshold_colony, settings, Random(3))
+
+        self.assertAlmostEqual(below.payoff, 2.0)
+        self.assertAlmostEqual(threshold.payoff, 2.5)
+
+    def test_frozen_comb_tilt_does_not_mutate(self) -> None:
+        settings = _settings(mutation_sd=0.5, evolve_comb_tilt=False)
+        traits = ColonyTraits(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=3.0,
+            comb_tilt=0.3,
+            comb_orientation=0.2,
+        )
+
+        mutated = _mutate_traits(traits, settings, Random(11))
+
+        self.assertEqual(mutated.comb_tilt, 0.3)
+
+    def test_frozen_comb_tilt_is_held_across_generations(self) -> None:
+        settings = _settings(
+            colony_count=8,
+            generations=5,
+            mutation_sd=0.2,
+            initial_comb_tilt=0.0,
+            evolve_comb_tilt=False,
+        )
+
+        history = simulate(settings, seed=4)
+
+        self.assertTrue(
+            all(state.average_comb_tilt == 0.0 for state in history)
+        )
+
+    def test_recruitment_advantage_is_positive_when_dances_are_useful(self) -> None:
+        settings = _settings(
+            episodes_per_colony=400,
+            foraging_attempts_per_episode=50,
+            stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
+            dance_noise_sd=0.0,
+            interpretation_noise_sd=0.0,
+            food_site_width=0.05,
+            food_site_min_distance=2.0,
+            food_site_max_distance=2.0,
+            max_search_distance=5.0,
+            food_site_capacity=50,
+            travel_cost_per_distance=0.0,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=1.0,
+                receiver_attention=0.5,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertGreater(evaluation.follower_attempts, 0)
+        self.assertGreater(evaluation.matched_searcher_attempts, 0)
+        follower_rate = evaluation.follower_successes / evaluation.follower_attempts
+        searcher_rate = (
+            evaluation.matched_searcher_successes
+            / evaluation.matched_searcher_attempts
+        )
+        self.assertGreater(follower_rate, searcher_rate + 0.1)
+
+    def test_recruitment_advantage_is_negligible_for_uninformative_dances(self) -> None:
+        settings = _settings(
+            episodes_per_colony=400,
+            foraging_attempts_per_episode=50,
+            stable_worker_sd=0.0,
+            max_signal_concentration=50.0,
+            dance_noise_sd=0.0,
+            interpretation_noise_sd=0.0,
+            food_site_width=0.05,
+            food_site_min_distance=2.0,
+            food_site_max_distance=2.0,
+            max_search_distance=5.0,
+            food_site_capacity=50,
+            travel_cost_per_distance=0.0,
+            cue_cost=0.0,
+            attention_cost=0.0,
+        )
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.0,
+                receiver_attention=0.5,
+                sender_transposition=0.0,
+                receiver_transposition=0.0,
+                search_limit=5.0,
+            ),
+            settings,
+            Random(2),
+        )
+
+        evaluation = evaluate_colony(colony, settings, Random(3))
+
+        self.assertGreater(evaluation.follower_attempts, 0)
+        self.assertGreater(evaluation.matched_searcher_attempts, 0)
+        follower_rate = evaluation.follower_successes / evaluation.follower_attempts
+        searcher_rate = (
+            evaluation.matched_searcher_successes
+            / evaluation.matched_searcher_attempts
+        )
+        self.assertLess(abs(follower_rate - searcher_rate), 0.1)
+
+    def test_simulation_is_reproducible(self) -> None:
+        settings = _settings(
+            colony_count=8,
+            workers_per_colony=12,
+            generations=3,
+            episodes_per_colony=8,
+            foraging_attempts_per_episode=3,
+        )
+
+        first = simulate(settings, seed=4)
+        second = simulate(settings, seed=4)
+
+        self.assertEqual(first, second)
+
+
+class DiskGeometryTests(unittest.TestCase):
+    def test_segment_disk_entry_hits_patch_dead_ahead(self) -> None:
+        # Center 3 units ahead, radius 0.5: entry is the near edge at 2.5.
+        entry = _segment_disk_entry(0.0, 5.0, 3.0, 0.0, 0.5)
+        self.assertAlmostEqual(entry, 2.5)
+
+    def test_segment_disk_entry_misses_when_offset_exceeds_capture_angle(self) -> None:
+        from math import asin
+
+        distance, radius = 3.0, 0.5
+        capture = asin(radius / distance)
+        # Just inside the capture half-angle the path enters the disk...
+        self.assertIsNotNone(
+            _segment_disk_entry(0.0, 5.0, distance, capture - 0.01, radius)
+        )
+        # ...and just outside it misses entirely.
+        self.assertIsNone(
+            _segment_disk_entry(0.0, 5.0, distance, capture + 0.01, radius)
+        )
+
+    def test_segment_disk_entry_respects_foray_length(self) -> None:
+        self.assertIsNone(_segment_disk_entry(0.0, 2.0, 3.0, 0.0, 0.5))
+        self.assertAlmostEqual(_segment_disk_entry(0.0, 2.5, 3.0, 0.0, 0.5), 2.5)
+
+    def test_segment_disk_entry_is_zero_when_nest_is_inside_patch(self) -> None:
+        entry = _segment_disk_entry(0.0, 5.0, 0.3, 1.2, 0.5)
+        self.assertEqual(entry, 0.0)
+
+    def test_disk_search_finds_nearest_patch_by_entry_distance(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=3.0, width=0.0, value=1.0, capacity=1, radius=0.3),
+            FoodSite(direction=0.0, distance=2.0, width=0.0, value=1.0, capacity=1, radius=0.3),
+        )
+        self.assertEqual(
+            find_food_site(0.0, 5.0, sites, [1, 1], geometry="disk"),
+            1,
+        )
+
+    def test_disk_search_skips_missed_patch(self) -> None:
+        sites = (
+            FoodSite(direction=0.0, distance=3.0, width=0.0, value=1.0, capacity=1, radius=0.2),
+        )
+        # Heading 0.5 rad off a 0.2-radius patch at distance 3 cannot intersect it.
+        self.assertIsNone(find_food_site(0.5, 5.0, sites, [1], geometry="disk"))
+        self.assertEqual(find_food_site(0.0, 5.0, sites, [1], geometry="disk"), 0)
+
+    def test_generated_disk_radii_are_positive_and_vary(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=200,
+            food_site_radius=0.4,
+            food_site_radius_log_sd=0.6,
+        )
+        sites = generate_food_sites(settings, Random(1))
+        radii = [site.radius for site in sites]
+        self.assertTrue(all(radius > 0.0 for radius in radii))
+        self.assertGreater(len(set(radii)), 1)
+
+    def test_zero_log_sd_gives_constant_patch_radius(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_radius=0.4,
+            food_site_radius_log_sd=0.0,
+        )
+        self.assertEqual(_sample_patch_radius(settings, Random(1)), 0.4)
+
+    def test_angular_geometry_leaves_radius_at_zero(self) -> None:
+        settings = _settings(food_site_radius=0.4)  # default angular geometry
+        self.assertEqual(_sample_patch_radius(settings, Random(1)), 0.0)
+
+
+class ForayDistributionTests(unittest.TestCase):
+    def test_fixed_foray_returns_the_range_trait_unchanged(self) -> None:
+        settings = _settings(foray_distribution="fixed")
+        self.assertEqual(_draw_foray_length(3.0, settings, Random(1)), 3.0)
+
+    def test_gamma_foray_mean_matches_evolved_mean(self) -> None:
+        settings = _settings(
+            foray_distribution="gamma",
+            foray_shape=2.0,
+            max_search_distance=100.0,  # avoid clamp bias for the mean check
+        )
+        rng = Random(7)
+        draws = [_draw_foray_length(3.0, settings, rng) for _ in range(20000)]
+        self.assertAlmostEqual(mean(draws), 3.0, delta=0.1)
+        self.assertGreater(len(set(draws)), 1)
+
+    def test_gamma_foray_is_clamped_to_max_search_distance(self) -> None:
+        settings = _settings(
+            foray_distribution="gamma",
+            foray_shape=2.0,
+            max_search_distance=5.0,
+        )
+        rng = Random(7)
+        draws = [_draw_foray_length(4.0, settings, rng) for _ in range(5000)]
+        self.assertLessEqual(max(draws), 5.0)
+        self.assertTrue(all(draw >= 0.0 for draw in draws))
+
+    def test_gamma_foray_with_zero_mean_is_zero(self) -> None:
+        settings = _settings(foray_distribution="gamma")
+        self.assertEqual(_draw_foray_length(0.0, settings, Random(1)), 0.0)
+
+    def test_gamma_foray_drops_per_worker_jitter(self) -> None:
+        settings = _settings(foray_distribution="gamma", stable_worker_sd=0.2)
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+                search_limit=2.0,
+            ),
+            settings,
+            Random(3),
+        )
+        self.assertTrue(all(worker.search_limit == 2.0 for worker in colony.workers))
+
+
+class CapacityScalingTests(unittest.TestCase):
+    def test_fixed_scaling_ignores_radius(self) -> None:
+        settings = _settings(food_site_capacity=6)  # default "fixed"
+        self.assertEqual(_site_capacity(settings, 999.0), 6)
+        self.assertEqual(_site_capacity(settings, 0.0), 6)
+
+    def test_area_scaling_is_quadratic_in_radius(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        self.assertEqual(_site_capacity(settings, 150.0), 6)   # reference -> base
+        self.assertEqual(_site_capacity(settings, 300.0), 24)  # 2x radius -> 4x
+        self.assertEqual(_site_capacity(settings, 600.0), 96)  # 4x radius -> 16x
+
+    def test_area_scaling_floors_tiny_patches_at_one(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        self.assertEqual(_site_capacity(settings, 15.0), 1)  # 6*0.01 -> round 0 -> 1
+
+    def test_area_scaling_falls_back_to_base_without_reference(self) -> None:
+        settings = _settings(
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=0.0,
+        )
+        self.assertEqual(_site_capacity(settings, 300.0), 6)
+
+    def test_generated_disk_sites_scale_capacity_with_drawn_radius(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=50,
+            food_site_radius=150.0,
+            food_site_radius_log_sd=0.6,
+            food_site_capacity=6,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=150.0,
+        )
+        sites = generate_food_sites(settings, Random(2))
+        self.assertTrue(all(site.capacity >= 1 for site in sites))
+        for site in sites:
+            expected = max(1, round(6 * (site.radius / 150.0) ** 2))
+            self.assertEqual(site.capacity, expected)
+
+
+class DancePropensityTests(unittest.TestCase):
+    @staticmethod
+    def _worker(dance_propensity: float) -> Worker:
+        return Worker(
+            directional_bias=0.5,
+            receiver_attention=0.5,
+            sender_transposition=0.5,
+            receiver_transposition=0.5,
+            search_limit=1.0,
+            dance_propensity=dance_propensity,
+        )
+
+    def test_legacy_scout_always_dances(self) -> None:
+        settings = _settings()  # evolve_dance_propensity False by default
+        worker = self._worker(0.0)
+        # Even with zero propensity and an exhausted patch, legacy always dances.
+        self.assertTrue(_scout_dances(worker, 0, settings, Random(1)))
+
+    def test_no_dance_for_exhausted_patch(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        self.assertFalse(_scout_dances(self._worker(1.0), 0, settings, Random(1)))
+
+    def test_full_propensity_dances_when_capacity_remains(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(1.0)
+        for remaining in (1, 5, 20):
+            self.assertTrue(_scout_dances(worker, remaining, settings, Random(remaining)))
+
+    def test_zero_propensity_never_dances(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(0.0)
+        self.assertFalse(
+            any(_scout_dances(worker, 5, settings, Random(seed)) for seed in range(50))
+        )
+
+    def test_dance_rate_matches_geometric_form(self) -> None:
+        settings = _settings(evolve_dance_propensity=True)
+        worker = self._worker(0.3)
+        rng = Random(11)
+        expected = 1.0 - (1.0 - 0.3) ** 3  # remaining capacity 3
+        rate = mean(_scout_dances(worker, 3, settings, rng) for _ in range(20000))
+        self.assertAlmostEqual(rate, expected, delta=0.02)
+
+    def test_inert_trait_stays_at_one(self) -> None:
+        settings = _settings()  # flag off
+        colony = create_colony(
+            ColonyTraits(
+                directional_bias=0.5,
+                receiver_attention=0.5,
+                sender_transposition=0.5,
+                receiver_transposition=0.5,
+                search_limit=2.0,
+            ),
+            settings,
+            Random(3),
+        )
+        self.assertTrue(all(worker.dance_propensity == 1.0 for worker in colony.workers))
+
+    def test_simulation_is_reproducible_with_trait_on(self) -> None:
+        settings = _settings(
+            evolve_dance_propensity=True,
+            food_geometry="disk",
+            food_site_radius=2.0,
+            food_capacity_scaling="area",
+            food_capacity_reference_radius=2.0,
+        )
+        self.assertEqual(simulate(settings, seed=5), simulate(settings, seed=5))
+
+
+class SiteCountTests(unittest.TestCase):
+    def test_fixed_count_is_exact(self) -> None:
+        settings = _settings(food_site_count=5)  # default "fixed"
+        self.assertTrue(
+            all(_sample_site_count(settings, Random(s)) == 5 for s in range(10))
+        )
+
+    def test_poisson_count_mean_matches_setting(self) -> None:
+        settings = _settings(
+            food_site_count=3, food_site_count_distribution="poisson"
+        )
+        rng = Random(4)
+        draws = [_sample_site_count(settings, rng) for _ in range(20000)]
+        self.assertAlmostEqual(mean(draws), 3.0, delta=0.1)
+        self.assertGreater(len(set(draws)), 1)
+        self.assertTrue(all(isinstance(d, int) and d >= 0 for d in draws))
+
+    def test_poisson_generates_variable_site_counts(self) -> None:
+        settings = _settings(
+            food_geometry="disk",
+            food_site_count=2,
+            food_site_count_distribution="poisson",
+            food_site_radius=100.0,
+        )
+        rng = Random(7)
+        counts = {len(generate_food_sites(settings, rng)) for _ in range(200)}
+        self.assertGreater(len(counts), 1)
+
+    def test_poisson_with_zero_mean_is_empty(self) -> None:
+        settings = _settings(
+            food_site_count=0, food_site_count_distribution="poisson"
+        )
+        self.assertEqual(_sample_site_count(settings, Random(1)), 0)
+
+
+def _settings(**overrides: float | int | bool | str | None) -> DirectionSettings:
+    values = {
+        "colony_count": 4,
+        "workers_per_colony": 20,
+        "generations": 1,
+        "episodes_per_colony": 20,
+        "foraging_attempts_per_episode": 4,
+        "mutation_sd": 0.03,
+        "transposition_mutation_correlation": 0.6,
+        "stable_worker_sd": 0.05,
+        "max_signal_concentration": 20.0,
+        "dance_noise_sd": 0.08,
+        "interpretation_noise_sd": 0.08,
+        "initial_comb_tilt": 0.0,
+        "vertical_comb_benefit": 0.0,
+        "sun_azimuth_center": tau / 2,
+        "sun_azimuth_width": tau / 2,
+        "food_site_count": 1,
+        "food_site_width": 0.35,
+        "food_site_min_distance": 1.0,
+        "food_site_max_distance": 5.0,
+        "max_search_distance": 5.0,
+        "food_site_capacity": 8,
+        "food_value": 1.0,
+        "travel_cost_per_distance": 0.0,
+        "base_dance_cost": 0.0,
+        "cue_cost": 0.01,
+        "attention_cost": 0.01,
+    }
+    values.update(overrides)
+    return DirectionSettings(**values)
+
+
+if __name__ == "__main__":
+    unittest.main()

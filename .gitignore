@@ -1,0 +1,36 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+results/*
+!results/.gitkeep
+!results/*.csv
+!results/*.csv.gz
+results/*.tmp
+# Slurm job logs (jobs write into logs/; ignore stray root-level logs too)
+logs/*
+!logs/.gitkeep
+slurm-*.out
+slurm-*.err
+report/*.aux
+report/*.bbl
+report/*.blg
+report/*.log
+report/*.out
+report/*.pdf
+report/*.fdb_latexmk
+report/*.fls
+report/figures/*.aux
+report/figures/*.log
+report/*.synctex.gz
+report/*.tar.gz
+q.log
+
+# Downloaded source papers (copyrighted; never commit)
+literature/

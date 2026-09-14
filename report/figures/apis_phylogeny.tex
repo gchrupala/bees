@@ -1,0 +1,60 @@
+\documentclass[border=6pt]{standalone}
+\usepackage[edges]{forest}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\newcommand{\combbraces}{%
+  \coordinate (bx) at ($(apiB.east)+(16pt,0)$);
+  \draw[decorate,decoration={brace,amplitude=5pt}]
+    (bx|-micA.north) -- (bx|-micB.south)
+    node[midway,right=7pt,align=left,font=\footnotesize]
+      {exposed\\horizontal comb};
+  \draw[decorate,decoration={brace,amplitude=5pt}]
+    (bx|-megA.north) -- (bx|-megB.south)
+    node[midway,right=7pt,align=left,font=\footnotesize]
+      {exposed\\vertical comb};
+  \draw[decorate,decoration={brace,amplitude=5pt}]
+    (bx|-apiA.north) -- (bx|-apiB.south)
+    node[midway,right=7pt,align=left,font=\footnotesize]
+      {vertical comb\\in a cavity};
+}
+\begin{document}
+\begin{forest}
+  for tree={
+    grow'=east,
+    calign=first,
+    parent anchor=east,
+    child anchor=west,
+    anchor=west,
+    edge={thick, rounded corners=2pt},
+    edge path={
+      \noexpand\path[\forestoption{edge}]
+        (!u.parent anchor) -- +(6pt,0) |- (.child anchor)\forestoption{edge label};
+    },
+    l sep=16pt,
+    s sep=3pt,
+    font=\small,
+  }
+  [\textit{Apis}, font=\itshape\bfseries, tikz=\combbraces
+    [Micrapis
+      [\textit{A.\ andreniformis}, name=micA]
+      [\textit{A.\ florea}, name=micB]
+    ]
+    [, inner sep=0pt, minimum size=0pt
+      [Megapis
+        [\textit{A.\ breviligula}, name=megA]
+        [\textit{A.\ laboriosa}]
+        [\textit{A.\ dorsata}, name=megB]
+      ]
+      [\textit{Apis} s.s.
+        [\textit{A.\ mellifera}, name=apiA]
+        [, inner sep=0pt, minimum size=0pt
+          [\textit{A.\ koschevnikovi}]
+          [\textit{A.\ cerana}]
+          [\textit{A.\ indica}]
+          [\textit{A.\ nuluensis}]
+          [\textit{A.\ nigrocincta}, name=apiB]
+        ]
+      ]
+    ]
+  ]
+\end{forest}
+\end{document}

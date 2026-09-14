@@ -1,0 +1,17 @@
+[project]
+name = "bees"
+version = "0.1.0"
+description = "Simple computational models for bee communication evolution."
+requires-python = ">=3.11"
+dependencies = [
+    "optuna>=4,<5",
+    "pandas>=2.2,<3",
+    "plotnine>=0.15,<1",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
